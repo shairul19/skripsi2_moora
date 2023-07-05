@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lengkapi Data User</title>
+</head>
+<body>
+    <h1>Lengkapi Data User</h1>
+
+    <form method="POST" action="/lengkapi_data_user">
+        <label for="nisn">NISN:</label>
+        <input type="text" id="nisn" name="nisn" required>
+        <br><br>
+        
+        <label for="nama_pemain">Nama Pemain:</label>
+        <input type="text" id="nama_pemain" name="nama_pemain" required>
+        <br><br>
+        
+        <label for="tgl_lahir_pemain">Tanggal Lahir Pemain:</label>
+        <input type="date" id="tgl_lahir_pemain" name="tgl_lahir_pemain" required>
+        <br><br>
+        
+        <label for="posisi">Posisi:</label>
+        <select id="posisi" name="posisi" required>
+            <option value="" disabled selected>Pilih Posisi</option>
+            <option value="GK">GK</option>
+            <option value="DF">DF</option>
+            <option value="MF">MF</option>
+            <option value="FW">FW</option>
+        </select>
+        <br><br>
+        
+        <label for="asal_sekolah">Asal Sekolah:</label>
+        <input type="text" id="asal_sekolah" name="asal_sekolah" required>
+        <br><br>
+        
+        <input type="submit" value="Simpan">
+    </form>
+</body>
+</html>

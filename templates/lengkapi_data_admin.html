@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lengkapi Data Admin</title>
+</head>
+<body>
+    <h1>Lengkapi Data Admin</h1>
+
+    <form method="POST" action="/lengkapi_data_admin">
+        <label for="nama_admin">Nama Admin:</label>
+        <input type="text" id="nama_admin" name="nama_admin" required>
+        <br><br>
+        
+        <label for="tgl_lahir_admin">Tanggal Lahir Admin:</label>
+        <input type="date" id="tgl_lahir_admin" name="tgl_lahir_admin" required>
+        <br><br>
+        
+        <label for="jabatan">Jabatan:</label>
+        <select id="jabatan" name="jabatan" required>
+            <option value="" disabled selected>Pilih Jabatan</option>
+            <option value="Head Coach">Head Coach</option>
+            <option value="Asst. Coach">Asst. Coach</option>
+            <option value="Scout Staff">Scout Staff</option>
+        </select>
+        <br><br>
+        
+        <input type="submit" value="Simpan">
+    </form>
+</body>
+</html>
