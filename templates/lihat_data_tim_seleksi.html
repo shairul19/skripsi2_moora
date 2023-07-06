@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lihat Data Tim Seleksi</title>
+</head>
+<body>
+    <h1>Lihat Data Tim Seleksi</h1>
+    <form method="POST" action="/lihat_data_tim_seleksi">
+        <label for="jabatan">Pilih Jabatan:</label>
+        <select name="jabatan" id="jabatan">
+            <option value="semua">Lihat Semua</option>
+            <option value="Head Coach">Head Coach</option>
+            <option value="Asst. Coach">Asst. Coach</option>
+            <option value="Scout Staff">Scout Staff</option>
+        </select>
+        <button type="submit">Tampilkan</button>
+    </form>
+    <br>
+    {% if data_tim_seleksi %}
+    <table border="1">
+        <tr>
+            <th>No.</th>
+            <th>Nama</th>
+            <th>Tanggal Lahir</th>
+            <th>Jabatan</th>
+        </tr>
+        {% for tim in data_tim_seleksi %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ tim[1] }}</td>
+            <td>{{ tim[2] }}</td>
+            <td>{{ tim[3] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+</body>
+</html>

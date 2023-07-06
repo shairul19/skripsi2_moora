@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lihat Data Kriteria</title>
+</head>
+<body>
+    <h1>Lihat Data Kriteria</h1>
+    <form method="POST">
+        <label for="posisi">Posisi:</label>
+        <select id="posisi" name="posisi">
+            <option value="semua">Semua</option>
+            <option value="GK">GK</option>
+            <option value="DF">DF</option>
+            <option value="MF">MF</option>
+            <option value="FW">FW</option>
+        </select>
+        <button type="submit">Filter</button>
+    </form>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Kode Kriteria</th>
+                <th>Nama Kriteria</th>
+                <th>Posisi</th>
+                <th>Bobot</th>
+                <th>Tipe</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for kriteria in data_kriteria %}
+            <tr>
+                <td>{{ kriteria[0] }}</td>
+                <td>{{ kriteria[1] }}</td>
+                <td>{{ kriteria[2] }}</td>
+                <td>{{ kriteria[3] }}</td>
+                <td>{{ kriteria[4] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </body>
+    </html>

@@ -16,22 +16,6 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
---
--- Name: public; Type: SCHEMA; Schema: -; Owner: postgres
---
-
-CREATE SCHEMA public;
-
-
-ALTER SCHEMA public OWNER TO postgres;
-
---
--- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: postgres
---
-
-COMMENT ON SCHEMA public IS 'standard public schema';
-
-
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -119,7 +103,8 @@ CREATE TABLE public.tbl_kriteria (
     id_kriteria integer NOT NULL,
     kode_kriteria character varying(255),
     nama_kriteria character varying(255),
-    posisi character varying(255)
+    posisi character varying(255),
+    tipe character varying(10)
 );
 
 
@@ -159,18 +144,6 @@ CREATE TABLE public.tbl_nilai_kriteria (
 
 
 ALTER TABLE public.tbl_nilai_kriteria OWNER TO shairul;
-
---
--- Name: tbl_nilai_preferensi; Type: TABLE; Schema: public; Owner: shairul
---
-
-CREATE TABLE public.tbl_nilai_preferensi (
-    id_kriteria integer NOT NULL,
-    nilai numeric(4,2)
-);
-
-
-ALTER TABLE public.tbl_nilai_preferensi OWNER TO shairul;
 
 --
 -- Name: tbl_pemain; Type: TABLE; Schema: public; Owner: shairul
@@ -214,7 +187,6 @@ CREATE TABLE public.tbl_users (
     role character varying(50),
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    is_completed boolean DEFAULT false,
     admin_data_completed boolean DEFAULT false,
     user_data_completed boolean DEFAULT false
 );
@@ -293,7 +265,7 @@ COPY public.tbl_bobot_kriteria (id_bobot_kriteria, id_kriteria, posisi, bobot) F
 -- Data for Name: tbl_kriteria; Type: TABLE DATA; Schema: public; Owner: shairul
 --
 
-COPY public.tbl_kriteria (id_kriteria, kode_kriteria, nama_kriteria, posisi) FROM stdin;
+COPY public.tbl_kriteria (id_kriteria, kode_kriteria, nama_kriteria, posisi, tipe) FROM stdin;
 \.
 
 
@@ -306,20 +278,13 @@ COPY public.tbl_nilai_kriteria (nisn, id_kriteria, nilai) FROM stdin;
 
 
 --
--- Data for Name: tbl_nilai_preferensi; Type: TABLE DATA; Schema: public; Owner: shairul
---
-
-COPY public.tbl_nilai_preferensi (id_kriteria, nilai) FROM stdin;
-\.
-
-
---
 -- Data for Name: tbl_pemain; Type: TABLE DATA; Schema: public; Owner: shairul
 --
 
 COPY public.tbl_pemain (nisn, id_user, nama_pemain, tgl_lahir_pemain, posisi, asal_sekolah, created_at, updated_at) FROM stdin;
 12345678	8	Shairul Annam	2000-10-31	DF	SDS Miftahul Jannah	2023-07-05 20:14:15.717602	2023-07-05 20:14:15.717602
 444444	10	Asan Basri	2000-03-10	FW	SDN 1 Cikupa	2023-07-05 20:15:38.810173	2023-07-05 20:15:38.810173
+447890	11	Muhammad Faturrahman	2008-01-10	DF	SMPN 1 CIKUPA	2023-07-06 14:05:58.345674	2023-07-06 14:05:58.345674
 \.
 
 
@@ -335,10 +300,11 @@ COPY public.tbl_skor_moora (nisn, skor, status) FROM stdin;
 -- Data for Name: tbl_users; Type: TABLE DATA; Schema: public; Owner: shairul
 --
 
-COPY public.tbl_users (id_user, username, password, role, created_at, updated_at, is_completed, admin_data_completed, user_data_completed) FROM stdin;
-8	shairul	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	user	2023-07-04 12:10:04.931547	2023-07-04 12:10:04.931547	f	f	t
-10	asan	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	user	2023-07-05 20:15:11.71078	2023-07-05 20:15:11.71078	f	f	t
-9	superadmin	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	admin	2023-07-04 12:11:14.477708	2023-07-04 12:11:14.477708	f	t	f
+COPY public.tbl_users (id_user, username, password, role, created_at, updated_at, admin_data_completed, user_data_completed) FROM stdin;
+8	shairul	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	user	2023-07-04 12:10:04.931547	2023-07-04 12:10:04.931547	f	t
+10	asan	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	user	2023-07-05 20:15:11.71078	2023-07-05 20:15:11.71078	f	t
+9	superadmin	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	admin	2023-07-04 12:11:14.477708	2023-07-04 12:11:14.477708	t	f
+11	fatur	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	user	2023-07-06 14:05:45.83033	2023-07-06 14:05:45.83033	f	t
 \.
 
 
@@ -367,7 +333,7 @@ SELECT pg_catalog.setval('public.tbl_kriteria_id_kriteria_seq', 1, false);
 -- Name: tbl_users_id_user_seq; Type: SEQUENCE SET; Schema: public; Owner: shairul
 --
 
-SELECT pg_catalog.setval('public.tbl_users_id_user_seq', 10, true);
+SELECT pg_catalog.setval('public.tbl_users_id_user_seq', 11, true);
 
 
 --
@@ -400,14 +366,6 @@ ALTER TABLE ONLY public.tbl_kriteria
 
 ALTER TABLE ONLY public.tbl_nilai_kriteria
     ADD CONSTRAINT tbl_nilai_kriteria_pkey PRIMARY KEY (nisn, id_kriteria);
-
-
---
--- Name: tbl_nilai_preferensi tbl_nilai_preferensi_pkey; Type: CONSTRAINT; Schema: public; Owner: shairul
---
-
-ALTER TABLE ONLY public.tbl_nilai_preferensi
-    ADD CONSTRAINT tbl_nilai_preferensi_pkey PRIMARY KEY (id_kriteria);
 
 
 --
@@ -467,14 +425,6 @@ ALTER TABLE ONLY public.tbl_nilai_kriteria
 
 
 --
--- Name: tbl_nilai_preferensi tbl_nilai_preferensi_id_kriteria_fkey; Type: FK CONSTRAINT; Schema: public; Owner: shairul
---
-
-ALTER TABLE ONLY public.tbl_nilai_preferensi
-    ADD CONSTRAINT tbl_nilai_preferensi_id_kriteria_fkey FOREIGN KEY (id_kriteria) REFERENCES public.tbl_kriteria(id_kriteria);
-
-
---
 -- Name: tbl_pemain tbl_pemain_id_user_fkey; Type: FK CONSTRAINT; Schema: public; Owner: shairul
 --
 
@@ -493,4 +443,3 @@ ALTER TABLE ONLY public.tbl_skor_moora
 --
 -- PostgreSQL database dump complete
 --
-

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lihat Data Pemain</title>
+</head>
+<body>
+    <h1>Lihat Data Pemain</h1>
+    <form method="POST" action="/lihat_data_pemain">
+        <label for="posisi">Pilih Posisi:</label>
+        <select name="posisi" id="posisi">
+            <option value="semua">Semua Pemain</option>
+            <option value="GK">Penjaga Gawang (GK)</option>
+            <option value="DF">Bek (DF)</option>
+            <option value="MF">Gelandang (MF)</option>
+            <option value="FW">Penyerang (FW)</option>
+        </select>
+        <button type="submit">Tampilkan</button>
+    </form>
+    <br>
+    {% if data_pemain %}
+    <table border="1">
+        <tr>
+            <th>No.</th>
+            <th>NISN</th>
+            <th>Nama Pemain</th>
+            <th>Posisi</th>
+            <th>Tanggal Lahir</th>
+            <th>Asal Sekolah</th>
+        </tr>
+        {% for pemain in data_pemain %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ pemain[0] }}</td>
+            <td>{{ pemain[1] }}</td>
+            <td>{{ pemain[2] }}</td>
+            <td>{{ pemain[3] }}</td>
+            <td>{{ pemain[4] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+</body>
+</html>

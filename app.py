@@ -1,9 +1,11 @@
 from flask import Flask, render_template, request, session, redirect
 import psycopg2
 import hashlib
+import jinja2.ext
 
 app = Flask(__name__)
 app.secret_key = 'andasiapa'
+app.jinja_env.add_extension(jinja2.ext.loopcontrols)
 
 # Koneksi ke database
 conn = psycopg2.connect(
@@ -44,6 +46,7 @@ def lengkapi_data_admin(user_id, nama_admin, tgl_lahir_admin, jabatan):
     # Perbarui status data completed pada tabel tbl_users
     cur.execute("UPDATE tbl_users SET admin_data_completed = TRUE WHERE id_user = %s", (user_id,))
     conn.commit()
+
 
 
 
@@ -173,6 +176,83 @@ def halaman_admin():
         return "Halaman Admin"
     else:
         return redirect('/login')
+
+
+# Halaman lihat data pemain
+@app.route('/lihat_data_pemain', methods=['GET', 'POST'])
+def lihat_data_pemain():
+    if 'user_id' in session:
+        if request.method == 'POST':
+            posisi = request.form['posisi']
+
+            if posisi == 'semua':  # Menampilkan semua pemain
+                cur.execute("SELECT nisn, nama_pemain, posisi, tgl_lahir_pemain, asal_sekolah FROM tbl_pemain")
+            else:
+                cur.execute("SELECT nisn, nama_pemain, posisi, tgl_lahir_pemain, asal_sekolah FROM tbl_pemain WHERE posisi = %s", (posisi,))
+
+            data_pemain = cur.fetchall()
+
+            return render_template('lihat_data_pemain.html', data_pemain=data_pemain)
+
+        return render_template('lihat_data_pemain.html')
+    else:
+        return redirect('/login')
+
+# Halaman lihat data tim seleksi
+@app.route('/lihat_data_tim_seleksi', methods=['GET', 'POST'])
+def lihat_data_tim_seleksi():
+    if 'user_id' in session:
+        if request.method == 'POST':
+            jabatan = request.form['jabatan']
+
+            if jabatan == 'semua':
+                cur.execute("SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE nama_admin != 'Superadmin'")
+            else:
+                cur.execute("SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE jabatan = %s AND nama_admin != 'Superadmin'", (jabatan,))
+
+            data_tim_seleksi = cur.fetchall()
+
+            return render_template('lihat_data_tim_seleksi.html', data_tim_seleksi=data_tim_seleksi)
+
+        return render_template('lihat_data_tim_seleksi.html')
+    else:
+        return redirect('/login')
+
+# Halaman lihat data kriteria berdasarkan posisi atau semua posisi
+@app.route('/lihat_data_kriteria', methods=['GET', 'POST'])
+def lihat_data_kriteria():
+    if request.method == 'POST':
+        posisi = request.form['posisi']
+
+        if posisi == 'semua':
+            cur.execute("SELECT kode_kriteria, nama_kriteria, posisi, bobot, tipe FROM tbl_kriteria")
+        else:
+            cur.execute("SELECT kode_kriteria, nama_kriteria, posisi, bobot, tipe FROM tbl_kriteria WHERE posisi = %s", (posisi,))
+
+        data_kriteria = cur.fetchall()
+        return render_template('lihat_data_kriteria.html', data_kriteria=data_kriteria)
+
+    return render_template('lihat_data_kriteria.html')
+
+
+
+# Halaman tambah kriteria
+@app.route('/tambah_kriteria', methods=['GET', 'POST'])
+def tambah_kriteria():
+    if request.method == 'POST':
+        kode_kriteria = request.form['kode_kriteria']
+        nama_kriteria = request.form['nama_kriteria']
+        posisi = request.form['posisi']
+        bobot = request.form['bobot']
+        tipe = request.form['tipe']
+
+        cur.execute("INSERT INTO tbl_kriteria (kode_kriteria, nama_kriteria, posisi, bobot, tipe) VALUES (%s, %s, %s, %s, %s)", (kode_kriteria, nama_kriteria, posisi, bobot, tipe))
+        conn.commit()
+
+        return redirect('/lihat_data_kriteria')
+
+    return render_template('tambah_kriteria.html')
+
 
 
 
