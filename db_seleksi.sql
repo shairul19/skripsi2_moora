@@ -60,42 +60,6 @@ ALTER SEQUENCE public.tbl_admin_id_admin_seq OWNED BY public.tbl_admin.id_admin;
 
 
 --
--- Name: tbl_bobot_kriteria; Type: TABLE; Schema: public; Owner: shairul
---
-
-CREATE TABLE public.tbl_bobot_kriteria (
-    id_bobot_kriteria integer NOT NULL,
-    id_kriteria integer,
-    posisi character varying(255),
-    bobot numeric(4,2)
-);
-
-
-ALTER TABLE public.tbl_bobot_kriteria OWNER TO shairul;
-
---
--- Name: tbl_bobot_kriteria_id_bobot_kriteria_seq; Type: SEQUENCE; Schema: public; Owner: shairul
---
-
-CREATE SEQUENCE public.tbl_bobot_kriteria_id_bobot_kriteria_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.tbl_bobot_kriteria_id_bobot_kriteria_seq OWNER TO shairul;
-
---
--- Name: tbl_bobot_kriteria_id_bobot_kriteria_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: shairul
---
-
-ALTER SEQUENCE public.tbl_bobot_kriteria_id_bobot_kriteria_seq OWNED BY public.tbl_bobot_kriteria.id_bobot_kriteria;
-
-
---
 -- Name: tbl_kriteria; Type: TABLE; Schema: public; Owner: shairul
 --
 
@@ -104,7 +68,8 @@ CREATE TABLE public.tbl_kriteria (
     kode_kriteria character varying(255),
     nama_kriteria character varying(255),
     posisi character varying(255),
-    tipe character varying(10)
+    tipe character varying(10),
+    bobot numeric(4,2)
 );
 
 
@@ -224,13 +189,6 @@ ALTER TABLE ONLY public.tbl_admin ALTER COLUMN id_admin SET DEFAULT nextval('pub
 
 
 --
--- Name: tbl_bobot_kriteria id_bobot_kriteria; Type: DEFAULT; Schema: public; Owner: shairul
---
-
-ALTER TABLE ONLY public.tbl_bobot_kriteria ALTER COLUMN id_bobot_kriteria SET DEFAULT nextval('public.tbl_bobot_kriteria_id_bobot_kriteria_seq'::regclass);
-
-
---
 -- Name: tbl_kriteria id_kriteria; Type: DEFAULT; Schema: public; Owner: shairul
 --
 
@@ -250,14 +208,9 @@ ALTER TABLE ONLY public.tbl_users ALTER COLUMN id_user SET DEFAULT nextval('publ
 
 COPY public.tbl_admin (id_admin, id_user, nama_admin, tgl_lahir_admin, jabatan, created_at, updated_at) FROM stdin;
 1	9	Superadmin	1987-12-14	Head Coach	2023-07-05 20:17:25.273351	2023-07-05 20:17:25.273351
-\.
-
-
---
--- Data for Name: tbl_bobot_kriteria; Type: TABLE DATA; Schema: public; Owner: shairul
---
-
-COPY public.tbl_bobot_kriteria (id_bobot_kriteria, id_kriteria, posisi, bobot) FROM stdin;
+2	12	Wawan Hendrawan	1966-12-19	Head Coach	2023-07-06 14:40:58.33863	2023-07-06 14:40:58.33863
+3	13	Mukti Wibisono	1978-05-04	Asst. Coach	2023-07-06 14:41:33.714784	2023-07-06 14:41:33.714784
+4	14	Andrian winarto	1992-01-13	Scout Staff	2023-07-06 14:42:17.321109	2023-07-06 14:42:17.321109
 \.
 
 
@@ -265,7 +218,10 @@ COPY public.tbl_bobot_kriteria (id_bobot_kriteria, id_kriteria, posisi, bobot) F
 -- Data for Name: tbl_kriteria; Type: TABLE DATA; Schema: public; Owner: shairul
 --
 
-COPY public.tbl_kriteria (id_kriteria, kode_kriteria, nama_kriteria, posisi, tipe) FROM stdin;
+COPY public.tbl_kriteria (id_kriteria, kode_kriteria, nama_kriteria, posisi, tipe, bobot) FROM stdin;
+5	C001	Speed	DF	\N	\N
+6	C002	Age	MF	\N	0.06
+7	C004	Shoot	FW	benefit	0.21
 \.
 
 
@@ -305,6 +261,9 @@ COPY public.tbl_users (id_user, username, password, role, created_at, updated_at
 10	asan	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	user	2023-07-05 20:15:11.71078	2023-07-05 20:15:11.71078	f	t
 9	superadmin	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	admin	2023-07-04 12:11:14.477708	2023-07-04 12:11:14.477708	t	f
 11	fatur	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	user	2023-07-06 14:05:45.83033	2023-07-06 14:05:45.83033	f	t
+12	wawan	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	admin	2023-07-06 14:40:16.281273	2023-07-06 14:40:16.281273	t	f
+13	mukti	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	admin	2023-07-06 14:40:27.934501	2023-07-06 14:40:27.934501	t	f
+14	andri	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	admin	2023-07-06 14:40:41.583132	2023-07-06 14:40:41.583132	t	f
 \.
 
 
@@ -312,28 +271,21 @@ COPY public.tbl_users (id_user, username, password, role, created_at, updated_at
 -- Name: tbl_admin_id_admin_seq; Type: SEQUENCE SET; Schema: public; Owner: shairul
 --
 
-SELECT pg_catalog.setval('public.tbl_admin_id_admin_seq', 1, true);
-
-
---
--- Name: tbl_bobot_kriteria_id_bobot_kriteria_seq; Type: SEQUENCE SET; Schema: public; Owner: shairul
---
-
-SELECT pg_catalog.setval('public.tbl_bobot_kriteria_id_bobot_kriteria_seq', 1, false);
+SELECT pg_catalog.setval('public.tbl_admin_id_admin_seq', 4, true);
 
 
 --
 -- Name: tbl_kriteria_id_kriteria_seq; Type: SEQUENCE SET; Schema: public; Owner: shairul
 --
 
-SELECT pg_catalog.setval('public.tbl_kriteria_id_kriteria_seq', 1, false);
+SELECT pg_catalog.setval('public.tbl_kriteria_id_kriteria_seq', 7, true);
 
 
 --
 -- Name: tbl_users_id_user_seq; Type: SEQUENCE SET; Schema: public; Owner: shairul
 --
 
-SELECT pg_catalog.setval('public.tbl_users_id_user_seq', 11, true);
+SELECT pg_catalog.setval('public.tbl_users_id_user_seq', 14, true);
 
 
 --
@@ -342,14 +294,6 @@ SELECT pg_catalog.setval('public.tbl_users_id_user_seq', 11, true);
 
 ALTER TABLE ONLY public.tbl_admin
     ADD CONSTRAINT tbl_admin_pkey PRIMARY KEY (id_admin);
-
-
---
--- Name: tbl_bobot_kriteria tbl_bobot_kriteria_pkey; Type: CONSTRAINT; Schema: public; Owner: shairul
---
-
-ALTER TABLE ONLY public.tbl_bobot_kriteria
-    ADD CONSTRAINT tbl_bobot_kriteria_pkey PRIMARY KEY (id_bobot_kriteria);
 
 
 --
@@ -398,14 +342,6 @@ ALTER TABLE ONLY public.tbl_users
 
 ALTER TABLE ONLY public.tbl_admin
     ADD CONSTRAINT tbl_admin_id_user_fkey FOREIGN KEY (id_user) REFERENCES public.tbl_users(id_user);
-
-
---
--- Name: tbl_bobot_kriteria tbl_bobot_kriteria_id_kriteria_fkey; Type: FK CONSTRAINT; Schema: public; Owner: shairul
---
-
-ALTER TABLE ONLY public.tbl_bobot_kriteria
-    ADD CONSTRAINT tbl_bobot_kriteria_id_kriteria_fkey FOREIGN KEY (id_kriteria) REFERENCES public.tbl_kriteria(id_kriteria);
 
 
 --
