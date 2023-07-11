@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form method="POST" action="">
+        <h2>Input Nilai</h2>
+        <p>NISN: {{ data_pemain[0] }}</p>
+        <p>Nama Pemain: {{ data_pemain[1] }}</p>
+        <p>Posisi: {{ data_pemain[2] }}</p>
+        
+        <table>
+          <thead>
+            <tr>
+              <th>Nama Kriteria</th>
+              <th>Nilai</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for kriteria in data_kriteria %}
+              <tr>
+                <td>{{ kriteria[1] }}</td>
+                <td>
+                  <input type="number" name="nilai_{{ kriteria[0] }}_{{ data_pemain[0] }}" min="0" max="100" required>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <br>
+        <input type="submit" value="Submit">
+      </form>
+      
+</body>
+</html>

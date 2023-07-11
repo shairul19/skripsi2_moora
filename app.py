@@ -253,6 +253,53 @@ def tambah_kriteria():
 
     return render_template('tambah_kriteria.html')
 
+#Halaman Penilaian Pemain
+@app.route('/penilaian_pemain', methods=['GET', 'POST'])
+def penilaian_pemain():
+    if 'user_id' in session and session['role'] == 'admin':
+        # Mengambil data posisi pemain dari tabel tbl_pemain
+        cur.execute("SELECT DISTINCT posisi FROM tbl_pemain")
+        data_posisi = cur.fetchall()
+
+        if request.method == 'POST' and 'pilih_posisi' in request.form:
+            posisi_pemain = request.form['posisi_pemain']
+
+            # Mengambil data pemain berdasarkan posisi yang dipilih
+            cur.execute("SELECT nisn, nama_pemain, posisi FROM tbl_pemain WHERE posisi = %s", (posisi_pemain,))
+            data_pemain = cur.fetchall()
+
+            return render_template('penilaian_pemain.html', data_posisi=data_posisi, data_pemain=data_pemain)
+        
+        return render_template('penilaian_pemain.html', data_posisi=data_posisi)
+    else:
+        return redirect('/login')
+
+
+@app.route('/input_nilai/<nisn>', methods=['GET', 'POST'])
+def input_nilai(nisn):
+    if 'user_id' in session and session['role'] == 'admin':
+        # Mengambil data pemain berdasarkan NISN
+        cur.execute("SELECT nisn, nama_pemain, posisi FROM tbl_pemain WHERE nisn = %s", (nisn,))
+        data_pemain = cur.fetchone()
+
+        # Mengambil data kriteria berdasarkan posisi pemain
+        cur.execute("SELECT id_kriteria, nama_kriteria FROM tbl_kriteria WHERE posisi = %s", (data_pemain[2],))
+        data_kriteria = cur.fetchall()
+
+        if request.method == 'POST':
+            # Memasukkan nilai penilaian untuk pemain ke dalam tabel tbl_nilai_kriteria
+            for kriteria in data_kriteria:
+                nilai = request.form.get("nilai_{}_{}".format(kriteria[0], nisn))
+                cur.execute("INSERT INTO tbl_nilai_kriteria (nisn, id_kriteria, nilai) VALUES (%s, %s, %s)",
+                            (nisn, kriteria[0], nilai))
+                conn.commit()
+
+            return redirect('/penilaian_pemain')  # Mengarahkan pengguna kembali ke halaman penilaian pemain
+
+        return render_template('input_nilai.html', data_pemain=data_pemain, data_kriteria=data_kriteria)
+    else:
+        return redirect('/login')
+
 
 
 
