@@ -26,7 +26,7 @@ def hash_password(password):
     sha256_hash.update(password.encode('utf-8'))
     return sha256_hash.hexdigest()
 
-# FUnction lengkapi data user
+# Function lengkapi data user
 def lengkapi_data_user(nisn, user_id, nama_pemain, tgl_lahir_pemain, posisi, asal_sekolah):
     # Masukkan data ke tabel tbl_pemain
     cur.execute("INSERT INTO tbl_pemain (nisn, id_user, nama_pemain, tgl_lahir_pemain, posisi, asal_sekolah) VALUES (%s, %s, %s, %s, %s, %s)", (nisn, user_id, nama_pemain, tgl_lahir_pemain, posisi, asal_sekolah))

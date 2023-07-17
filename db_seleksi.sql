@@ -219,9 +219,51 @@ COPY public.tbl_admin (id_admin, id_user, nama_admin, tgl_lahir_admin, jabatan, 
 --
 
 COPY public.tbl_kriteria (id_kriteria, kode_kriteria, nama_kriteria, posisi, tipe, bobot) FROM stdin;
-5	C001	Speed	DF	\N	\N
-6	C002	Age	MF	\N	0.06
-7	C004	Shoot	FW	benefit	0.21
+8	CGK01	Age	GK	cost	0.02
+9	CGK02	Height	GK	benefit	0.10
+10	CGK03	Stamina	GK	benefit	0.07
+11	CGK04	Positioning	GK	benefit	0.08
+12	CGK05	Passing/Crossing	GK	benefit	0.03
+13	CGK06	teamwork	GK	benefit	0.08
+14	CGK07	Ball Control	GK	benefit	0.07
+15	CGK08	Save the ball	GK	benefit	0.20
+16	CGK09	Serenity	GK	benefit	0.15
+17	CGK10	Reflect	GK	benefit	0.20
+18	CDF01	Age	DF	cost	0.02
+19	CDF02	Height	DF	benefit	0.10
+20	CDF03	Body Balance	DF	benefit	0.20
+21	CDF04	Stamina	DF	benefit	0.07
+22	CDF05	Positioning	DF	benefit	0.10
+23	CDF06	Passing/Crossing	DF	benefit	0.10
+24	CDF07	Speed	DF	benefit	0.07
+25	CDF08	Teamwork	DF	benefit	0.10
+26	CDF09	Ball Control	DF	benefit	0.10
+27	CDF10	Drible	DF	benefit	0.06
+28	CDF11	Serenity	DF	benefit	0.08
+29	CMF01	Age	MF	cost	0.02
+30	CMF02	Height	MF	benefit	0.07
+31	CMF03	Body Balance	MF	benefit	0.10
+32	CMF04	Stamina	MF	benefit	0.10
+33	CMF05	Positioning	MF	benefit	0.08
+34	CMF06	Passing/Crossing	MF	benefit	0.15
+35	CMF07	Speed	MF	benefit	0.08
+36	CMF08	Teamwork	MF	benefit	0.15
+37	CMF09	Ball Control	MF	benefit	0.10
+38	CMF10	Drible	MF	benefit	0.07
+39	CMF11	Serenity	MF	benefit	0.08
+40	CFW01	Age	FW	cost	0.02
+41	CFW02	Height	FW	benefit	0.07
+42	CFW03	Body Balance	FW	benefit	0.08
+43	CFW04	Stamina	FW	benefit	0.07
+44	CFW05	Positioning	FW	benefit	0.08
+45	CFW06	Passing/Crossing	FW	benefit	0.03
+46	CFW07	Speed	FW	benefit	0.07
+47	CFW08	Teamwork	FW	benefit	0.06
+48	CFW09	Ball Control	FW	benefit	0.07
+50	CFW10	Shoot	FW	benefit	0.15
+51	CFW11	Finishing	FW	benefit	0.15
+52	CFW12	Drible	FW	benefit	0.08
+53	CFW13	Serenity	FW	benefit	0.07
 \.
 
 
@@ -241,6 +283,7 @@ COPY public.tbl_pemain (nisn, id_user, nama_pemain, tgl_lahir_pemain, posisi, as
 12345678	8	Shairul Annam	2000-10-31	DF	SDS Miftahul Jannah	2023-07-05 20:14:15.717602	2023-07-05 20:14:15.717602
 444444	10	Asan Basri	2000-03-10	FW	SDN 1 Cikupa	2023-07-05 20:15:38.810173	2023-07-05 20:15:38.810173
 447890	11	Muhammad Faturrahman	2008-01-10	DF	SMPN 1 CIKUPA	2023-07-06 14:05:58.345674	2023-07-06 14:05:58.345674
+625679	15	Chandra Tri	2008-06-15	GK	SDN 1 Cikupa	2023-07-11 20:32:34.398104	2023-07-11 20:32:34.398104
 \.
 
 
@@ -264,6 +307,7 @@ COPY public.tbl_users (id_user, username, password, role, created_at, updated_at
 12	wawan	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	admin	2023-07-06 14:40:16.281273	2023-07-06 14:40:16.281273	t	f
 13	mukti	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	admin	2023-07-06 14:40:27.934501	2023-07-06 14:40:27.934501	t	f
 14	andri	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	admin	2023-07-06 14:40:41.583132	2023-07-06 14:40:41.583132	t	f
+15	Chandra	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	user	2023-07-11 20:32:21.961813	2023-07-11 20:32:21.961813	f	t
 \.
 
 
@@ -278,14 +322,14 @@ SELECT pg_catalog.setval('public.tbl_admin_id_admin_seq', 4, true);
 -- Name: tbl_kriteria_id_kriteria_seq; Type: SEQUENCE SET; Schema: public; Owner: shairul
 --
 
-SELECT pg_catalog.setval('public.tbl_kriteria_id_kriteria_seq', 7, true);
+SELECT pg_catalog.setval('public.tbl_kriteria_id_kriteria_seq', 53, true);
 
 
 --
 -- Name: tbl_users_id_user_seq; Type: SEQUENCE SET; Schema: public; Owner: shairul
 --
 
-SELECT pg_catalog.setval('public.tbl_users_id_user_seq', 14, true);
+SELECT pg_catalog.setval('public.tbl_users_id_user_seq', 15, true);
 
 
 --
