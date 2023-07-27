@@ -104,7 +104,7 @@ ALTER SEQUENCE public.tbl_kriteria_id_kriteria_seq OWNED BY public.tbl_kriteria.
 CREATE TABLE public.tbl_nilai_kriteria (
     nisn integer NOT NULL,
     id_kriteria integer NOT NULL,
-    nilai numeric(4,2)
+    nilai numeric(5,2)
 );
 
 
@@ -134,8 +134,7 @@ ALTER TABLE public.tbl_pemain OWNER TO shairul;
 
 CREATE TABLE public.tbl_skor_moora (
     nisn integer NOT NULL,
-    skor numeric(9,6),
-    status character varying(50)
+    skor numeric(9,6)
 );
 
 
@@ -291,7 +290,7 @@ COPY public.tbl_pemain (nisn, id_user, nama_pemain, tgl_lahir_pemain, posisi, as
 -- Data for Name: tbl_skor_moora; Type: TABLE DATA; Schema: public; Owner: shairul
 --
 
-COPY public.tbl_skor_moora (nisn, skor, status) FROM stdin;
+COPY public.tbl_skor_moora (nisn, skor) FROM stdin;
 \.
 
 

@@ -2,6 +2,10 @@ from flask import Flask, render_template, request, session, redirect
 import psycopg2
 import hashlib
 import jinja2.ext
+import math
+from math import sqrt
+from decimal import Decimal
+import logging
 
 app = Flask(__name__)
 app.secret_key = 'andasiapa'
@@ -47,55 +51,100 @@ def lengkapi_data_admin(user_id, nama_admin, tgl_lahir_admin, jabatan):
     cur.execute("UPDATE tbl_users SET admin_data_completed = TRUE WHERE id_user = %s", (user_id,))
     conn.commit()
 
-# Fungsi untuk menghitung nilai Moora
-def calculate_moora(nisn):
-    # Mengambil data kriteria dari tabel tbl_kriteria
-    cur.execute("SELECT id_kriteria, nama_kriteria, tipe, bobot FROM tbl_kriteria WHERE posisi = (SELECT posisi FROM tbl_pemain WHERE nisn = %s)", (nisn,))
-    data_kriteria = cur.fetchall()
+# Fungsi untuk menghitung skor MOORA dan nilai C (a - b) berdasarkan tipe kriteria
+def hitung_skor_moora(nisn, posisi_pemain, cur, conn):
+    # Mendapatkan data nilai kriteria berdasarkan nisn pemain dan posisi_pemain dari tabel "tbl_nilai_kriteria"
+    cur.execute("SELECT nk.id_kriteria, nk.nilai, k.tipe FROM tbl_nilai_kriteria nk JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria WHERE nk.nisn = %s AND k.posisi = %s", (nisn, posisi_pemain))
+    data_nilai_kriteria = cur.fetchall()
 
-    # Mengambil nilai kriteria dari tabel tbl_nilai_kriteria untuk pemain dengan nisn tertentu
-    cur.execute("SELECT id_kriteria, nilai FROM tbl_nilai_kriteria WHERE nisn = %s", (nisn,))
-    nilai_kriteria = cur.fetchall()
+    print("")
+    print("dnk")
+    print(data_nilai_kriteria)
 
-    if len(nilai_kriteria) != len(data_kriteria):
-        return None  # Jumlah kriteria tidak sesuai, hasil perhitungan tidak valid
-
-    # Hitung nilai normalisasi (cost atau benefit) berdasarkan tipe kriteria
-    for i in range(len(nilai_kriteria)):
-        id_kriteria = nilai_kriteria[i][0]
-        tipe_kriteria = [k[2] for k in data_kriteria if k[0] == id_kriteria][0]
-        if tipe_kriteria == 'cost':
-            nilai_kriteria[i] = min(nilai_kriteria[i][1])
-        elif tipe_kriteria == 'benefit':
-            nilai_kriteria[i] = max(nilai_kriteria[i][1])
-
-    # Normalisasi bobot agar jumlah bobot menjadi 1
-    total_bobot = sum([x[3] for x in data_kriteria])
-    bobot_normalisasi = [x[3] / total_bobot for x in data_kriteria]
-
-    # Hitung nilai Moora
-    nilai_moora = sum([x * y for x, y in zip(nilai_kriteria, bobot_normalisasi)])
-
-    # Memasukkan nilai Moora ke dalam tabel tbl_skor_moora
-    cur.execute("INSERT INTO tbl_skor_moora (nisn, skor, status) VALUES (%s, %s, %s)",
-                (nisn, nilai_moora, "Belum Dikonfirmasi"))
-    conn.commit()
-
-    return nilai_moora
-
-
-# Function untuk memperbarui peringkat di tabel tbl_skor_moora
-def update_peringkat():
-    # Ambil data skor Moora dan NISN dari tabel tbl_skor_moora
-    cur.execute("SELECT nisn, skor FROM tbl_skor_moora ORDER BY skor DESC")
-    data_skor_moora = cur.fetchall()
-
-    # Perbarui peringkat berdasarkan skor Moora
-    peringkat = 1
-    for nisn, _ in data_skor_moora:
-        cur.execute("UPDATE tbl_skor_moora SET peringkat = %s WHERE nisn = %s", (peringkat, nisn))
+    if not data_nilai_kriteria:
+        # Jika tidak ada data nilai kriteria untuk pemain ini, berikan skor default dan langsung simpan ke dalam tabel "tbl_skor_moora"
+        default_skor = Decimal(0.0000)  # Atur skor default sesuai kebutuhan
+        cur.execute("INSERT INTO tbl_skor_moora (nisn, skor) VALUES (%s, %s) ON CONFLICT (nisn) DO UPDATE SET skor = EXCLUDED.skor", (nisn, default_skor))
         conn.commit()
-        peringkat += 1
+        return
+
+    # Ubah data nilai kriteria menjadi list nilai
+    nilai_per_kriteria = {id_kriteria: [] for id_kriteria, _, _ in data_nilai_kriteria}
+    tipe_kriteria = {id_kriteria: tipe for id_kriteria, _, tipe in data_nilai_kriteria}
+
+    for id_kriteria, nilai, _ in data_nilai_kriteria:
+        nilai_per_kriteria[id_kriteria].append(Decimal(nilai))
+
+    print("")
+    print("npk")
+    print(nilai_per_kriteria)
+
+    # Mendapatkan data bobot kriteria berdasarkan posisi pemain dari tabel "tbl_kriteria"
+    cur.execute("SELECT bobot, tipe FROM tbl_kriteria WHERE posisi = %s", (posisi_pemain,))
+    data_kriteria = cur.fetchall()
+    bobot_kriteria = [Decimal(row[0]) for row in data_kriteria]  # List berisi bobot kriteria as Decimal
+
+    print("")
+    print("bobot")
+    print(bobot_kriteria)
+
+    # Memisahkan nilai kriteria berdasarkan tipe 'cost' dan 'benefit'
+    benefit_values = [sum(nilai_per_kriteria[id_kriteria]) for id_kriteria in nilai_per_kriteria if tipe_kriteria[id_kriteria] == 'benefit']
+    cost_values = [sum(nilai_per_kriteria[id_kriteria]) for id_kriteria in nilai_per_kriteria if tipe_kriteria[id_kriteria] == 'cost']
+
+    print("")
+    print("benefit_values")
+    print(benefit_values)
+    print("")
+    print("cost_values")
+    print(cost_values)
+
+    # Menghitung total kuadrat kriteria untuk pemain berdasarkan satu matriks nilai kriteria
+    jumlah_kuadrat_kriteria = {id_kriteria: sum(nilai ** 2 for nilai in nilai_per_kriteria[id_kriteria]) for id_kriteria in nilai_per_kriteria}
+
+    print("")
+    print("jkk")
+    print(jumlah_kuadrat_kriteria)
+
+    # Akarkan Hasil Penjumlahan untuk mendapatkan akar_penjumlahan
+    akar_penjumlahan = {id_kriteria: Decimal(sqrt(jumlah)) for id_kriteria, jumlah in jumlah_kuadrat_kriteria.items()}  # Convert akar_penjumlahan to Decimal
+
+    print("")
+    print("ap")
+    print(akar_penjumlahan)
+
+    # Normalisasi matriks (nilai awal / akar penjumlahan)
+    normalisasi_matriks = {id_kriteria: [nilai / akar_penjumlahan[id_kriteria] for nilai in nilai_per_kriteria[id_kriteria]] for id_kriteria in nilai_per_kriteria}
+
+    print("")
+    print("ntk")
+    print(normalisasi_matriks)
+
+    # Normalisasi terbobot kriteria (nilai awal / akar penjumlahan * bobot kriteria)
+    normalisasi_terbobot_kriteria = {id_kriteria: [nilai / akar_penjumlahan[id_kriteria] * bobot_kriteria[bobot_kriteria_id] for nilai, bobot_kriteria_id in zip(normalisasi_matriks[id_kriteria], range(len(bobot_kriteria)))] for id_kriteria in normalisasi_matriks}
+
+    print("")
+    print("ntbk")
+    print(normalisasi_terbobot_kriteria)
+
+    # Menghitung nilai C (a - b) berdasarkan tipe kriteria
+    a_values = sum(normalisasi_terbobot_kriteria[id_kriteria][0] for id_kriteria in normalisasi_terbobot_kriteria if tipe_kriteria[id_kriteria] == 'benefit')
+    b_values = sum(normalisasi_terbobot_kriteria[id_kriteria][0] for id_kriteria in normalisasi_terbobot_kriteria if tipe_kriteria[id_kriteria] == 'cost')
+    c_values = a_values - b_values
+
+    print("")
+    print("a_values")
+    print(a_values)
+    print("")
+    print("b_values")
+    print(b_values)
+    print("")
+    print("c_values")
+    print(c_values)
+
+    # Menyimpan hasil perhitungan pada tabel "tbl_skor_moora" dengan mengidentifikasi pemain berdasarkan id posisi pemain
+    cur.execute("INSERT INTO tbl_skor_moora (nisn, skor) VALUES (%s, %s) ON CONFLICT (nisn) DO UPDATE SET skor = EXCLUDED.skor", (nisn, c_values))
+    conn.commit()
 
 
 # Baris Function (END) ===============================
@@ -301,7 +350,54 @@ def tambah_kriteria():
 
     return render_template('tambah_kriteria.html')
 
+#Halaman penilaian pemain
+@app.route('/penilaian_pemain', methods=['GET', 'POST'])
+def penilaian_pemain():
+    if 'user_id' in session and session['role'] == 'admin':
+        # Mengambil data posisi pemain dari tabel tbl_pemain
+        cur.execute("SELECT DISTINCT posisi FROM tbl_pemain")
+        data_posisi = cur.fetchall()
 
+        if request.method == 'POST' and 'pilih_posisi' in request.form:
+            posisi_pemain = request.form['posisi_pemain']
+
+            # Mengambil data pemain berdasarkan posisi yang dipilih
+            cur.execute("SELECT nisn, nama_pemain, posisi FROM tbl_pemain WHERE posisi = %s", (posisi_pemain,))
+            data_pemain = cur.fetchall()
+
+            return render_template('penilaian_pemain.html', data_posisi=data_posisi, data_pemain=data_pemain)
+        
+        return render_template('penilaian_pemain.html', data_posisi=data_posisi)
+    else:
+        return redirect('/login')
+
+# Halaman input nilai pemain
+@app.route('/input_nilai_pemain/<nisn>', methods=['GET', 'POST'])
+def input_nilai(nisn):
+    if 'user_id' in session and session['role'] == 'admin':
+        # Mendapatkan data pemain berdasarkan NISN
+        cur.execute("SELECT nisn, nama_pemain, posisi FROM tbl_pemain WHERE nisn = %s", (nisn,))
+        data_pemain = cur.fetchone()
+
+        # Mendapatkan data kriteria berdasarkan posisi pemain
+        cur.execute("SELECT id_kriteria, nama_kriteria FROM tbl_kriteria WHERE posisi = %s", (data_pemain[2],))
+        data_kriteria = cur.fetchall()
+
+        if request.method == 'POST':
+            # Memasukkan nilai penilaian untuk pemain ke dalam tabel tbl_nilai_kriteria
+            for kriteria in data_kriteria:
+                nilai = request.form.get("nilai_{}_{}".format(kriteria[0], nisn))
+                cur.execute("INSERT INTO tbl_nilai_kriteria (nisn, id_kriteria, nilai) VALUES (%s, %s, %s)", (nisn, kriteria[0], nilai))
+                conn.commit()
+
+            # Lakukan perhitungan MOORA dan update hasil pada tabel "tbl_skor_moora" hanya untuk kriteria-kriteria yang sesuai dengan posisi pemain
+            hitung_skor_moora(nisn, data_pemain[2], cur, conn)  # data_pemain[2] berisi posisi pemain
+
+            return redirect('/penilaian_pemain')  # Mengarahkan pengguna kembali ke halaman penilaian pemain
+
+        return render_template('input_nilai_pemain.html', data_pemain=data_pemain, data_kriteria=data_kriteria)
+    else:
+        return redirect('/login')
 
 # Baris untuk routing (end) ========================
 
