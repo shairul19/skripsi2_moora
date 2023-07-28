@@ -51,10 +51,9 @@ def lengkapi_data_admin(user_id, nama_admin, tgl_lahir_admin, jabatan):
     cur.execute("UPDATE tbl_users SET admin_data_completed = TRUE WHERE id_user = %s", (user_id,))
     conn.commit()
 
-# Fungsi untuk menghitung skor MOORA dan nilai C (a - b) berdasarkan tipe kriteria
 def hitung_skor_moora(nisn, posisi_pemain, cur, conn):
     # Mendapatkan data nilai kriteria berdasarkan nisn pemain dan posisi_pemain dari tabel "tbl_nilai_kriteria"
-    cur.execute("SELECT nk.id_kriteria, nk.nilai, k.tipe FROM tbl_nilai_kriteria nk JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria WHERE nk.nisn = %s AND k.posisi = %s", (nisn, posisi_pemain))
+    cur.execute("SELECT nk.id_kriteria, nk.nilai, k.bobot, k.tipe FROM tbl_nilai_kriteria nk JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria WHERE nk.nisn = %s AND k.posisi = %s", (nisn, posisi_pemain))
     data_nilai_kriteria = cur.fetchall()
 
     print("")
@@ -69,10 +68,11 @@ def hitung_skor_moora(nisn, posisi_pemain, cur, conn):
         return
 
     # Ubah data nilai kriteria menjadi list nilai
-    nilai_per_kriteria = {id_kriteria: [] for id_kriteria, _, _ in data_nilai_kriteria}
-    tipe_kriteria = {id_kriteria: tipe for id_kriteria, _, tipe in data_nilai_kriteria}
+    nilai_per_kriteria = {id_kriteria: [] for id_kriteria, _, _, _ in data_nilai_kriteria}
+    tipe_kriteria = {id_kriteria: tipe for id_kriteria, _, _, tipe in data_nilai_kriteria}
+    bobot_kriteria = {id_kriteria: bobot for id_kriteria, _, bobot, _ in data_nilai_kriteria}  # Perbaiki penggunaan kunci
 
-    for id_kriteria, nilai, _ in data_nilai_kriteria:
+    for id_kriteria, nilai, _, _ in data_nilai_kriteria:  # Jangan masukkan variabel yang tidak digunakan dengan _
         nilai_per_kriteria[id_kriteria].append(Decimal(nilai))
 
     print("")
@@ -82,7 +82,10 @@ def hitung_skor_moora(nisn, posisi_pemain, cur, conn):
     # Mendapatkan data bobot kriteria berdasarkan posisi pemain dari tabel "tbl_kriteria"
     cur.execute("SELECT bobot, tipe FROM tbl_kriteria WHERE posisi = %s", (posisi_pemain,))
     data_kriteria = cur.fetchall()
-    bobot_kriteria = [Decimal(row[0]) for row in data_kriteria]  # List berisi bobot kriteria as Decimal
+    
+    print("")
+    print("dk")
+    print(data_kriteria)
 
     print("")
     print("bobot")
@@ -121,8 +124,10 @@ def hitung_skor_moora(nisn, posisi_pemain, cur, conn):
     print(normalisasi_matriks)
 
     # Normalisasi terbobot kriteria (nilai awal / akar penjumlahan * bobot kriteria)
-    normalisasi_terbobot_kriteria = {id_kriteria: [nilai / akar_penjumlahan[id_kriteria] * bobot_kriteria[bobot_kriteria_id] for nilai, bobot_kriteria_id in zip(normalisasi_matriks[id_kriteria], range(len(bobot_kriteria)))] for id_kriteria in normalisasi_matriks}
-
+    normalisasi_terbobot_kriteria = {
+        id_kriteria: [(nilai / akar_penjumlahan[id_kriteria]) * bobot_kriteria[id_kriteria] for nilai in nilai_per_kriteria[id_kriteria]]
+        for id_kriteria in nilai_per_kriteria
+    }  
     print("")
     print("ntbk")
     print(normalisasi_terbobot_kriteria)
