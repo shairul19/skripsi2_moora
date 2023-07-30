@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Nilai Pemain</title>
+</head>
+<body>
+    <h1>Data Tabel Nilai Kriteria</h1>
+
+    <form method="post">
+        <label for="posisi_pemain">Pilih Posisi Pemain:</label>
+        <select id="posisi_pemain" name="posisi_pemain">
+            <option value="">-- Pilih Posisi Pemain --</option>
+            {% for posisi in positions %}
+            <option value="{{ posisi }}" {% if posisi == posisi_pemain %}selected{% endif %}>{{ posisi }}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="Tampilkan">
+    </form>
+
+    {% if table_data %}
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Nama Pemain</th>
+                {% for column in table_data[0] if column != 'nama_pemain' %}
+                <th>{{ column }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in table_data %}
+            <tr>
+                <td>{{ row['nama_pemain'] }}</td>
+                {% for column in table_data[0] if column != 'nama_pemain' %}
+                <td>{{ row[column] }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</body>
+</html>

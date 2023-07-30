@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Perhitungan Pemangkatan</title>
+</head>
+<body>
+    <h1>Perhitungan Pemangkatan</h1>
+
+    <form method="POST" action="/perhitungan_pemangkatan">
+        <label for="posisi_pemain">Pilih Posisi Pemain:</label>
+        <select id="posisi_pemain" name="posisi_pemain">
+            {% for posisi in positions %}
+                <option value="{{ posisi }}" {% if posisi == posisi_pemain %}selected{% endif %}>{{ posisi }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Tampilkan</button>
+    </form>
+
+    {% if table_data %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>nisn</th>
+                    {% for kriteria in criteria %}
+                        <th>{{ kriteria }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in table_data %}
+                    <tr>
+                        <td>{{ data['nama_pemain'] }}</td>
+                        {% for kriteria in criteria %}
+                            <td>{{ data[kriteria] }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No data available.</p>
+    {% endif %}
+</body>
+</html>

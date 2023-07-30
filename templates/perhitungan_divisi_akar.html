@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Perhitungan Divisi Akar</title>
+</head>
+<body>
+    <h1>Normalisasi Matriks</h1>
+    <form method="post">
+        <label for="posisi_pemain">Pilih Posisi Pemain:</label>
+        <select name="posisi_pemain" id="posisi_pemain">
+            {% for posisi in positions %}
+            <option value="{{ posisi }}" {% if posisi_pemain == posisi %}selected{% endif %}>{{ posisi }}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="Hitung">
+    </form>
+    <table border="1">
+        <tr>
+            
+            {% for kriteria in criteria %}
+            <th>Nama Pemain</th>
+            <th>{{ kriteria }}</th>
+            {% endfor %}
+        </tr>
+        {% for row in table_data %}
+        <tr>
+            <td>{{ row['nama_pemain'] }}</td>
+            {% for kriteria in criteria %}
+            <td>{{ row[kriteria] }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

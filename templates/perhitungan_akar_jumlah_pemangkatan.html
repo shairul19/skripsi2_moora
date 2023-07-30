@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Perhitungan Akar Jumlah Pemangkatan</title>
+</head>
+<body>
+    <h1>Perhitungan Akar Jumlah Pemangkatan</h1>
+
+    <form method="POST" action="/perhitungan_akar_jumlah_pemangkatan">
+        <label for="posisi_pemain">Pilih Posisi Pemain:</label>
+        <select id="posisi_pemain" name="posisi_pemain">
+            {% for posisi in positions %}
+                <option value="{{ posisi }}" {% if posisi == posisi_pemain %}selected{% endif %}>{{ posisi }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Tampilkan</button>
+    </form>
+
+    {% if sum_data %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Kriteria</th>
+                    <th>Jumlah</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in sum_data %}
+                    <tr>
+                        <td>{{ data['kriteria'] }}</td>
+                        <td>{{ data['jumlah'] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No data available.</p>
+    {% endif %}
+</body>
+</html>

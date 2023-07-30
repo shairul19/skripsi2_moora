@@ -4,8 +4,11 @@ import hashlib
 import jinja2.ext
 import math
 from math import sqrt
-from decimal import Decimal
+from decimal import Decimal, DivisionByZero
+import decimal
 import logging
+import pandas as pd
+import numpy as np
 
 app = Flask(__name__)
 app.secret_key = 'andasiapa'
@@ -51,9 +54,11 @@ def lengkapi_data_admin(user_id, nama_admin, tgl_lahir_admin, jabatan):
     cur.execute("UPDATE tbl_users SET admin_data_completed = TRUE WHERE id_user = %s", (user_id,))
     conn.commit()
 
+
+#Fungsi hitung skor moora
 def hitung_skor_moora(nisn, posisi_pemain, cur, conn):
     # Mendapatkan data nilai kriteria berdasarkan nisn pemain dan posisi_pemain dari tabel "tbl_nilai_kriteria"
-    cur.execute("SELECT nk.id_kriteria, nk.nilai, k.bobot, k.tipe FROM tbl_nilai_kriteria nk JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria WHERE nk.nisn = %s AND k.posisi = %s", (nisn, posisi_pemain))
+    cur.execute("SELECT nk.id_kriteria, nk.nilai, k.bobot, k.tipe FROM tbl_nilai_kriteria nk JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria WHERE k.posisi = %s", (posisi_pemain,))
     data_nilai_kriteria = cur.fetchall()
 
     print("")
@@ -116,11 +121,21 @@ def hitung_skor_moora(nisn, posisi_pemain, cur, conn):
     print("ap")
     print(akar_penjumlahan)
 
-    # Normalisasi matriks (nilai awal / akar penjumlahan)
-    normalisasi_matriks = {id_kriteria: [nilai / akar_penjumlahan[id_kriteria] for nilai in nilai_per_kriteria[id_kriteria]] for id_kriteria in nilai_per_kriteria}
+    # Menghitung normalisasi matriks berdasarkan nilai terakhir dari nilai_per_kriteria dan akar_penjumlahan
+    normalisasi_matriks = {}
+
+    for id_kriteria, nilai_kriteria in nilai_per_kriteria.items():
+        # Mengambil nilai terakhir dari list nilai_kriteria
+        nilai_terakhir = nilai_kriteria[-1]
+
+    # Mengambil nilai akar_penjumlahan berdasarkan id_kriteria
+    akar_penjumlahan_kriteria = akar_penjumlahan[id_kriteria]
+
+    # Menghitung normalisasi matriks berdasarkan nilai terakhir dan akar_penjumlahan
+    normalisasi_matriks[id_kriteria] = nilai_terakhir / akar_penjumlahan_kriteria
 
     print("")
-    print("ntk")
+    print("normalisasi matriks")
     print(normalisasi_matriks)
 
     # Normalisasi terbobot kriteria (nilai awal / akar penjumlahan * bobot kriteria)
@@ -405,6 +420,261 @@ def input_nilai(nisn):
         return redirect('/login')
 
 # Baris untuk routing (end) ========================
+
+
+
+# Function to get the list of available player positions
+def get_player_positions():
+    cur.execute("SELECT DISTINCT posisi FROM tbl_pemain")
+    positions = cur.fetchall()
+    return [posisi[0] for posisi in positions]
+
+# Halaman data_tbl_nilai_kriteria
+@app.route('/data_tbl_nilai_kriteria', methods=['GET', 'POST'])
+def data_tbl_nilai_kriteria():
+    if 'user_id' in session:  # Make sure the user is logged in (adjust as per your requirements)
+        if request.method == 'POST':
+            posisi_pemain = request.form['posisi_pemain']
+
+            # Query data dari tabel tbl_nilai_kriteria dan gabungkan dengan tbl_pemain dan tbl_kriteria
+            cur.execute("SELECT p.nama_pemain, k.nama_kriteria, nk.nilai, k.id_kriteria "
+                        "FROM tbl_nilai_kriteria nk "
+                        "JOIN tbl_pemain p ON nk.nisn = p.nisn "
+                        "JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria "
+                        "WHERE p.posisi = %s", (posisi_pemain,))
+            data_nilai_kriteria = cur.fetchall()
+
+            # Create a DataFrame
+            df = pd.DataFrame(data_nilai_kriteria, columns=['nama_pemain', 'nama_kriteria', 'nilai', 'id_kriteria'])
+
+            # Use pivot to reshape the DataFrame
+            pivot_df = df.pivot(index='nama_pemain', columns='id_kriteria', values='nilai')
+
+            # Reset the column names to use "nama_kriteria" instead of "id_kriteria"
+            pivot_df.columns = [kriteria for kriteria in df['nama_kriteria'].unique()]
+
+            # Convert the pivot DataFrame to a list of dictionaries
+            table_data = pivot_df.reset_index().to_dict(orient='records')
+
+            return render_template('data_tbl_nilai_kriteria.html', table_data=table_data, positions=get_player_positions(), posisi_pemain=posisi_pemain)
+
+        return render_template('data_tbl_nilai_kriteria.html', positions=get_player_positions())
+    else:
+        return redirect('/login')
+
+
+# Halaman perhitungan_pemangkatan
+@app.route('/perhitungan_pemangkatan', methods=['GET', 'POST'])
+def perhitungan_pemangkatan():
+    if 'user_id' in session:
+        if request.method == 'POST':
+            posisi_pemain = request.form['posisi_pemain']
+
+            # Query data dari tabel tbl_nilai_kriteria dan gabungkan dengan tbl_pemain dan tbl_kriteria
+            cur.execute("SELECT p.nama_pemain, k.nama_kriteria, nk.nilai, k.id_kriteria "
+                        "FROM tbl_nilai_kriteria nk "
+                        "JOIN tbl_pemain p ON nk.nisn = p.nisn "
+                        "JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria "
+                        "WHERE p.posisi = %s", (posisi_pemain,))
+            data_nilai_kriteria = cur.fetchall()
+
+            # Create a DataFrame
+            df = pd.DataFrame(data_nilai_kriteria, columns=['nama_pemain', 'nama_kriteria', 'nilai', 'id_kriteria'])
+
+            # Use pivot to reshape the DataFrame
+            pivot_df = df.pivot(index='nama_pemain', columns='id_kriteria', values='nilai')
+
+            # Reset the column names to use "nama_kriteria" instead of "id_kriteria"
+            pivot_df.columns = [kriteria for kriteria in df['nama_kriteria'].unique()]
+
+            # Perform the calculation: nilai * nilai for each criterion
+            for kriteria in pivot_df.columns:
+                pivot_df[kriteria] = pivot_df[kriteria] ** 2
+
+            # Convert the pivot DataFrame to a list of dictionaries
+            table_data = pivot_df.reset_index().to_dict(orient='records')
+
+            return render_template('perhitungan_pemangkatan.html', table_data=table_data, 
+                                   criteria=pivot_df.columns, positions=get_player_positions(), posisi_pemain=posisi_pemain)
+
+        return render_template('perhitungan_pemangkatan.html', positions=get_player_positions())
+    else:
+        return redirect('/login')
+
+# Halaman perhitungan_jumlah_pemangkatan
+@app.route('/perhitungan_jumlah_pemangkatan', methods=['GET', 'POST'])
+def perhitungan_jumlah_pemangkatan():
+    if 'user_id' in session:
+        if request.method == 'POST':
+            posisi_pemain = request.form['posisi_pemain']
+
+            # Query data dari tabel tbl_nilai_kriteria dan gabungkan dengan tbl_pemain dan tbl_kriteria
+            cur.execute("SELECT p.nama_pemain, k.nama_kriteria, nk.nilai, k.id_kriteria "
+                        "FROM tbl_nilai_kriteria nk "
+                        "JOIN tbl_pemain p ON nk.nisn = p.nisn "
+                        "JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria "
+                        "WHERE p.posisi = %s", (posisi_pemain,))
+            data_nilai_kriteria = cur.fetchall()
+
+            # Create a DataFrame
+            df = pd.DataFrame(data_nilai_kriteria, columns=['nama_pemain', 'nama_kriteria', 'nilai', 'id_kriteria'])
+
+            # Use pivot to reshape the DataFrame
+            pivot_df = df.pivot(index='nama_pemain', columns='id_kriteria', values='nilai')
+
+            # Reset the column names to use "nama_kriteria" instead of "id_kriteria"
+            pivot_df.columns = [kriteria for kriteria in df['nama_kriteria'].unique()]
+
+            # Perform the calculation: nilai * nilai for each criterion
+            for kriteria in pivot_df.columns:
+                pivot_df[kriteria] = pivot_df[kriteria] ** 2
+
+            # Create a new DataFrame to hold the sum of the squared values for each criterion
+            sum_df = pd.DataFrame({'kriteria': pivot_df.columns, 'jumlah': pivot_df.sum()})
+
+            # Convert the sum DataFrame to a list of dictionaries
+            sum_data = sum_df.to_dict(orient='records')
+
+            return render_template('perhitungan_jumlah_pemangkatan.html', sum_data=sum_data, 
+                                   positions=get_player_positions(), posisi_pemain=posisi_pemain)
+
+        return render_template('perhitungan_jumlah_pemangkatan.html', positions=get_player_positions())
+    else:
+        return redirect('/login')
+
+
+
+def calculate_sum_of_squared_values(data):
+    # Create a DataFrame
+    df = pd.DataFrame(data, columns=['nama_pemain', 'nama_kriteria', 'nilai', 'id_kriteria'])
+
+    # Use pivot to reshape the DataFrame
+    pivot_df = df.pivot(index='nama_pemain', columns='id_kriteria', values='nilai')
+
+    # Reset the column names to use "nama_kriteria" instead of "id_kriteria"
+    pivot_df.columns = [kriteria for kriteria in df['nama_kriteria'].unique()]
+
+    # Perform the calculation: nilai * nilai for each criterion
+    for kriteria in pivot_df.columns:
+        pivot_df[kriteria] = pivot_df[kriteria] ** 2
+
+    # Create a new DataFrame to hold the sum of the squared values for each criterion
+    sum_df = pd.DataFrame({'kriteria': pivot_df.columns, 'jumlah': pivot_df.sum()})
+
+    # Calculate the square root of the sum for each criterion
+    sum_df['jumlah'] = sum_df['jumlah'].apply(lambda x: math.sqrt(x))
+
+    # Convert the sum DataFrame to a list of dictionaries
+    sum_data = sum_df.to_dict(orient='records')
+
+    return sum_data
+
+
+# Halaman perhitungan_akar_jumlah_pemangkatan
+@app.route('/perhitungan_akar_jumlah_pemangkatan', methods=['GET', 'POST'])
+def perhitungan_akar_jumlah_pemangkatan():
+    if 'user_id' in session:
+        if request.method == 'POST':
+            posisi_pemain = request.form['posisi_pemain']
+
+            # Query data dari tabel tbl_nilai_kriteria dan gabungkan dengan tbl_pemain dan tbl_kriteria
+            cur.execute("SELECT p.nama_pemain, k.nama_kriteria, nk.nilai, k.id_kriteria "
+                        "FROM tbl_nilai_kriteria nk "
+                        "JOIN tbl_pemain p ON nk.nisn = p.nisn "
+                        "JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria "
+                        "WHERE p.posisi = %s", (posisi_pemain,))
+            data_nilai_kriteria = cur.fetchall()
+
+            # Calculate the sum of squared values for each criterion
+            sum_data = calculate_sum_of_squared_values(data_nilai_kriteria)
+
+            return render_template('perhitungan_akar_jumlah_pemangkatan.html', sum_data=sum_data,
+                                   positions=get_player_positions(), posisi_pemain=posisi_pemain)
+
+        return render_template('perhitungan_akar_jumlah_pemangkatan.html', positions=get_player_positions())
+    else:
+        return redirect('/login')
+
+
+# Halaman perhitungan_divisi_akar
+@app.route('/perhitungan_divisi_akar', methods=['GET', 'POST'])
+def perhitungan_divisi_akar():
+    if 'user_id' in session:
+        if request.method == 'POST':
+            posisi_pemain = request.form['posisi_pemain']
+
+            # Query data dari tabel tbl_nilai_kriteria dan gabungkan dengan tbl_pemain dan tbl_kriteria
+            cur.execute("SELECT p.nama_pemain, k.nama_kriteria, nk.nilai, k.id_kriteria "
+                        "FROM tbl_nilai_kriteria nk "
+                        "JOIN tbl_pemain p ON nk.nisn = p.nisn "
+                        "JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria "
+                        "WHERE p.posisi = %s", (posisi_pemain,))
+            data_nilai_kriteria = cur.fetchall()
+
+            # Create a DataFrame
+            df = pd.DataFrame(data_nilai_kriteria, columns=['nama_pemain', 'nama_kriteria', 'nilai', 'id_kriteria'])
+
+            # Use pivot to reshape the DataFrame
+            pivot_df = df.pivot(index='nama_pemain', columns='id_kriteria', values='nilai')
+
+            # Reset the column names to use "nama_kriteria" instead of "id_kriteria"
+            pivot_df.columns = [kriteria for kriteria in df['nama_kriteria'].unique()]
+
+            # Perform the calculation: nilai * nilai for each criterion
+            for kriteria in pivot_df.columns:
+                pivot_df[kriteria] = pivot_df[kriteria] ** 2
+
+            # Get the sum of squared values for each criterion
+            sum_data = calculate_sum_of_squared_values(data_nilai_kriteria)
+
+            # Create a new DataFrame for the division operation
+            pivot_df_divisi_akar = create_pivot_df_divisi_akar(pivot_df, sum_data)
+
+            # Convert the pivot DataFrame to a list of dictionaries
+            table_data = pivot_df_divisi_akar.reset_index().to_dict(orient='records')
+
+            return render_template('perhitungan_divisi_akar.html', table_data=table_data,
+                                   criteria=pivot_df_divisi_akar.columns, positions=get_player_positions(), posisi_pemain=posisi_pemain)
+
+        return render_template('perhitungan_divisi_akar.html', positions=get_player_positions())
+    else:
+        return redirect('/login')
+
+
+def create_pivot_df(data, squared=False):
+    # Create a DataFrame
+    df = pd.DataFrame(data, columns=['nama_pemain', 'nama_kriteria', 'nilai', 'id_kriteria'])
+
+    # Use pivot to reshape the DataFrame
+    pivot_df = df.pivot(index='nama_pemain', columns='id_kriteria', values='nilai')
+
+    # Reset the column names to use "nama_kriteria" instead of "id_kriteria"
+    pivot_df.columns = [kriteria for kriteria in df['nama_kriteria'].unique()]
+
+    if squared:
+        # Perform the calculation: nilai * nilai for each criterion
+        for kriteria in pivot_df.columns:
+            pivot_df[kriteria] = pivot_df[kriteria] ** 2
+
+    return pivot_df
+
+
+# Function to create the DataFrame for the division operation
+def create_pivot_df_divisi_akar(pivot_df_squared, sum_data):
+    # Create a new DataFrame to hold the division values for each criterion
+    pivot_df_divisi_akar = pivot_df_squared.copy()
+
+    # Perform the calculation: nilai / akar_jumlah_pemangkatan for each criterion
+    for kriteria in pivot_df_divisi_akar.columns:
+        sum_value = next((item['jumlah'] for item in sum_data if item['kriteria'] == kriteria), None)
+        sum_value_decimal = decimal.Decimal(sum_value)  # Convert sum_value to decimal.Decimal
+        pivot_df_divisi_akar[kriteria] = np.sqrt(pivot_df_divisi_akar[kriteria]) / sum_value_decimal
+
+    return pivot_df_divisi_akar
+
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
