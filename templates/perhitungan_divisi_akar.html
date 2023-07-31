@@ -4,32 +4,38 @@
     <title>Perhitungan Divisi Akar</title>
 </head>
 <body>
-    <h1>Normalisasi Matriks</h1>
-    <form method="post">
+    <h1>Perhitungan MOORA</h1>
+    <form method="POST">
         <label for="posisi_pemain">Pilih Posisi Pemain:</label>
         <select name="posisi_pemain" id="posisi_pemain">
             {% for posisi in positions %}
-            <option value="{{ posisi }}" {% if posisi_pemain == posisi %}selected{% endif %}>{{ posisi }}</option>
+                <option value="{{ posisi }}">{{ posisi }}</option>
             {% endfor %}
         </select>
-        <input type="submit" value="Hitung">
+        <input type="submit" value="Submit">
     </form>
-    <table border="1">
-        <tr>
-            
-            {% for kriteria in criteria %}
-            <th>Nama Pemain</th>
-            <th>{{ kriteria }}</th>
-            {% endfor %}
-        </tr>
-        {% for row in table_data %}
-        <tr>
-            <td>{{ row['nama_pemain'] }}</td>
-            {% for kriteria in criteria %}
-            <td>{{ row[kriteria] }}</td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
-    </table>
+
+    {% if table_data %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Peringkat</th>
+                    <th>Nama</th>
+                    <th>Nilai Moora</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in table_data %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ row['nama_pemain'] }}</td>
+                        <td>{{ row['Nilai Moora'] |round(7) }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No data available. Please select a player position and submit the form.</p>
+    {% endif %}
 </body>
 </html>

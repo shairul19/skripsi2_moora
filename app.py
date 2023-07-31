@@ -595,15 +595,17 @@ def perhitungan_akar_jumlah_pemangkatan():
     else:
         return redirect('/login')
 
-
-# Halaman perhitungan_divisi_akar
 @app.route('/perhitungan_divisi_akar', methods=['GET', 'POST'])
 def perhitungan_divisi_akar():
+    # Check if the 'user_id' is present in the session (user logged in)
     if 'user_id' in session:
+        # Check if the request method is POST (form submitted)
         if request.method == 'POST':
+            # Get the selected player position from the form data
             posisi_pemain = request.form['posisi_pemain']
 
-            # Query data dari tabel tbl_nilai_kriteria dan gabungkan dengan tbl_pemain dan tbl_kriteria
+            # Query data from the database for the selected player position
+            # and join data from multiple tables to get criteria values
             cur.execute("SELECT p.nama_pemain, k.nama_kriteria, nk.nilai, k.id_kriteria "
                         "FROM tbl_nilai_kriteria nk "
                         "JOIN tbl_pemain p ON nk.nisn = p.nisn "
@@ -611,33 +613,51 @@ def perhitungan_divisi_akar():
                         "WHERE p.posisi = %s", (posisi_pemain,))
             data_nilai_kriteria = cur.fetchall()
 
-            # Create a DataFrame
-            df = pd.DataFrame(data_nilai_kriteria, columns=['nama_pemain', 'nama_kriteria', 'nilai', 'id_kriteria'])
-
-            # Use pivot to reshape the DataFrame
-            pivot_df = df.pivot(index='nama_pemain', columns='id_kriteria', values='nilai')
-
-            # Reset the column names to use "nama_kriteria" instead of "id_kriteria"
-            pivot_df.columns = [kriteria for kriteria in df['nama_kriteria'].unique()]
-
-            # Perform the calculation: nilai * nilai for each criterion
-            for kriteria in pivot_df.columns:
-                pivot_df[kriteria] = pivot_df[kriteria] ** 2
-
-            # Get the sum of squared values for each criterion
+            # Calculate the sum of squared values for each criterion
             sum_data = calculate_sum_of_squared_values(data_nilai_kriteria)
 
+            # Create a DataFrame and perform the calculation: nilai * nilai for each criterion
+            pivot_df_squared = create_pivot_df(data_nilai_kriteria, squared=True)
+
             # Create a new DataFrame for the division operation
-            pivot_df_divisi_akar = create_pivot_df_divisi_akar(pivot_df, sum_data)
+            pivot_df_divisi_akar = create_pivot_df_divisi_akar(pivot_df_squared, sum_data, posisi_pemain, cur)
+
+            # Convert the values in pivot_df_divisi_akar to decimal.Decimal
+            pivot_df_divisi_akar = pivot_df_divisi_akar.applymap(decimal.Decimal)
+
+            # Fetch the criteria types (benefit or cost) from the tbl_kriteria table based on the player's position (posisi_pemain)
+            cur.execute("SELECT nama_kriteria, tipe FROM tbl_kriteria WHERE posisi = %s", (posisi_pemain,))
+            criteria_types = dict(cur.fetchall())
+
+            # Calculate the Moora value for each player
+            pivot_df_divisi_akar['Total Benefit'] = decimal.Decimal(0.0)
+            pivot_df_divisi_akar['Total Cost'] = decimal.Decimal(0.0)
+
+            for kriteria in pivot_df_divisi_akar.columns:
+                nilai_kriteria = pivot_df_divisi_akar[kriteria]
+                tipe_kriteria = criteria_types.get(kriteria)
+
+                if tipe_kriteria == 'benefit':
+                    pivot_df_divisi_akar['Total Benefit'] += nilai_kriteria
+                elif tipe_kriteria == 'cost':
+                    pivot_df_divisi_akar['Total Cost'] += nilai_kriteria
+
+            #   Calculate the Moora value for each player
+            pivot_df_divisi_akar['Nilai Moora'] = pivot_df_divisi_akar['Total Benefit'] - pivot_df_divisi_akar['Total Cost']
 
             # Convert the pivot DataFrame to a list of dictionaries
             table_data = pivot_df_divisi_akar.reset_index().to_dict(orient='records')
+            table_data.sort(key=lambda x: x['Nilai Moora'], reverse=True)
 
+            # Render the HTML template with the calculated Moora values and other data
             return render_template('perhitungan_divisi_akar.html', table_data=table_data,
                                    criteria=pivot_df_divisi_akar.columns, positions=get_player_positions(), posisi_pemain=posisi_pemain)
 
+        # If the request method is GET (initial page load)
+        # Render the initial page with the dropdown list of player positions
         return render_template('perhitungan_divisi_akar.html', positions=get_player_positions())
     else:
+        # If 'user_id' is not present in the session, redirect to the login page
         return redirect('/login')
 
 
@@ -659,21 +679,22 @@ def create_pivot_df(data, squared=False):
     return pivot_df
 
 
-# Function to create the DataFrame for the division operation
-def create_pivot_df_divisi_akar(pivot_df_squared, sum_data):
+def create_pivot_df_divisi_akar(pivot_df_squared, sum_data, posisi_pemain, cur):
     # Create a new DataFrame to hold the division values for each criterion
     pivot_df_divisi_akar = pivot_df_squared.copy()
 
-    # Perform the calculation: nilai / akar_jumlah_pemangkatan for each criterion
+    # Fetch the weights (bobot) from the tbl_kriteria table based on the player's position (posisi_pemain)
+    cur.execute("SELECT nama_kriteria, bobot FROM tbl_kriteria WHERE posisi = %s", (posisi_pemain,))
+    kriteria_weights = dict(cur.fetchall())
+
+    # Perform the calculation: (nilai / akar_jumlah_pemangkatan) * bobot for each criterion
     for kriteria in pivot_df_divisi_akar.columns:
         sum_value = next((item['jumlah'] for item in sum_data if item['kriteria'] == kriteria), None)
         sum_value_decimal = decimal.Decimal(sum_value)  # Convert sum_value to decimal.Decimal
-        pivot_df_divisi_akar[kriteria] = np.sqrt(pivot_df_divisi_akar[kriteria]) / sum_value_decimal
+        bobot = decimal.Decimal(kriteria_weights.get(kriteria, 1.0))  # Default weight is 1.0 if not found
+        pivot_df_divisi_akar[kriteria] = (np.sqrt(pivot_df_divisi_akar[kriteria]) / sum_value_decimal) * bobot
 
     return pivot_df_divisi_akar
-
-
-
 
 
 if __name__ == '__main__':
