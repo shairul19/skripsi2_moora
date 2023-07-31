@@ -271,6 +271,49 @@ COPY public.tbl_kriteria (id_kriteria, kode_kriteria, nama_kriteria, posisi, tip
 --
 
 COPY public.tbl_nilai_kriteria (nisn, id_kriteria, nilai) FROM stdin;
+12345678	18	15.00
+12345678	19	170.00
+12345678	20	80.00
+12345678	21	75.00
+12345678	22	80.00
+12345678	23	60.00
+12345678	24	85.00
+12345678	25	90.00
+12345678	26	90.00
+12345678	27	80.00
+12345678	28	90.00
+447890	18	14.00
+447890	19	165.00
+447890	20	90.00
+447890	21	85.00
+447890	22	75.00
+447890	23	80.00
+447890	24	80.00
+447890	25	90.00
+447890	26	95.00
+447890	27	70.00
+447890	28	70.00
+625679	8	15.00
+625679	9	150.00
+625679	10	88.00
+625679	11	90.00
+625679	12	76.00
+625679	13	80.00
+625679	14	76.00
+625679	15	80.00
+625679	16	90.00
+625679	17	69.00
+19101140	18	14.00
+19101140	19	176.00
+19101140	20	90.00
+19101140	21	90.00
+19101140	22	86.00
+19101140	23	78.00
+19101140	24	90.00
+19101140	25	90.00
+19101140	26	75.00
+19101140	27	80.00
+19101140	28	90.00
 \.
 
 
@@ -283,6 +326,7 @@ COPY public.tbl_pemain (nisn, id_user, nama_pemain, tgl_lahir_pemain, posisi, as
 444444	10	Asan Basri	2000-03-10	FW	SDN 1 Cikupa	2023-07-05 20:15:38.810173	2023-07-05 20:15:38.810173
 447890	11	Muhammad Faturrahman	2008-01-10	DF	SMPN 1 CIKUPA	2023-07-06 14:05:58.345674	2023-07-06 14:05:58.345674
 625679	15	Chandra Tri	2008-06-15	GK	SDN 1 Cikupa	2023-07-11 20:32:34.398104	2023-07-11 20:32:34.398104
+19101140	16	Roby Alkahfi	2007-06-05	DF	SDN 1 Cikupa	2023-07-31 12:15:07.40132	2023-07-31 12:15:07.40132
 \.
 
 
@@ -291,6 +335,10 @@ COPY public.tbl_pemain (nisn, id_user, nama_pemain, tgl_lahir_pemain, posisi, as
 --
 
 COPY public.tbl_skor_moora (nisn, skor) FROM stdin;
+12345678	0.960000
+447890	0.668039
+625679	0.960000
+19101140	0.536361
 \.
 
 
@@ -307,6 +355,7 @@ COPY public.tbl_users (id_user, username, password, role, created_at, updated_at
 13	mukti	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	admin	2023-07-06 14:40:27.934501	2023-07-06 14:40:27.934501	t	f
 14	andri	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	admin	2023-07-06 14:40:41.583132	2023-07-06 14:40:41.583132	t	f
 15	Chandra	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	user	2023-07-11 20:32:21.961813	2023-07-11 20:32:21.961813	f	t
+16	roby	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	user	2023-07-31 12:07:54.935338	2023-07-31 12:07:54.935338	f	t
 \.
 
 
@@ -328,7 +377,7 @@ SELECT pg_catalog.setval('public.tbl_kriteria_id_kriteria_seq', 53, true);
 -- Name: tbl_users_id_user_seq; Type: SEQUENCE SET; Schema: public; Owner: shairul
 --
 
-SELECT pg_catalog.setval('public.tbl_users_id_user_seq', 15, true);
+SELECT pg_catalog.setval('public.tbl_users_id_user_seq', 16, true);
 
 
 --
