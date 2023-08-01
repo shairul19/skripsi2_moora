@@ -2,31 +2,44 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css')  }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css')  }}">
     <title>Lengkapi Data Admin</title>
 </head>
 <body>
-    <h1>Lengkapi Data Admin</h1>
+    
+    <div class="global-container">
+        <div class="card login-form">
+            <div class="card-text">
+                <h2 class="card-title text-center">Lengkapi Data Admin</h2>
+                <hr>
+                <form method="POST" action="/lengkapi_data_admin">
+                    <div class="mb-3">
+                      <label for="nama-admin" class="form-label">Nama Admin</label>
+                      <input type="text" name="nama_admin" class="form-control" id="nama_admin" aria-describedby="nama_admin" placeholder="Nama Lengkap" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tgl_lahir" class="form-label">Tanggal Lahir</label>
+                        <input type="date" name="tgl_lahir_admin" class="form-control" id="tgl_lahir_admin" aria-describedby="tgl_lahir_admin" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="Jabatan" class="form-label">Jabatan</label>
+                        <select name="jabatan" id="jabatan" required>
+                            <option value="" disabled selected>--Pilih Jabatan--</option>
+                            <option value="Head Coach">Head Coach</option>
+                            <option value="Asst. Coach">Asisten Coach</option>
+                            <option value="Scout Staff">Scout Staff</option>
+                        </select>
+                    </div>
+                    <button type="submit" value="Simpan" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
-    <form method="POST" action="/lengkapi_data_admin">
-        <label for="nama_admin">Nama Admin:</label>
-        <input type="text" id="nama_admin" name="nama_admin" required>
-        <br><br>
-        
-        <label for="tgl_lahir_admin">Tanggal Lahir Admin:</label>
-        <input type="date" id="tgl_lahir_admin" name="tgl_lahir_admin" required>
-        <br><br>
-        
-        <label for="jabatan">Jabatan:</label>
-        <select id="jabatan" name="jabatan" required>
-            <option value="" disabled selected>Pilih Jabatan</option>
-            <option value="Head Coach">Head Coach</option>
-            <option value="Asst. Coach">Asst. Coach</option>
-            <option value="Scout Staff">Scout Staff</option>
-        </select>
-        <br><br>
-        
-        <input type="submit" value="Simpan">
-    </form>
+    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js')  }}"></script>
 </body>
 </html>

@@ -55,118 +55,6 @@ def lengkapi_data_admin(user_id, nama_admin, tgl_lahir_admin, jabatan):
     conn.commit()
 
 
-#Fungsi hitung skor moora
-def hitung_skor_moora(nisn, posisi_pemain, cur, conn):
-    # Mendapatkan data nilai kriteria berdasarkan nisn pemain dan posisi_pemain dari tabel "tbl_nilai_kriteria"
-    cur.execute("SELECT nk.id_kriteria, nk.nilai, k.bobot, k.tipe FROM tbl_nilai_kriteria nk JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria WHERE k.posisi = %s", (posisi_pemain,))
-    data_nilai_kriteria = cur.fetchall()
-
-    print("")
-    print("dnk")
-    print(data_nilai_kriteria)
-
-    if not data_nilai_kriteria:
-        # Jika tidak ada data nilai kriteria untuk pemain ini, berikan skor default dan langsung simpan ke dalam tabel "tbl_skor_moora"
-        default_skor = Decimal(0.0000)  # Atur skor default sesuai kebutuhan
-        cur.execute("INSERT INTO tbl_skor_moora (nisn, skor) VALUES (%s, %s) ON CONFLICT (nisn) DO UPDATE SET skor = EXCLUDED.skor", (nisn, default_skor))
-        conn.commit()
-        return
-
-    # Ubah data nilai kriteria menjadi list nilai
-    nilai_per_kriteria = {id_kriteria: [] for id_kriteria, _, _, _ in data_nilai_kriteria}
-    tipe_kriteria = {id_kriteria: tipe for id_kriteria, _, _, tipe in data_nilai_kriteria}
-    bobot_kriteria = {id_kriteria: bobot for id_kriteria, _, bobot, _ in data_nilai_kriteria}  # Perbaiki penggunaan kunci
-
-    for id_kriteria, nilai, _, _ in data_nilai_kriteria:  # Jangan masukkan variabel yang tidak digunakan dengan _
-        nilai_per_kriteria[id_kriteria].append(Decimal(nilai))
-
-    print("")
-    print("npk")
-    print(nilai_per_kriteria)
-
-    # Mendapatkan data bobot kriteria berdasarkan posisi pemain dari tabel "tbl_kriteria"
-    cur.execute("SELECT bobot, tipe FROM tbl_kriteria WHERE posisi = %s", (posisi_pemain,))
-    data_kriteria = cur.fetchall()
-    
-    print("")
-    print("dk")
-    print(data_kriteria)
-
-    print("")
-    print("bobot")
-    print(bobot_kriteria)
-
-    # Memisahkan nilai kriteria berdasarkan tipe 'cost' dan 'benefit'
-    benefit_values = [sum(nilai_per_kriteria[id_kriteria]) for id_kriteria in nilai_per_kriteria if tipe_kriteria[id_kriteria] == 'benefit']
-    cost_values = [sum(nilai_per_kriteria[id_kriteria]) for id_kriteria in nilai_per_kriteria if tipe_kriteria[id_kriteria] == 'cost']
-
-    print("")
-    print("benefit_values")
-    print(benefit_values)
-    print("")
-    print("cost_values")
-    print(cost_values)
-
-    # Menghitung total kuadrat kriteria untuk pemain berdasarkan satu matriks nilai kriteria
-    jumlah_kuadrat_kriteria = {id_kriteria: sum(nilai ** 2 for nilai in nilai_per_kriteria[id_kriteria]) for id_kriteria in nilai_per_kriteria}
-
-    print("")
-    print("jkk")
-    print(jumlah_kuadrat_kriteria)
-
-    # Akarkan Hasil Penjumlahan untuk mendapatkan akar_penjumlahan
-    akar_penjumlahan = {id_kriteria: Decimal(sqrt(jumlah)) for id_kriteria, jumlah in jumlah_kuadrat_kriteria.items()}  # Convert akar_penjumlahan to Decimal
-
-    print("")
-    print("ap")
-    print(akar_penjumlahan)
-
-    # Menghitung normalisasi matriks berdasarkan nilai terakhir dari nilai_per_kriteria dan akar_penjumlahan
-    normalisasi_matriks = {}
-
-    for id_kriteria, nilai_kriteria in nilai_per_kriteria.items():
-        # Mengambil nilai terakhir dari list nilai_kriteria
-        nilai_terakhir = nilai_kriteria[-1]
-
-    # Mengambil nilai akar_penjumlahan berdasarkan id_kriteria
-    akar_penjumlahan_kriteria = akar_penjumlahan[id_kriteria]
-
-    # Menghitung normalisasi matriks berdasarkan nilai terakhir dan akar_penjumlahan
-    normalisasi_matriks[id_kriteria] = nilai_terakhir / akar_penjumlahan_kriteria
-
-    print("")
-    print("normalisasi matriks")
-    print(normalisasi_matriks)
-
-    # Normalisasi terbobot kriteria (nilai awal / akar penjumlahan * bobot kriteria)
-    normalisasi_terbobot_kriteria = {
-        id_kriteria: [(nilai / akar_penjumlahan[id_kriteria]) * bobot_kriteria[id_kriteria] for nilai in nilai_per_kriteria[id_kriteria]]
-        for id_kriteria in nilai_per_kriteria
-    }  
-    print("")
-    print("ntbk")
-    print(normalisasi_terbobot_kriteria)
-
-    # Menghitung nilai C (a - b) berdasarkan tipe kriteria
-    a_values = sum(normalisasi_terbobot_kriteria[id_kriteria][0] for id_kriteria in normalisasi_terbobot_kriteria if tipe_kriteria[id_kriteria] == 'benefit')
-    b_values = sum(normalisasi_terbobot_kriteria[id_kriteria][0] for id_kriteria in normalisasi_terbobot_kriteria if tipe_kriteria[id_kriteria] == 'cost')
-    c_values = a_values - b_values
-
-    print("")
-    print("a_values")
-    print(a_values)
-    print("")
-    print("b_values")
-    print(b_values)
-    print("")
-    print("c_values")
-    print(c_values)
-
-    # Menyimpan hasil perhitungan pada tabel "tbl_skor_moora" dengan mengidentifikasi pemain berdasarkan id posisi pemain
-    cur.execute("INSERT INTO tbl_skor_moora (nisn, skor) VALUES (%s, %s) ON CONFLICT (nisn) DO UPDATE SET skor = EXCLUDED.skor", (nisn, c_values))
-    conn.commit()
-
-
 # Baris Function (END) ===============================
 
 
@@ -409,9 +297,6 @@ def input_nilai(nisn):
                 nilai = request.form.get("nilai_{}_{}".format(kriteria[0], nisn))
                 cur.execute("INSERT INTO tbl_nilai_kriteria (nisn, id_kriteria, nilai) VALUES (%s, %s, %s)", (nisn, kriteria[0], nilai))
                 conn.commit()
-
-            # Lakukan perhitungan MOORA dan update hasil pada tabel "tbl_skor_moora" hanya untuk kriteria-kriteria yang sesuai dengan posisi pemain
-            hitung_skor_moora(nisn, data_pemain[2], cur, conn)  # data_pemain[2] berisi posisi pemain
 
             return redirect('/penilaian_pemain')  # Mengarahkan pengguna kembali ke halaman penilaian pemain
 

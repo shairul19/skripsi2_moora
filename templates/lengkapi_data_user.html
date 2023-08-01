@@ -2,40 +2,52 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css')  }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css')  }}">
     <title>Lengkapi Data User</title>
 </head>
 <body>
-    <h1>Lengkapi Data User</h1>
+    
+    <div class="global-container">
+        <div class="card lengkapi-data-user-form">
+            <div class="card-text">
+                <h2 class="card-title text-center">Lengkapi Data User</h2>
+                <hr>
+                <form method="POST" action="/lengkapi_data_user">
+                    <div class="mb-3">
+                        <label for="nisn" class="form-label">NISN</label>
+                        <input type="number" pattern="[0-9]{10}" name="nisn" class="form-control" id="nisn" aria-describedby="nama_admin" placeholder="NISN" required>
+                      </div>
+                    <div class="mb-3">
+                      <label for="nama-pemain" class="form-label">Nama Pemain</label>
+                      <input type="text" name="nama_pemain" class="form-control" id="nama_pemain" aria-describedby="nama_pemain" placeholder="Nama Lengkap" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tgl_lahir" class="form-label">Tanggal Lahir</label>
+                        <input type="date" name="tgl_lahir_pemain" class="form-control" id="tgl_lahir_pemain" aria-describedby="tgl_lahir_pemain" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="posisi" class="form-label">Posisi</label>
+                        <select name="posisi" id="posisi" required>
+                            <option value="" disabled selected>--Pilih Posisi--</option>
+                            <option value="GK">Goal Keeper (Penjaga Gawang)</option>
+                            <option value="DF">Defender (Pemain Bertahan)</option>
+                            <option value="MF">Midfielder (Pemain Tengah)</option>
+                            <option value="FW">Forward (Penyerang)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="asal_sekolah" class="form-label">Asal Sekolah</label>
+                        <input type="text" name="asal_sekolah" class="form-control" id="asal_sekolah" aria-describedby="asal_sekolah" placeholder="Asal Sekolah" required>
+                    </div>
+                    <button type="submit" value="Simpan" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
-    <form method="POST" action="/lengkapi_data_user">
-        <label for="nisn">NISN:</label>
-        <input type="text" id="nisn" name="nisn" required>
-        <br><br>
-        
-        <label for="nama_pemain">Nama Pemain:</label>
-        <input type="text" id="nama_pemain" name="nama_pemain" required>
-        <br><br>
-        
-        <label for="tgl_lahir_pemain">Tanggal Lahir Pemain:</label>
-        <input type="date" id="tgl_lahir_pemain" name="tgl_lahir_pemain" required>
-        <br><br>
-        
-        <label for="posisi">Posisi:</label>
-        <select id="posisi" name="posisi" required>
-            <option value="" disabled selected>Pilih Posisi</option>
-            <option value="GK">GK</option>
-            <option value="DF">DF</option>
-            <option value="MF">MF</option>
-            <option value="FW">FW</option>
-        </select>
-        <br><br>
-        
-        <label for="asal_sekolah">Asal Sekolah:</label>
-        <input type="text" id="asal_sekolah" name="asal_sekolah" required>
-        <br><br>
-        
-        <input type="submit" value="Simpan">
-    </form>
+    <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js')  }}"></script>
 </body>
 </html>

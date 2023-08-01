@@ -1,0 +1,154 @@
+* {
+    margin:0;
+    padding:0;
+    box-sizing: border-box;
+    font:'Gill Sans' ;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    /* Gradient Background */
+    background-image: linear-gradient(135deg, #ffd8cd, #b3f0f6);
+}
+
+.container {
+    width: 100%;
+    display: flex;
+    max-width: 900px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+.global-container {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-form{
+    width: 380px;
+    height: 5000px;
+    padding: 10px;
+    border-radius: 10px !important;
+}
+
+.lengkapi-data-user-form{
+    width: 380px;
+    height: 660px;
+    padding: 10px;
+    border-radius: 10px !important;
+}
+
+.login {
+    width: 400px;
+}
+
+.register {
+    width: 400px;
+}
+
+form {
+    width: 250px;
+    margin: 30px auto;
+}
+
+
+h1 {
+    margin: 10px;
+    text-align: center;
+    font-weight: bolder;
+    text-transform: uppercase;
+}
+
+hr {
+    border-top: 2px solid rgb(34, 145, 179);
+}
+
+p {
+    text-align: center;
+    margin: 10px;
+}
+
+.right img {
+    width: 550px;
+    height: 100%;
+    border-top-right-radius: 15px;
+    border-bottom-right-radius: 15px;
+
+}
+
+form label {
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 5px;
+}
+
+input {
+    width: 100%;
+    margin: 2px;
+    border: none;
+    outline: none;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid gray;
+}
+
+select {
+    width: 100%;
+    margin: 2px;
+    border: none;
+    outline: none;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid gray;
+}
+
+
+.role {
+    width: 100%;
+    margin: 2px;
+    border: none;
+    outline: none;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid gray;
+}
+
+button {
+    border: none;
+    outline: none;
+    padding: 8px;
+    width: 252px;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 20px;
+    border-radius: 5px;
+    background-color: rgb(34, 145, 179);
+}
+
+button:hover {
+    background: rgb(168, 206, 34);
+}
+
+/* Media Queries for Responsive Layout */
+@media screen and (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .right img {
+        border-radius: 15px;
+    }
+
+    form {
+        width: 100%;
+    }
+}

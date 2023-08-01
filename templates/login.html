@@ -1,19 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css')  }}">
 </head>
 <body>
-    <h1>Login</h1>
-    <form method="POST" action="/login">
-        <input type="text" name="username" placeholder="Username" required><br><br>
-        <input type="password" name="password" placeholder="Password" required><br><br>
-        <input type="submit" value="Login">
-    </form>
-    {% if error %}
-        <p>{{ error }}</p>
-    {% endif %}
+  <div class="container">
+    <div class="login">
+      <form method="POST" action="/login">
+        <h1>Login</h1>
+        <hr>
+        {% if error %}
+          <p>{{ error }}</p>
+        {%  endif %}
+        <br>
+        <label for="">Username</label>
+        <input type="text" name="username" placeholder="Username" required>
+        <label for="">Password</label>
+        <input type="Password" name="password" placeholder="Password" required>
+        <button type="submit" value="Login">Login</button>
+        <p>
+          <a href="/register">Daftar Akun</a>
+        </p>
+      </form>
+    </div>
+
+    <div class="right">
+        <img src="{{ url_for('static', filename='img/login.jpg')}}" alt="login">
+    </div>
+  </div>
 </body>
 </html>
