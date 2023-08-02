@@ -125,6 +125,14 @@ def login():
 
     return render_template('login.html')
 
+# Halaman Logout
+@app.route('/logout')
+def logout():
+    #Membersihkan Session
+    session.clear()
+    return redirect('/login')
+
+
 # Halaman lengkapi data user
 @app.route('/lengkapi_data_user', methods=['GET', 'POST'])
 def lengkapi_data_user_page():
