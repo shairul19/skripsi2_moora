@@ -77,7 +77,7 @@ def register():
         cur.execute("INSERT INTO tbl_users (username, password, role) VALUES (%s, %s, %s)", (username, hashed_password, role))
         conn.commit()
 
-        return "Registrasi berhasil!"
+        
 
     return render_template('register.html')
 
@@ -178,7 +178,7 @@ def halaman_pengguna():
 @app.route('/halaman_admin')
 def halaman_admin():
     if 'user_id' in session and session['role'] == 'admin':
-        return "Halaman Admin"
+        return render_template('dashboard.html')
     else:
         return redirect('/login')
 

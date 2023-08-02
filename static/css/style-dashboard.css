@@ -1,0 +1,56 @@
+body, button{
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.nav-link:hover{
+    background-color:#51c57d !important;
+    }
+    
+:root{
+    --offcanvas-width: 270px;
+    --topNavbarHeight: 56px;
+}
+
+.sidebar-nav{
+    width: var(--offcanvas-width);
+}
+.card-body-icon{
+    position: absolute;
+    z-index: 0;
+    top: 25px;
+    right: 4px;
+    opacity: 0.4;
+    font-size: 90px;
+}
+
+@media (min-width:992px){
+    main{
+        margin-left: var(--offcanvas-width);
+    }
+
+    
+
+    .offcanvas-backdrop::before{
+        display: none;
+    }
+    
+    body{
+        overflow: auto !important;
+    }
+    
+    .nav-link:hover{
+    background-color:#51c57d !important;
+    }
+    
+    .nav-link .icon{
+        transition:all 1s;
+    }
+    
+    
+    .sidebar-nav{
+        transform: none;
+        visibility: visible !important;
+        top: var(--topNavbarHeight);
+        height: calc(100% - var(--topNavbarHeight));
+    }
+}
