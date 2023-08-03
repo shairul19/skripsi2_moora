@@ -1,43 +1,117 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Data Nilai Pemain</title>
-</head>
-<body>
-    <h1>Data Tabel Nilai Kriteria</h1>
+{% extends "base.html" %}
 
-    <form method="post">
-        <label for="posisi_pemain">Pilih Posisi Pemain:</label>
-        <select id="posisi_pemain" name="posisi_pemain">
-            <option value="">-- Pilih Posisi Pemain --</option>
-            {% for posisi in positions %}
-            <option value="{{ posisi }}" {% if posisi == posisi_pemain %}selected{% endif %}>{{ posisi }}</option>
-            {% endfor %}
-        </select>
-        <input type="submit" value="Tampilkan">
-    </form>
+{% block title %}
+Nilai Pemain
+{% endblock %}
 
-    {% if table_data %}
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Nama Pemain</th>
-                {% for column in table_data[0] if column != 'nama_pemain' %}
-                <th>{{ column }}</th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for row in table_data %}
-            <tr>
-                <td>{{ row['nama_pemain'] }}</td>
-                {% for column in table_data[0] if column != 'nama_pemain' %}
-                <td>{{ row[column] }}</td>
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% endif %}
-</body>
-</html>
+{% block content %}
+<!--Main-->
+<main class="mt-5 pt-3">
+    <div class="col-md-12 p-4 pt-2">
+
+        <h3> <i class="fa-solid fa-file-pen icon"></i> Nilai Pemain</h3>
+            <hr>
+
+            <div class="row">
+                <form method="post">
+                    <label for="posisi_pemain">Pilih Posisi Pemain:</label>
+                    <select id="posisi_pemain" name="posisi_pemain">
+                        <option value="">-- Pilih Posisi Pemain --</option>
+                        {% for posisi in positions %}
+                        <option value="{{ posisi }}" {% if posisi==posisi_pemain %}selected{% endif %}>{{ posisi }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="submit" value="Tampilkan">
+                </form>
+            
+                {% if table_data %}
+                <table class="table table-sm table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>No</th>
+                            <th>Nama Pemain</th>
+                            {% for column in table_data[0] if column != 'nama_pemain' %}
+                            <th>{{ column }}</th>
+                            {% endfor %}
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in table_data %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ row['nama_pemain'] }}</td>
+                            {% for column in table_data[0] if column != 'nama_pemain' %}
+                            <td>{{ row[column] }}</td>
+                            {% endfor %}
+                            {% if 'user_id' in session and session['role'] == 'admin' %}
+                    <td><!-- Button trigger modal -->
+                        
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#exampleModal">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                        
+                        <!-- Modal -->
+                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                            aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        ...
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-primary">Save changes</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Button trigger modal -->
+                        
+                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#exampleModal">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        
+                        <!-- Modal -->
+                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                            aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        ...
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-primary">Save changes</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </td>
+                    {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+            </div>
+    </div>
+</main>
+<!--Main-->
+{% endblock %}
