@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, redirect
+from flask import Flask, render_template, request, session, redirect, make_response
 import psycopg2
 import hashlib
 import jinja2.ext
@@ -129,8 +129,16 @@ def login():
 @app.route('/logout')
 def logout():
     #Membersihkan Session
-    session.clear()
-    return redirect('/login')
+    session.pop('user_id', None)
+    session.pop('role', None)
+    
+    response = make_response(redirect('/login'))
+
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = 0
+
+    return response
 
 
 # Halaman lengkapi data user
@@ -177,7 +185,7 @@ def lengkapi_data_admin_page():
 @app.route('/halaman_pengguna')
 def halaman_pengguna():
     if 'user_id' in session and session['role'] == 'user':
-        return "Halaman Pengguna"
+        return render_template('dashboard.html')
     else:
         return redirect('/login')
 
