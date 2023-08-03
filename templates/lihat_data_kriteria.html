@@ -12,9 +12,11 @@
           <h3> <i class="fa-solid fa-clipboard-list icon"></i>Data Kriteria</h3><hr>
                         
               <div class="row">
+                {% if 'user_id' in session and session['role'] == 'admin' %}
                 <div class="col-sm-2">
                     <a class="btn btn-success" href="/tambah_kriteria" role="button"><i class="fa-solid fa-square-plus"> </i> Tambah</a>
                 </div><br><br>
+                {% endif %}
                 
                 <form method="POST">
                     <label for="posisi">Posisi:</label>
@@ -38,7 +40,9 @@
                             <th>Posisi</th>
                             <th>Bobot</th>
                             <th>Tipe</th>
+                            {% if 'user_id' in session and session['role'] == 'admin' %}
                             <th>Aksi</th>
+                            {% endif %}
                         </tr>
                     </thead>
                     <tbody>

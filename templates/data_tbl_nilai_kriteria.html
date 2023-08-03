@@ -23,7 +23,7 @@ Nilai Pemain
                     </select>
                     <input type="submit" value="Tampilkan">
                 </form>
-            
+                <br><br>
                 {% if table_data %}
                 <table class="table table-sm table-striped table-hover">
                     <thead class="table-dark">
@@ -33,7 +33,9 @@ Nilai Pemain
                             {% for column in table_data[0] if column != 'nama_pemain' %}
                             <th>{{ column }}</th>
                             {% endfor %}
+                            {% if 'user_id' in session and session['role'] == 'admin' %}
                             <th>Aksi</th>
+                            {% endif %}
                         </tr>
                     </thead>
                     <tbody>

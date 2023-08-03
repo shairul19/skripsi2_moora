@@ -30,7 +30,9 @@
                         <th>Nama</th>
                         <th>Tanggal Lahir</th>
                         <th>Jabatan</th>
+                        {% if 'user_id' in session and session['role'] == 'admin' %}
                         <th>Aksi</th>
+                        {% endif %}
                     </tr>
                     {% if data_tim_seleksi %}
                     {% for tim in data_tim_seleksi %}
@@ -39,8 +41,9 @@
                         <td>{{ tim[1] }}</td>
                         <td>{{ tim[2] }}</td>
                         <td>{{ tim[3] }}</td>
+                        {% if 'user_id' in session and session['role'] == 'admin' %}
                         <td>
-                            {% if 'user_id' in session and session['role'] == 'admin' %}
+                           
                         <!-- Button trigger modal -->
                         
                             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
