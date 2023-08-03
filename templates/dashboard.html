@@ -9,20 +9,20 @@
     <main class="mt-5 pt-3">
           <div class="col-md-12 p-4 pt-2">
             
-          <h3><i class='bx bxs-dashboard icon'></i> DASHBOARD</h3><hr>
+          <h3> <i class="fa-solid fa-chart-line icon"></i> DASHBOARD</h3><hr>
                         
               <div class="row">
                     <div class="card bg-light m-2 shadow" style="max-width: 20rem;">
                         <div class="card-body text-dark">
                             <h4 class="card-title">Data Pemain</h4><hr>
-                            <p class="card-text fs-1 text-dark">10</p>
+                            <p class="card-text fs-1 text-dark">{{ jumlah_pemain }}</p>
                         </div>
                     </div>
 
                     <div class="card bg-light  m-2 shadow" style="max-width: 20rem;">
                         <div class="card-body text-dark">
                             <h4 class="card-title">Data Penilai</h4><hr>
-                            <p class="card-text fs-1 text-dark">5</p>
+                            <p class="card-text fs-1 text-dark">{{ jumlah_penilai }}</p>
                         </div>
                        
                     </div>
@@ -30,7 +30,7 @@
                     <div class="card bg-light  m-2 shadow" style="max-width: 20rem;">
                         <div class="card-body text-dark">
                             <h4 class="card-title">Pemain Dinilai</h4><hr>
-                            <p class="card-text fs-1 text-dark">12</p>
+                            <p class="card-text fs-1 text-dark">{{ jumlah_pemain_dinilai }}</p>
                         </div>
                     </div>
              </div>

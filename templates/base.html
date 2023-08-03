@@ -64,7 +64,7 @@
                         </div>
                     </li>
                     <li class="my-2">
-                        <a href="/dashboard" class="nav-link px-3 active">
+                        <a href="{% if 'role' in session and session['role'] == 'admin' %}/halaman_admin{% else %}/halaman_pengguna{% endif %}" class="nav-link px-3 active">
                             <span class="me-2 ">
                                 <i class="fa-solid fa-chart-line icon"></i>
                             </span>

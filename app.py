@@ -185,7 +185,19 @@ def lengkapi_data_admin_page():
 @app.route('/halaman_pengguna')
 def halaman_pengguna():
     if 'user_id' in session and session['role'] == 'user':
-        return render_template('dashboard.html')
+        cur.execute("SELECT COUNT (*) FROM tbl_pemain")
+        conn.commit()
+        jumlah_pemain = cur.fetchone()[0]
+
+        cur.execute("SELECT COUNT (*) FROM tbl_admin")
+        conn.commit()
+        jumlah_penilai = cur.fetchone()[0]
+        
+        cur.execute("SELECT COUNT (DISTINCT Nisn) FROM tbl_nilai_kriteria")
+        conn.commit()
+        jumlah_pemain_dinilai = cur.fetchone()[0]
+
+        return render_template('dashboard.html', jumlah_pemain=jumlah_pemain, jumlah_penilai=jumlah_penilai, jumlah_pemain_dinilai=jumlah_pemain_dinilai)
     else:
         return redirect('/login')
 
@@ -194,7 +206,19 @@ def halaman_pengguna():
 @app.route('/halaman_admin')
 def halaman_admin():
     if 'user_id' in session and session['role'] == 'admin':
-        return render_template('dashboard.html')
+        cur.execute("SELECT COUNT (*) FROM tbl_pemain")
+        conn.commit()
+        jumlah_pemain = cur.fetchone()[0]
+
+        cur.execute("SELECT COUNT (*) FROM tbl_admin")
+        conn.commit()
+        jumlah_penilai = cur.fetchone()[0]
+        
+        cur.execute("SELECT COUNT (DISTINCT Nisn) FROM tbl_nilai_kriteria")
+        conn.commit()
+        jumlah_pemain_dinilai = cur.fetchone()[0]
+
+        return render_template('dashboard.html', jumlah_pemain=jumlah_pemain, jumlah_penilai=jumlah_penilai, jumlah_pemain_dinilai=jumlah_pemain_dinilai)
     else:
         return redirect('/login')
 
