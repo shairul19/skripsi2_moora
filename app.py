@@ -9,6 +9,7 @@ import decimal
 import logging
 import pandas as pd
 import numpy as np
+from flask_paginate import Pagination
 
 app = Flask(__name__)
 app.secret_key = 'andasiapa'

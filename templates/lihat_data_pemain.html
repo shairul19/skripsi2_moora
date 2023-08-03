@@ -35,7 +35,9 @@ Data Pemain
                     <th>Posisi</th>
                     <th>Tanggal Lahir</th>
                     <th>Asal Sekolah</th>
+                    {% if 'user_id' in session and session['role'] == 'admin' %}
                     <th>Aksi</th>
+                    {% endif %}
                 </tr>
                 {% if data_pemain %}
                 {% for pemain in data_pemain %}
@@ -46,6 +48,7 @@ Data Pemain
                     <td>{{ pemain[2] }}</td>
                     <td>{{ pemain[3] }}</td>
                     <td>{{ pemain[4] }}</td>
+                    {% if 'user_id' in session and session['role'] == 'admin' %}
                     <td><!-- Button trigger modal -->
                         
                             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
@@ -105,6 +108,7 @@ Data Pemain
                         </div>
 
                     </td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </table>
