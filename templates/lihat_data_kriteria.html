@@ -1,50 +1,124 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lihat Data Kriteria</title>
-</head>
-<body>
-    <h1>Lihat Data Kriteria</h1>
-    <a href="/tambah_kriteria">Tambah Kriteria</a>
-    <br>
-    <form method="POST">
-        <label for="posisi">Posisi:</label>
-        <select id="posisi" name="posisi">
-            <option value="semua">Semua</option>
-            <option value="GK">GK</option>
-            <option value="DF">DF</option>
-            <option value="MF">MF</option>
-            <option value="FW">FW</option>
-        </select>
-        <button type="submit">Filter</button>
-    </form>
-    
-    <table>
-        <thead>
-            <tr>
-                <th>Kode Kriteria</th>
-                <th>Nama Kriteria</th>
-                <th>Posisi</th>
-                <th>Bobot</th>
-                <th>Tipe</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for kriteria in data_kriteria %}
-            <tr>
-                <td>{{ kriteria[0] }}</td>
-                <td>{{ kriteria[1] }}</td>
-                <td>{{ kriteria[2] }}</td>
-                <td>{{ kriteria[3] }}</td>
-                <td>{{ kriteria[4] }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+{% extends "base.html" %}
 
-    <br>
-    
-</body>
-</html>
+{% block title %}
+    Data Kriteria
+{% endblock %}
+
+{% block content %}
+    <!--Main-->  
+    <main class="mt-5 pt-3">
+          <div class="col-md-12 p-4 pt-2">
+            
+          <h3> <i class="fa-solid fa-clipboard-list icon"></i>Data Kriteria</h3><hr>
+                        
+              <div class="row">
+                <div class="col-sm-2">
+                    <a class="btn btn-success" href="/tambah_kriteria" role="button"><i class="fa-solid fa-square-plus"> </i> Tambah</a>
+                </div><br><br>
+                
+                <form method="POST">
+                    <label for="posisi">Posisi:</label>
+                    <select id="posisi" name="posisi">
+                        <option value="semua">Semua</option>
+                        <option value="GK">GK</option>
+                        <option value="DF">DF</option>
+                        <option value="MF">MF</option>
+                        <option value="FW">FW</option>
+                    </select>
+                    <button type="submit">Tampilkan</button>
+                </form>
+                <br><br>
+               
+                <table class="table table-sm table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>No</th>
+                            <th>Kode Kriteria</th>
+                            <th>Nama Kriteria</th>
+                            <th>Posisi</th>
+                            <th>Bobot</th>
+                            <th>Tipe</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for kriteria in data_kriteria %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ kriteria[0] }}</td>
+                            <td>{{ kriteria[1] }}</td>
+                            <td>{{ kriteria[2] }}</td>
+                            <td>{{ kriteria[3] }}</td>
+                            <td>{{ kriteria[4] }}</td>
+                            {% if 'user_id' in session and session['role'] == 'admin' %}
+                    <td><!-- Button trigger modal -->
+                        
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#exampleModal">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                        
+                        <!-- Modal -->
+                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                            aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        ...
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-primary">Save changes</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Button trigger modal -->
+                        
+                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#exampleModal">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        
+                        <!-- Modal -->
+                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                            aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        ...
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-primary">Save changes</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </td>
+                    {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            
+                <br>
+             </div>
+          </div>
+    </main>
+    <!--Main-->
+{% endblock %}
