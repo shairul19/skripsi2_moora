@@ -13,6 +13,11 @@ Nilai Pemain
             <hr>
 
             <div class="row">
+                {% if 'user_id' in session and session['role'] == 'admin' %}
+                <div class="col-sm-2">
+                    <a class="btn btn-success" href="/penilaian_pemain" role="button"><i class="fa-solid fa-square-plus"> </i> Tambah</a>
+                </div><br><br>
+                {% endif %}
                 <form method="post">
                     <label for="posisi_pemain">Pilih Posisi Pemain:</label>
                     <select id="posisi_pemain" name="posisi_pemain">

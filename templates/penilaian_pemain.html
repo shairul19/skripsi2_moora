@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-    Penilaianilai Pemain
+    Penilaian Pemain
 {% endblock %}
 
 {% block content %}
@@ -25,27 +25,34 @@
                 </form>
             
                 {% if data_pemain %}
-                <table>
-                    <thead>
+                <table class="table table-sm table-striped table-hover">
+                    <thead class="table-dark">
                         <tr>
+                            <th>No</th>
                             <th>NISN</th>
                             <th>Nama Pemain</th>
                             <th>Posisi</th>
-                            <th>Nilai</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for pemain in data_pemain %}
-                        <tr>
-                            <td>{{ pemain[0] }}</td>
-                            <td>{{ pemain[1] }}</td>
-                            <td>{{ pemain[2] }}</td>
-                            <td>
-                                <!-- Tombol "Nilai" yang mengarahkan ke halaman input_nilai_pemain.html -->
-                                <a href="/input_nilai_pemain/{{ pemain[0] }}">Nilai</a>
-                            </td>
-                        </tr>
-                        {% endfor %}
+<tr>
+    <td>{{ loop.index }}</td>
+    <td>{{ pemain[0] }}</td>
+    <td>{{ pemain[1] }}</td>
+    <td>{{ pemain[2] }}</td>
+    <td>
+        {% if pemain[0] in data_nilai_pemain %}
+        Sudah Dinilai
+    {% else %}
+        <!-- Tombol "Nilai" yang mengarahkan ke halaman input_nilai_pemain.html -->
+        <a class="btn btn-sm btn-primary" href="/input_nilai_pemain/{{ pemain[0] }}" role="button">Nilai</a>
+    {% endif %}
+       
+    </td>
+</tr>
+{% endfor %}
                     </tbody>
                 </table>
                 <br>

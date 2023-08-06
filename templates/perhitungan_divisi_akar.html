@@ -15,7 +15,9 @@
                 <form method="POST">
                     <label for="posisi_pemain">Pilih Posisi Pemain:</label>
                     <select name="posisi_pemain" id="posisi_pemain">
+                        <option value="" disabled selected>--Pilih Posisi--</option>
                         {% for posisi in positions %}
+                            
                             <option value="{{ posisi }}">{{ posisi }}</option>
                         {% endfor %}
                     </select>

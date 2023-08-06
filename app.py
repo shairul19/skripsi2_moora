@@ -56,6 +56,7 @@ def lengkapi_data_admin(user_id, nama_admin, tgl_lahir_admin, jabatan):
     conn.commit()
 
 
+
 # Baris Function (END) ===============================
 
 
@@ -307,6 +308,10 @@ def penilaian_pemain():
         cur.execute("SELECT DISTINCT posisi FROM tbl_pemain")
         data_posisi = cur.fetchall()
 
+        # Mengambil NISN pemain yang sudah memiliki nilai dalam tbl_nilai_kriteria
+        cur.execute("SELECT DISTINCT nisn FROM tbl_nilai_kriteria")
+        data_nilai_pemain = [row[0] for row in cur.fetchall()]
+
         if request.method == 'POST' and 'pilih_posisi' in request.form:
             posisi_pemain = request.form['posisi_pemain']
 
@@ -314,7 +319,7 @@ def penilaian_pemain():
             cur.execute("SELECT nisn, nama_pemain, posisi FROM tbl_pemain WHERE posisi = %s", (posisi_pemain,))
             data_pemain = cur.fetchall()
 
-            return render_template('penilaian_pemain.html', data_posisi=data_posisi, data_pemain=data_pemain)
+            return render_template('penilaian_pemain.html', data_posisi=data_posisi, data_pemain=data_pemain, data_nilai_pemain=data_nilai_pemain)
         
         return render_template('penilaian_pemain.html', data_posisi=data_posisi)
     else:
