@@ -1,39 +1,72 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <form method="POST" action="">
-        <h2>Input Nilai</h2>
-        <p>NISN: {{ data_pemain[0] }}</p>
-        <p>Nama Pemain: {{ data_pemain[1] }}</p>
-        <p>Posisi: {{ data_pemain[2] }}</p>
-        
-        <table>
-          <thead>
-            <tr>
-              <th>Nama Kriteria</th>
-              <th>Nilai</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for kriteria in data_kriteria %}
-              <tr>
-                <td>{{ kriteria[1] }}</td>
-                <td>
-                  <input type="number" name="nilai_{{ kriteria[0] }}_{{ data_pemain[0] }}" min="0" max="200" required>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-        <br>
-        <input type="submit" value="Submit">
-      </form>
-      
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}
+    Input Nilai
+{% endblock %}
+
+{% block content %}
+    <!--Main-->  
+    <main class="mt-5 pt-3">
+          <div class="col-md-12 p-4 pt-2">
+            
+          <h3>Input Nilai Pemain</h3><hr>
+                        
+              <div class="row">
+                <div class="card" style="width: 30rem;">
+                  <div class="card-header">
+                    <form method="POST" action="" id="inputNilaiForm">
+                      <h5>Data Pemain</h5>
+                      <table class="table table-sm table-borderless">
+                        <tr>
+                          <td>NISN</td>
+                          <td>:</td>
+                          <td>{{ data_pemain[0] }}</td>
+                        </tr>
+                        <tr>
+                          <td>Nama Pemain</td>
+                          <td>:</td>
+                          <td>{{ data_pemain[1] }}</td>
+                        </tr>
+                        <tr>
+                          <td>Posisi</td>
+                          <td>:</td>
+                          <td>{{ data_pemain[2] }}</td>
+                        </tr>
+                      </table>
+                  </div>
+                  <div class="card-body">
+                    <table class="table table-sm table-borderless">
+                      <thead>
+                        <tr>
+                          <th>Nama Kriteria</th>
+                          <th>Nilai</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for kriteria in data_kriteria %}
+                          <tr>
+                            <td><label for="exampleFormControlInput1" class="form-label">{{ kriteria[1] }}</label></td>
+                            <td>
+                               <input type="number" class="form-control" name="nilai_{{ kriteria[0] }}_{{ data_pemain[0] }}" min="0" max="200" required>
+                            </td>
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                    <br>
+                    <button type="submit" class="btn btn-success" value="Submit">Simpan</button>
+                    <a class="btn btn-danger" href="/penilaian_pemain" role="button">Batal</a>
+                  </form> 
+                  </div>
+                </div>
+
+
+               
+                  
+                  
+              </div>
+          </div>
+    </main>
+    <!--Main-->
+{% endblock %}
 

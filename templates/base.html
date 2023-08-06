@@ -175,7 +175,11 @@
 
     <!-- js -->
     <script src="{{ url_for('static', filename='bootstrap-dashboard/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <!-- SweetAlert 2 JS -->
+  <script src="{{ url_for('static', filename='sweetalert/sweetalert2.min.js') }}"></script>
     <!-- js -->
+
+    {% block js %} {% endblock %}
     
   </body>
 </html>

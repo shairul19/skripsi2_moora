@@ -1,3 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Tambah Kriteria
+{% endblock %}
+
+{% block content %}
+    <!--Main-->  
+    <main class="mt-5 pt-3">
+          <div class="col-md-12 p-4 pt-2">
+            
+          <h3>Tambah Kriteria</h3><hr>
+                        
+              <div class="row">
+                <form method="POST">
+                    <table>
+                    <tr>
+                    <td><label for="kode_kriteria">Kode Kriteria</label></td>
+                    <td><input type="text" id="kode_kriteria" class="form-control" name="kode_kriteria" placeholder="Masukan Kode Kriteria" required></td>
+                    </tr>
+                    <tr>     
+                    <td><label for="nama_kriteria">Nama Kriteria:</label></td>
+                    <td><input type="text" id="nama_kriteria" placeholder="Masukan Nama Kriteria" class="form-control" name="nama_kriteria" required></td>
+                    </tr>  
+                    <tr>       
+                    <td><label for="posisi">Posisi:</label></td>
+                    <td><select id="posisi" class="form-select" name="posisi">
+                        <option value="" disabled selected>--Pilih Posisi--</option>
+                        <option value="GK">GK</option>
+                        <option value="DF">DF</option>
+                        <option value="MF">MF</option>
+                        <option value="FW">FW</option>
+                    </select></td>
+                    </tr>  
+                    <tr>
+                    <td><label for="bobot">Bobot:</label></td>
+                    <td><input type="number" class="form-control" placeholder="Masukan Bobot" step="0.01" id="bobot" name="bobot" required></td>
+                    </tr>
+                    <tr>
+                    <td><label for="tipe">Tipe:</label></td>
+                    <td><select id="tipe" class="form-select" name="tipe">
+                        <option value="" selected disabled>--Pilih Tipe Kriteria--</option>
+                        <option value="cost">Cost</option>
+                        <option value="benefit">Benefit</option>
+                    </select></td>
+                    </tr>
+                </table>
+                <br>
+                <button type="submit" class="btn btn-success" value="Submit">Simpan</button>
+                    <a class="btn btn-danger" href="/lihat_data_kriteria" role="button">Batal</a>
+                </form>
+             </div>
+          </div>
+    </main>
+    <!--Main-->
+{% endblock %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,31 +65,6 @@
 <body>
     <h1>Tambah Kriteria</h1>
 
-    <form method="POST">
-        <label for="kode_kriteria">Kode Kriteria:</label>
-        <input type="text" id="kode_kriteria" name="kode_kriteria" required><br><br>
-
-        <label for="nama_kriteria">Nama Kriteria:</label>
-        <input type="text" id="nama_kriteria" name="nama_kriteria" required><br><br>
-
-        <label for="posisi">Posisi:</label>
-        <select id="posisi" name="posisi">
-            <option value="GK">GK</option>
-            <option value="DF">DF</option>
-            <option value="MF">MF</option>
-            <option value="FW">FW</option>
-        </select><br><br>
-
-        <label for="bobot">Bobot:</label>
-        <input type="number" step="0.01" id="bobot" name="bobot" required><br><br>
-
-        <label for="tipe">Tipe:</label>
-        <select id="tipe" name="tipe">
-            <option value="cost">Cost</option>
-            <option value="benefit">Benefit</option>
-        </select><br><br>
-
-        <button type="submit">Tambah</button>
-    </form>
+   
 </body>
 </html>
