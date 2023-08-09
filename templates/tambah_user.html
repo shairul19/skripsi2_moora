@@ -17,19 +17,19 @@
                       <form method="POST" action="/tambah_user" id="registerForm"> <!-- Add id="registerForm" to the form -->
                         
                         {% if error_message %}
-                        <div class="notification-red">
+                        <div class="alert alert-danger" role="alert">
                           {{error_message}}
                         </div>
                         {% endif %}
                 
                         {% if error_message_db %}
-                        <div class="notification-red">
+                        <div class="alert alert-danger" role="alert">
                           {{error_message_db}}
                         </div>
                         {% endif %}
                 
                         {% if success %}
-                        <div class="notification-green">
+                        <div class="alert alert-primary" role="alert">
                           {{success}}
                         </div>
                         {% endif %}
