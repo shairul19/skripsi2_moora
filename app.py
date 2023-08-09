@@ -90,7 +90,9 @@ def register():
         cur.execute("INSERT INTO tbl_users (username, password, role) VALUES (%s, %s, %s)", (username, hashed_password, role))
         conn.commit()
 
-        
+        #Daftar Berhasil
+        success = "Usser berhasil didaftarkan"
+        return render_template('register.html', success=success)
 
     return render_template('register.html')
 

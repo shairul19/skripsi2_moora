@@ -149,6 +149,17 @@ button:hover {
     margin-top: 5px;
 }
 
+.notification-green{
+    position: relative;
+    padding: 15px;
+    background-color: rgba(56, 227, 113, 0.8);
+    
+    color: white;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
 /* Media Queries for Responsive Layout */
 @media screen and (max-width: 768px) {
     .container {

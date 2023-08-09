@@ -20,6 +20,12 @@
           {{error_message}}
         </div>
         {% endif %}
+
+        {% if success %}
+        <div class="notification-green">
+          {{success}}
+        </div>
+        {% endif %}
   
         <label for="">Username</label>
         <input type="text" id="username" name="username" placeholder="Username" required>
