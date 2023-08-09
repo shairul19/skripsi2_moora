@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Tambah User
+{% endblock %}
+
+{% block content %}
+    <!--Main-->  
+    <main class="mt-5 pt-3">
+          <div class="col-md-12 p-4 pt-2">
+            
+          <h3><i class="fa-solid fa-user-plus icon"></i> Tambah User</h3><hr>
+                        
+              <div class="row">
+                <div class="container">
+                    <div class="card-body">
+                      <form method="POST" action="/tambah_user" id="registerForm"> <!-- Add id="registerForm" to the form -->
+                        
+                        {% if error_message %}
+                        <div class="notification-red">
+                          {{error_message}}
+                        </div>
+                        {% endif %}
+                
+                        {% if error_message_db %}
+                        <div class="notification-red">
+                          {{error_message_db}}
+                        </div>
+                        {% endif %}
+                
+                        {% if success %}
+                        <div class="notification-green">
+                          {{success}}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label for="" class="form-label">Username</label>
+                            <input type="text" id="username" class="form-control" name="username" placeholder="Username" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Password" required> <!-- Use lowercase "password" for the input type -->
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="" class="form-label">Role</label>
+                            <select name="role" class="form-select" id="role" required>
+                                <option value="admin" selected>Admin</option>
+                                <option value="user">User</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" value="Register" class="btn btn-primary">Daftar</button>
+                        
+                      </form>
+                    </div>
+             </div>
+          </div>
+    </main>
+    <!--Main-->
+{% endblock %}

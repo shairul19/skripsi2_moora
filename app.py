@@ -74,7 +74,7 @@ def lengkapi_data_admin(user_id, nama_admin, tgl_lahir_admin, jabatan):
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
+        username = request.form['username'].lower()
         password = request.form['password']
         role = request.form['role']
 
@@ -105,7 +105,7 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
+        username = request.form['username'].lower()
         password = request.form['password']
 
         # Enkripsi password
@@ -159,16 +159,45 @@ def logout():
     return response
 
 
+# Halaman tambah user oleh admin
+@app.route('/tambah_user', methods=['GET', 'POST'])
+def add_user():
+    if request.method == 'POST':
+        username = request.form['username'].lower()
+        password = request.form['password']
+        role = request.form['role']
+
+        if cek_username(username):
+            # Username sudah ada, tampilkan pesan error
+            error_message = "Username sudah terdaftar. Silakan pilih username lain."
+            return render_template('tambah_user.html', error_message=error_message)
+
+        # Enkripsi password
+        hashed_password = hash_password(password)
+
+        try:
+            cur.execute("INSERT INTO tbl_users (username, password, role) VALUES (%s, %s, %s)", (username, hashed_password, role))
+            conn.commit()
+            # Pendaftaran berhasil
+            success = "User berhasil didaftarkan"
+            return render_template('tambah_user.html', success=success)
+        except Exception as e:
+            # Gagal memasukkan data, tampilkan pesan error
+            error_message_db = "Gagal mendaftarkan user. Silakan coba lagi."
+            return render_template('tambah_user.html', error_message_db=error_message_db)
+
+    return render_template('tambah_user.html')
+
 # Halaman lengkapi data user
 @app.route('/lengkapi_data_user', methods=['GET', 'POST'])
 def lengkapi_data_user_page():
     if 'user_id' in session and session['role'] == 'user':
         if request.method == 'POST':
             nisn = request.form['nisn']
-            nama_pemain = request.form['nama_pemain']
+            nama_pemain = request.form['nama_pemain'].upper()
             tgl_lahir_pemain = request.form['tgl_lahir_pemain']
             posisi = request.form['posisi']
-            asal_sekolah = request.form['asal_sekolah']
+            asal_sekolah = request.form['asal_sekolah'].upper()
 
             user_id = session['user_id']
             lengkapi_data_user(nisn, user_id, nama_pemain, tgl_lahir_pemain, posisi, asal_sekolah)
@@ -185,7 +214,7 @@ def lengkapi_data_user_page():
 def lengkapi_data_admin_page():
     if 'user_id' in session and session['role'] == 'admin':
         if request.method == 'POST':
-            nama_admin = request.form['nama_admin']
+            nama_admin = request.form['nama_admin'].upper()
             tgl_lahir_admin = request.form['tgl_lahir_admin']
             jabatan = request.form['jabatan']
 
@@ -269,9 +298,9 @@ def lihat_data_tim_seleksi():
             jabatan = request.form['jabatan']
 
             if jabatan == 'semua':
-                cur.execute("SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE nama_admin != 'Superadmin'")
+                cur.execute("SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE nama_admin != 'SUPERADMIN'")
             else:
-                cur.execute("SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE jabatan = %s AND nama_admin != 'Superadmin'", (jabatan,))
+                cur.execute("SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE jabatan = %s AND nama_admin != 'SUPERADMIN'", (jabatan,))
 
             data_tim_seleksi = cur.fetchall()
 
