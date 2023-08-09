@@ -135,7 +135,18 @@ button {
 }
 
 button:hover {
-    background: rgb(168, 206, 34);
+    background: rgb(206, 236, 98);
+}
+
+.notification-red{
+    position: relative;
+    padding: 15px;
+    background-color: rgba(227, 56, 56, 0.8);
+    
+    color: white;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    margin-top: 5px;
 }
 
 /* Media Queries for Responsive Layout */

@@ -28,6 +28,12 @@ cur = conn.cursor()
 
 # Baris Function (start) ==============================
 
+# Function cek username
+def cek_username(username):
+    cur.execute("SELECT COUNT(*) FROM tbl_users WHERE username = %s", (username,))
+    count = cur.fetchone()[0]
+    return count > 0
+
 # Function untuk mengenkripsi password menggunakan SHA256
 def hash_password(password):
     sha256_hash = hashlib.sha256()
@@ -71,6 +77,11 @@ def register():
         username = request.form['username']
         password = request.form['password']
         role = request.form['role']
+
+        if cek_username(username):
+            # Username sudah ada, tampilkan pesan error
+            error_message = "Username sudah terdaftar. Silakan pilih username lain."
+            return render_template('register.html', error_message=error_message)
 
         # Enkripsi password
         hashed_password = hash_password(password)
