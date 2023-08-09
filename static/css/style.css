@@ -152,14 +152,22 @@ button:hover {
 /* Media Queries for Responsive Layout */
 @media screen and (max-width: 768px) {
     .container {
+        justify-content: center;
+        max-width: 100%;
         flex-direction: column;
     }
 
     .right img {
-        border-radius: 15px;
+        display: none;
     }
 
     form {
-        width: 100%;
+        justify-content: center;
+        padding: 5px;
+    }
+
+    button{
+        justify-content: center;
+        padding:10px;
     }
 }
