@@ -86,13 +86,16 @@ def register():
         # Enkripsi password
         hashed_password = hash_password(password)
 
-        # Masukkan data pengguna ke tabel tbl_users
-        cur.execute("INSERT INTO tbl_users (username, password, role) VALUES (%s, %s, %s)", (username, hashed_password, role))
-        conn.commit()
-
-        #Daftar Berhasil
-        success = "Usser berhasil didaftarkan"
-        return render_template('register.html', success=success)
+        try:
+            cur.execute("INSERT INTO tbl_users (username, password, role) VALUES (%s, %s, %s)", (username, hashed_password, role))
+            conn.commit()
+            # Pendaftaran berhasil
+            success = "User berhasil didaftarkan"
+            return render_template('register.html', success=success)
+        except Exception as e:
+            # Gagal memasukkan data, tampilkan pesan error
+            error_message_db = "Gagal mendaftarkan user. Silakan coba lagi."
+            return render_template('register.html', error_message_db=error_message_db)
 
     return render_template('register.html')
 

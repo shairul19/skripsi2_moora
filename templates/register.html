@@ -21,6 +21,12 @@
         </div>
         {% endif %}
 
+        {% if error_message_db %}
+        <div class="notification-red">
+          {{error_message_db}}
+        </div>
+        {% endif %}
+
         {% if success %}
         <div class="notification-green">
           {{success}}
