@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Update Profile
+{% endblock %}
+
+{% block content %}
+    <!--Main-->  
+    <main class="mt-5 pt-3">
+          <div class="col-md-12 p-4 pt-2">
+            
+         
+              <div class="row">
+                <!-- .container start -->
+                <div class="container py-2">
+                    <!-- .row start -->
+                    <div class="row">
+                        <!-- .col start -->
+                        <div class="col-lg-6">
+                            <div class="shadow border rounded p-5 mb-5">
+                                <h2>Update Profile</h2>
+                                <hr>
+                                <!-- .row start -->
+                                <div class="row">
+                                    <!-- .col start -->
+                                    <div class="col-lg-12">
+                                        <form action="" method="POST">
+                                        {% if user_profile %}
+                                        <p class="card-text">
+                                            <span class="text-muted mb-1 d-block">NISN</span>
+                                            <input type="text" name="nisn" class="form-control" id="nisn" value="{{ user_profile[2]}}" disabled>
+                                        </p>
+
+                                        <p class="card-text">
+                                            <span class="text-muted mb-1 d-block">Username</span>
+                                            <input type="text" class="form-control" name="username" id="username" value="{{ user_profile[1]}}" disabled>
+                                        </p>
+
+                                        <p class="card-text">
+                                            <span class="text-muted mb-1 d-block">Nama Pemain</span>
+                                            <input type="text" class="form-control" name="nama_pemain" id="nama_pemain" value="{{ user_profile[3]}}" >
+                                        </p>
+
+                                        <p class="card-text">
+                                            <span class="text-muted mb-1 d-block">Tanggal Lahir</span>
+                                            <input type="date" class="form-control" name="tgl_lahir_pemain" id="nama_pemain" value="{{ user_profile[4]}}" >
+                                        </p>
+
+                                        <p class="card-text">
+                                        <span class="text-muted mb-1 d-block">Posisi Pemain</span>
+                                        <select class="form-select" name="posisi" id="posisi" disabled>
+                                            <option value="GK" {% if user_profile[5] == 'GK' %}selected{% endif %}>GK</option>
+                                            <option value="DF" {% if user_profile[5] == 'DF' %}selected{% endif %}>DF</option>
+                                            <option value="MF" {% if user_profile[5] == 'MF' %}selected{% endif %}>MF</option>
+                                            <option value="FW" {% if user_profile[5] == 'FW' %}selected{% endif %}>FW</option>
+                                        </select>
+                                        </p>
+
+                                        <p class="card-text">
+                                            <span class="text-muted mb-1 d-block">Asal Sekolah</span>
+                                            <input type="text" class="form-control" name="asal_sekolah" id="nama_pemain" value="{{ user_profile[6]}}" >
+                                        </p>
+
+                                        {% elif admin_profile %}
+
+                                        <!-- Form untuk admin -->
+                                        <p class="card-text">
+                                        <label for="nama_admin">Username</label>
+                                        <input type="text" class="form-control" id="nama_admin" name="username" value="{{ admin_profile[5] }}" required disabled><br>
+                                        </p>
+
+                                        <p class="card-text">
+                                        <label for="nama_admin">Nama Admin:</label>
+                                        <input type="text" class="form-control" id="nama_admin" name="nama_admin" value="{{ admin_profile[2] }}" required><br>
+                                        </p>    
+
+                                        <p class="card-text">
+                                        <label for="tgl_lahir_admin">Tanggal Lahir Admin:</label>
+                                        <input type="date" class="form-control" id="tgl_lahir_admin" name="tgl_lahir_admin" value="{{ admin_profile[3] }}" required><br>
+                                        </p>    
+
+                                        <p class="card-text">
+                                        <label for="jabatan">Jabatan:</label>
+                                        <select class="form-select" id="jabatan" name="jabatan" required>
+                                            <option value="Head Coach" {% if admin_profile[4] == 'Head Coach' %}selected{% endif %}>Head Coach</option>
+                                            <option value="Asst. Coach" {% if admin_profile[4] == 'Asst. Coach' %}selected{% endif %}>Asst. Coach</option>
+                                            <option value="Scout Staff" {% if admin_profile[4] == 'Scout Staff' %}selected{% endif %}>Scout Staff</option>
+                                        </select><br>
+                                        </p>
+
+                                        {% endif %}
+                                        <button class="btn btn-primary" type="submit">Simpan Perubahan</button>
+                                    </form>
+                                    </div>
+                                    <!-- .col end -->
+
+
+                                </div>
+                                <!-- .row end -->
+
+                            </div>
+
+                        </div>
+                        <!-- .col end -->
+
+                    </div>
+                    <!-- .row end -->
+
+                </div>
+                <!-- container end -->
+             </div>
+          </div>
+    </main>
+    <!--Main-->
+{% endblock %}
+
+
+

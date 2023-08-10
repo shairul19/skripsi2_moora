@@ -79,6 +79,8 @@ def get_admin_profile(user_id):
     admin_profile = cur.fetchone()
     return admin_profile
 
+
+
 # Baris Function (END) ===============================
 
 
@@ -237,6 +239,48 @@ def profil():
         return render_template('profil_admin.html', admin_profile=admin_profile)
         
     return redirect('/login')
+
+
+# Halaman update profil
+@app.route('/update_profil', methods=['GET', 'POST'])
+def update_profil():
+    if 'user_id' in session:
+        user_id = session['user_id']
+        role = session['role']
+
+        if role == 'user':
+            user_profile = get_user_profile(user_id)
+
+            if request.method == 'POST':
+                nama_pemain = request.form['nama_pemain'].upper()
+                tgl_lahir_pemain = request.form['tgl_lahir_pemain']
+                asal_sekolah = request.form['asal_sekolah'].upper()
+
+                # Update data profil pemain
+                cur.execute("UPDATE tbl_pemain SET nama_pemain = %s, tgl_lahir_pemain = %s, asal_sekolah = %s WHERE id_user = %s", (nama_pemain, tgl_lahir_pemain, asal_sekolah, user_id))
+                conn.commit()
+
+                return redirect('/profil')
+
+            return render_template('update_profil.html', user_profile=user_profile)
+        
+        elif role == 'admin':
+            admin_profile = get_admin_profile(user_id)
+
+            if request.method == 'POST':
+                nama_admin = request.form['nama_admin'].upper()
+                tgl_lahir_admin = request.form['tgl_lahir_admin']
+                jabatan = request.form['jabatan']
+
+                # Update data profil admin
+                cur.execute("UPDATE tbl_admin SET nama_admin = %s, tgl_lahir_admin = %s, jabatan = %s WHERE id_user = %s", (nama_admin, tgl_lahir_admin, jabatan, user_id))
+                conn.commit()
+
+                return redirect('/profil')
+
+            return render_template('update_profil.html', admin_profile=admin_profile)
+    else:
+        return redirect('/login')
 
 
 # Halaman lengkapi data admin
