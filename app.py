@@ -61,7 +61,23 @@ def lengkapi_data_admin(user_id, nama_admin, tgl_lahir_admin, jabatan):
     cur.execute("UPDATE tbl_users SET admin_data_completed = TRUE WHERE id_user = %s", (user_id,))
     conn.commit()
 
+# Function mengambil data untuk profil pemain
+def get_user_profile(user_id):
+    cur.execute("SELECT u.id_user, u.username, p.nisn, p.nama_pemain, p.tgl_lahir_pemain, p.posisi, p.asal_sekolah "
+                "FROM tbl_users u "
+                "JOIN tbl_pemain p ON u.id_user = p.id_user "
+                "WHERE u.id_user = %s", (user_id,))
+    user_profile = cur.fetchone()
+    return user_profile
 
+# Function mengambil data untuk profil admin
+def get_admin_profile(user_id):
+    cur.execute("SELECT a.id_user, a.id_admin, a.nama_admin, a.tgl_lahir_admin, a.Jabatan, u.username "
+                "FROM tbl_admin a "
+                "JOIN tbl_users u ON a.id_user = u.id_user "
+                "WHERE a.id_user = %s", (user_id,))
+    admin_profile = cur.fetchone()
+    return admin_profile
 
 # Baris Function (END) ===============================
 
@@ -207,6 +223,20 @@ def lengkapi_data_user_page():
         return render_template('lengkapi_data_user.html')
     else:
         return redirect('/login')
+
+# Halaman Profil Pemain
+@app.route('/profil')
+def profil():
+    if 'user_id' in session and session['role'] == 'user':
+        user_id = session['user_id']
+        user_profile = get_user_profile(user_id)
+        return render_template('profil_pemain.html', user_profile=user_profile)
+    else:
+        user_id = session['user_id']
+        admin_profile = get_admin_profile(user_id)
+        return render_template('profil_admin.html', admin_profile=admin_profile)
+        
+    return redirect('/login')
 
 
 # Halaman lengkapi data admin

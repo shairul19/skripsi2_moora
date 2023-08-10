@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Profile
+{% endblock %}
+
+{% block content %}
+    <!--Main-->  
+    <main class="mt-5 pt-3">
+          <div class="col-md-12 p-4 pt-2">
+            
+          
+                        
+              <div class="row">
+                <div class="container py-2">
+
+                    <!-- .row start -->
+                    <div class="row">
+
+                        <!-- .col start -->
+                        <div class="col-lg-4">
+
+                            <div class="card text-center p-5">
+
+                                <div class="card-body">
+
+                                    <img src="{{url_for('static', filename='img/user_profile.jpg')}}"
+                                        alt="Profil Picture" class="img img-thumbnail rounded-circle w-50">
+
+                                    <h3>{{ user_profile[3]}}</h3>
+
+                                    <button class="btn btn-success btn-sm">
+                                        <i class="fa-solid fa-pencil me-1"></i> Ubah Profil
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+                        <!-- .col end -->
+
+                        <!-- .col start -->
+                        <div class="col-lg-8">
+
+
+
+                            <div class="shadow border rounded p-5 mb-5">
+                                <h2>Informasi Profil</h2><hr>
+
+                                <!-- .row start -->
+                                <div class="row">
+
+                                    <!-- .col start -->
+                                    <div class="col-lg-6">
+
+                                        <p class="card-text">
+                                            <span class="text-muted mb-1 d-block">NISN</span>
+
+                                            <i class="fa-solid fa-id-card-clip text-success"></i>
+
+                                            {{ user_profile[2]}}
+                                        </p> 
+
+                                        <p class="card-text">
+                                            <span class="text-muted mb-1 d-block">Username</span>
+
+                                            <i class="fa-solid fa-user text-success"></i> {{ user_profile[1]}}
+
+                                        </p> 
+
+                                        <p class="card-text">
+                                            <span class="text-muted mb-1 d-block">Tanggal Lahir</span>
+                                            <i class="fa-regular fa-calendar-days text-success"></i>
+                                            {{ user_profile[4]}}
+                                        </p> 
+
+                                        <p class="card-text">
+                                            <span class="text-muted mb-1 d-block">Posisi Pemain</span>
+                                            <i class="fa-solid fa-map-pin text-success"></i> {{ user_profile[5]}}
+                                        </p>
+
+                                        <p class="card-text">
+                                            <span class="text-muted mb-1 d-block">Asal Sekolah</span>
+                                            <i class="fa-solid fa-school-flag text-success"></i> {{ user_profile[6]}}
+                                        </p>
+                                      
+
+                                    </div>
+                                    <!-- .col end -->
+
+
+                                </div>
+                                <!-- .row end -->
+
+                            </div>
+
+                        </div>
+                        <!-- .col end -->
+
+                    </div>
+                    <!-- .row end -->
+
+                </div>
+             </div>
+          </div>
+    </main>
+    <!--Main-->
+{% endblock %}
