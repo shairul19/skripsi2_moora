@@ -10,7 +10,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style-dashboard.css') }}">
     <!-- Boxicons CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/all.min.css') }}">
-
+ <!-- SweetAlert 2 JS -->
+ <script src="{{ url_for('static', filename='sweetalert/sweetalert2.min.js') }}"></script>
     <title>{% block title %}{% endblock %}</title>
   </head>
   <body>
@@ -175,8 +176,7 @@
 
     <!-- js -->
     <script src="{{ url_for('static', filename='bootstrap-dashboard/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <!-- SweetAlert 2 JS -->
-  <script src="{{ url_for('static', filename='sweetalert/sweetalert2.min.js') }}"></script>
+   
     <!-- js -->
 
     {% block js %} {% endblock %}

@@ -12,6 +12,14 @@
           <h3><i class='bx bxs-dashboard icon'></i> Penilaian Pemain</h3><hr>
                         
               <div class="row">
+                 {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ messages[0] }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+            {% endwith %}
                 <form method="POST" action="/penilaian_pemain">
                     <!-- Dropdown untuk memilih posisi pemain -->
                     <label for="posisi_pemain">Posisi Pemain:</label>

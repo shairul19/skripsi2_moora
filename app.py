@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, redirect, make_response
+from flask import Flask, render_template, request, session, redirect, make_response, flash
 import psycopg2
 import hashlib
 import jinja2.ext
@@ -463,6 +463,9 @@ def input_nilai(nisn):
                 cur.execute("INSERT INTO tbl_nilai_kriteria (nisn, id_kriteria, nilai) VALUES (%s, %s, %s)", (nisn, kriteria[0], nilai))
                 conn.commit()
 
+
+            # Flash a success message
+            flash('Penilaian Berhasil!', 'success')
             return redirect('/penilaian_pemain')  # Mengarahkan pengguna kembali ke halaman penilaian pemain
 
         return render_template('input_nilai_pemain.html', data_pemain=data_pemain, data_kriteria=data_kriteria)
@@ -559,12 +562,15 @@ def data_nilai_pemain():
 @app.route('/hapus_nilai/<nisn>', methods=['GET', 'POST'])
 def hapus_nilai(nisn):
     if 'user_id' in session and session['role'] == 'admin':
-        if request.method == 'POST':
-            # Hapus nilai berdasarkan nisn
-            cur.execute("DELETE FROM tbl_nilai_kriteria WHERE nisn = %s", (nisn,))
-            conn.commit()
-            
-        return redirect('/data_tbl_nilai_kriteria')
+        # Perform the deletion operation here, e.g., using a database query
+        cur.execute("DELETE FROM tbl_nilai_kriteria WHERE nisn = %s", (nisn,))
+        conn.commit()  # Commit the transaction
+
+         # Flash a success message
+        flash('Data berhasil dihapus!', 'success')
+
+        # Redirect back to the data_nilai_pemain
+        return redirect('/data_nilai_pemain')
     else:
         return redirect('/login')
 
