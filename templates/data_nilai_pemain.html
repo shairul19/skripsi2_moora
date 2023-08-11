@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}
+Nilai Pemain
+{% endblock %}
+
+{% block content %}
+<!--Main-->
+<main class="mt-5 pt-3">
+    <div class="col-md-12 p-4 pt-2">
+
+        <h3> <i class="fa-solid fa-file-pen icon"></i> Nilai Pemain</h3>
+        <hr>
+
+        <div class="row">
+            {% if 'user_id' in session and session['role'] == 'admin' %}
+            <div class="col-sm-2">
+                <a class="btn btn-success" href="/penilaian_pemain" role="button"><i class="fa-solid fa-square-plus"> </i> Tambah</a>
+            </div><br><br>
+            {% endif %}
+            <form method="post">
+                <label for="posisi_pemain">Pilih Posisi Pemain:</label>
+                <select id="posisi_pemain" name="posisi_pemain">
+                    <option value="">-- Pilih Posisi Pemain --</option>
+                    {% for posisi in positions %}
+                    <option value="{{ posisi }}" {% if posisi==posisi_pemain %}selected{% endif %}>{{ posisi }}</option>
+                    {% endfor %}
+                </select>
+                <input type="submit" value="Tampilkan">
+            </form>
+            <br><br>
+            {% if table_data %}
+            <table class="table table-sm table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>No</th>
+                        <th>Nama Pemain</th>
+                        {% for kriteria_id, kriteria_name in kriteria_list.items() %}
+                        <th>{{ kriteria_name }}</th>
+                        {% endfor %}
+                        {% if 'user_id' in session and session['role'] == 'admin' %}
+                        <th>Aksi</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for nisn, data in table_data.items() %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ data['nama_pemain'] }}</td>
+                        {% for kriteria_id, kriteria_name in kriteria_list.items() %}
+                        <td>{{ data.get(kriteria_id, '') }}</td>
+                        {% endfor %}
+                        {% if 'user_id' in session and session['role'] == 'admin' %}
+                        <td>
+                            <!-- Button trigger modal -->
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#exampleModal">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <!-- Modal -->
+                            <!-- ... (your modal code) ... -->
+                            <!-- Tombol untuk Menghapus Nilai -->
+                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#hapusModal{{ nisn }}">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                            <!-- Modal Konfirmasi Hapus -->
+                            <!-- ... (your modal code) ... -->
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+</main>
+<!--Main-->
+{% endblock %}

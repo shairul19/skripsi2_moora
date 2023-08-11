@@ -478,7 +478,7 @@ def get_player_positions():
     cur.execute("SELECT DISTINCT posisi FROM tbl_pemain")
     positions = cur.fetchall()
     return [posisi[0] for posisi in positions]
-
+"""
 # Halaman data_tbl_nilai_kriteria
 @app.route('/data_tbl_nilai_kriteria', methods=['GET', 'POST'])
 def data_tbl_nilai_kriteria():
@@ -487,7 +487,7 @@ def data_tbl_nilai_kriteria():
             posisi_pemain = request.form['posisi_pemain']
 
             # Query data dari tabel tbl_nilai_kriteria dan gabungkan dengan tbl_pemain dan tbl_kriteria
-            cur.execute("SELECT p.nama_pemain, k.nama_kriteria, nk.nilai, k.id_kriteria "
+            cur.execute("SELECT p.nisn, p.nama_pemain, k.nama_kriteria, nk.nilai, k.id_kriteria "
                         "FROM tbl_nilai_kriteria nk "
                         "JOIN tbl_pemain p ON nk.nisn = p.nisn "
                         "JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria "
@@ -495,7 +495,7 @@ def data_tbl_nilai_kriteria():
             data_nilai_kriteria = cur.fetchall()
 
             # Create a DataFrame
-            df = pd.DataFrame(data_nilai_kriteria, columns=['nama_pemain', 'nama_kriteria', 'nilai', 'id_kriteria'])
+            df = pd.DataFrame(data_nilai_kriteria, columns=['nisn','nama_pemain', 'nama_kriteria', 'nilai', 'id_kriteria'])
 
             # Use pivot to reshape the DataFrame
             pivot_df = df.pivot(index='nama_pemain', columns='id_kriteria', values='nilai')
@@ -511,7 +511,62 @@ def data_tbl_nilai_kriteria():
         return render_template('data_tbl_nilai_kriteria.html', positions=get_player_positions())
     else:
         return redirect('/login')
+"""
 
+@app.route('/data_nilai_pemain', methods=['GET', 'POST'])
+def data_nilai_pemain():
+    if 'user_id' in session:  
+        if request.method == 'POST':
+            posisi_pemain = request.form['posisi_pemain']
+
+            # Query data dari tabel tbl_nilai_kriteria dan gabungkan dengan tbl_pemain dan tbl_kriteria
+            cur.execute("SELECT p.nisn, p.nama_pemain, k.id_kriteria, nk.nilai "
+                        "FROM tbl_nilai_kriteria nk "
+                        "JOIN tbl_pemain p ON nk.nisn = p.nisn "
+                        "JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria "
+                        "WHERE p.posisi = %s", (posisi_pemain,))
+            data_nilai_kriteria = cur.fetchall()
+
+            # Create a dictionary to store data for each player
+            table_data = {}
+
+            for row in data_nilai_kriteria:
+                nisn = row[0]
+                nama_pemain = row[1]
+                id_kriteria = row[2]
+                nilai = row[3]
+
+                if nisn not in table_data:
+                    table_data[nisn] = {'nama_pemain': nama_pemain, 'nisn': nisn}
+                table_data[nisn][id_kriteria] = nilai
+
+            # Get the list of criteria names for the selected position
+            cur.execute("SELECT k.id_kriteria, k.nama_kriteria "
+                        "FROM tbl_kriteria k "
+                        "WHERE k.posisi = %s", (posisi_pemain,))
+            kriteria_list = {row[0]: row[1] for row in cur.fetchall()}
+
+            return render_template('data_nilai_pemain.html', table_data=table_data, kriteria_list=kriteria_list, positions=get_player_positions(), posisi_pemain=posisi_pemain)
+
+        return render_template('data_nilai_pemain.html', positions=get_player_positions())
+    else:
+        return redirect('/login')
+
+
+
+
+# Halaman Delete nilai pemain
+@app.route('/hapus_nilai/<nisn>', methods=['GET', 'POST'])
+def hapus_nilai(nisn):
+    if 'user_id' in session and session['role'] == 'admin':
+        if request.method == 'POST':
+            # Hapus nilai berdasarkan nisn
+            cur.execute("DELETE FROM tbl_nilai_kriteria WHERE nisn = %s", (nisn,))
+            conn.commit()
+            
+        return redirect('/data_tbl_nilai_kriteria')
+    else:
+        return redirect('/login')
 
 # Halaman perhitungan_pemangkatan
 @app.route('/perhitungan_pemangkatan', methods=['GET', 'POST'])
