@@ -79,7 +79,11 @@ def get_admin_profile(user_id):
     admin_profile = cur.fetchone()
     return admin_profile
 
-
+# Fungsi cek id_kriteria pada tbl_nilai_kriteria
+def is_kriteria_used(id_kriteria):
+    cur.execute("SELECT COUNT(*) FROM tbl_nilai_kriteria WHERE id_kriteria = %s", (id_kriteria,))
+    count = cur.fetchone()[0]
+    return count > 0
 
 # Baris Function (END) ===============================
 
@@ -391,11 +395,13 @@ def lihat_data_kriteria():
         posisi = request.form['posisi']
 
         if posisi == 'semua':
-            cur.execute("SELECT kode_kriteria, nama_kriteria, posisi, bobot, tipe FROM tbl_kriteria")
+            cur.execute("SELECT id_kriteria, kode_kriteria, nama_kriteria, posisi, bobot, tipe FROM tbl_kriteria")
         else:
-            cur.execute("SELECT kode_kriteria, nama_kriteria, posisi, bobot, tipe FROM tbl_kriteria WHERE posisi = %s", (posisi,))
-
+            cur.execute("SELECT id_kriteria, kode_kriteria, nama_kriteria, posisi, bobot, tipe FROM tbl_kriteria WHERE posisi = %s", (posisi,))
+       
         data_kriteria = cur.fetchall()
+
+        
         return render_template('lihat_data_kriteria.html', data_kriteria=data_kriteria)
 
     return render_template('lihat_data_kriteria.html')
@@ -418,6 +424,45 @@ def tambah_kriteria():
         return redirect('/lihat_data_kriteria')
 
     return render_template('tambah_kriteria.html')
+
+# Fungsi Hapus Kriteria
+@app.route('/hapus_data_kriteria/<int:id_kriteria>', methods=['POST'])
+def hapus_data_kriteria(id_kriteria):
+    if 'user_id' in session and session['role'] == 'admin':
+        # Lakukan operasi delete di sini, misalnya dengan menggunakan query SQL
+        cur.execute("DELETE FROM tbl_kriteria WHERE id_kriteria = %s", (id_kriteria,))
+        conn.commit()  # Jangan lupa untuk commit perubahan
+        flash('Data kriteria berhasil dihapus', 'success')  # Tampilkan pesan sukses
+        return redirect('/lihat_data_kriteria')
+    else:
+        flash('Anda tidak memiliki izin untuk menghapus data kriteria', 'danger')  # Tampilkan pesan error
+        return redirect('/lihat_data_kriteria')
+
+# Fungsi untuk mengedit kriteria
+@app.route('/edit_kriteria/<int:id_kriteria>', methods=['GET', 'POST'])
+def edit_kriteria(id_kriteria):
+    if 'user_id' in session and session['role'] == 'admin':
+        cur.execute("SELECT id_kriteria, kode_kriteria, nama_kriteria, posisi, tipe, bobot "
+                    "FROM tbl_kriteria WHERE id_kriteria = %s", (id_kriteria,))
+        kriteria = cur.fetchone()
+
+        if request.method == 'POST':
+            kode_kriteria = request.form['kode_kriteria']
+            nama_kriteria = request.form['nama_kriteria']
+            posisi = request.form['posisi']
+            tipe = request.form['tipe']
+            bobot = float(request.form['bobot'])  # Pastikan bobot diubah menjadi float
+
+            cur.execute("UPDATE tbl_kriteria "
+                        "SET kode_kriteria = %s, nama_kriteria = %s, posisi = %s, tipe = %s, bobot = %s "
+                        "WHERE id_kriteria = %s",
+                        (kode_kriteria, nama_kriteria, posisi, tipe, bobot, id_kriteria))
+            conn.commit()
+            return redirect('/lihat_data_kriteria')
+
+        return render_template('edit_kriteria.html', kriteria=kriteria)
+    else:
+        return redirect('/login')
 
 #Halaman penilaian pemain
 @app.route('/penilaian_pemain', methods=['GET', 'POST'])

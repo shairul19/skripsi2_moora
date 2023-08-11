@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Edit Kriteria
+{% endblock %}
+
+{% block content %}
+    <!--Main-->  
+    <main class="mt-5 pt-3">
+        <div class="col-md-12 p-4 pt-2">
+            <h3>Edit Kriteria</h3>
+            <hr>
+            <div class="row">
+                <form method="POST">
+                    <label for="kode_kriteria">Kode Kriteria</label>
+                    <input type="text" id="kode_kriteria" class="form-control" name="kode_kriteria" value="{{ kriteria[1] }}" required disabled>
+                    
+                    <label for="nama_kriteria">Nama Kriteria:</label>
+                    <input type="text" id="nama_kriteria" class="form-control" name="nama_kriteria" value="{{ kriteria[2] }}" required>
+                    
+                    <label for="posisi">Posisi:</label>
+                    <select id="posisi" class="form-select" name="posisi" disabled>
+                        <option value="GK" {% if kriteria[3] == "GK" %} selected {% endif %}>GK</option>
+                        <option value="DF" {% if kriteria[3] == "DF" %} selected {% endif %}>DF</option>
+                        <option value="MF" {% if kriteria[3] == "MF" %} selected {% endif %}>MF</option>
+                        <option value="FW" {% if kriteria[3] == "FW" %} selected {% endif %}>FW</option>
+                    </select>
+                    
+                    <label for="bobot">Bobot:</label>
+                    <input type="number" class="form-control" step="0.01" id="bobot" name="bobot" value="{{ kriteria[5] }}" required>
+                    
+                    <label for="tipe">Tipe:</label>
+                    <select id="tipe" class="form-select" name="tipe">
+                        <option value="cost" {% if kriteria[4] == "cost" %} selected {% endif %}>Cost</option>
+                        <option value="benefit" {% if kriteria[4] == "benefit" %} selected {% endif %}>Benefit</option>
+                    </select>
+                    
+                    <br>
+                    <button type="submit" class="btn btn-success">Simpan</button>
+                    <a class="btn btn-danger" href="/lihat_data_kriteria" role="button">Batal</a>
+                </form>
+            </div>
+        </div>
+    </main>
+    <!--Main-->
+{% endblock %}

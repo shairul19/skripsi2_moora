@@ -12,6 +12,14 @@
           <h3> <i class="fa-solid fa-clipboard-list icon"></i>Data Kriteria</h3><hr>
                         
               <div class="row">
+                 {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ messages[0] }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+            {% endwith %}
                 {% if 'user_id' in session and session['role'] == 'admin' %}
                 <div class="col-sm-2">
                     <a class="btn btn-success" href="/tambah_kriteria" role="button"><i class="fa-solid fa-square-plus"> </i> Tambah</a>
@@ -49,69 +57,43 @@
                         {% for kriteria in data_kriteria %}
                         <tr>
                             <td>{{ loop.index }}</td>
-                            <td>{{ kriteria[0] }}</td>
                             <td>{{ kriteria[1] }}</td>
                             <td>{{ kriteria[2] }}</td>
                             <td>{{ kriteria[3] }}</td>
                             <td>{{ kriteria[4] }}</td>
+                            <td>{{ kriteria[5] }}</td>
                             {% if 'user_id' in session and session['role'] == 'admin' %}
-                    <td><!-- Button trigger modal -->
+                    <td>
+                        <a href="/edit_kriteria/{{ kriteria[0] }}" class="btn btn-primary btn-sm">
+                            <i class="fa-solid fa-pen-to-square"></i> Edit
+                        </a>
                         
-                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                data-bs-target="#exampleModal">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
                         
-                        <!-- Modal -->
-                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
-                            aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        ...
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                            data-bs-dismiss="modal">Close</button>
-                                        <button type="button" class="btn btn-primary">Save changes</button>
-                                    </div>
+                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#hapusModal{{ kriteria[0] }}">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                    
+                    <!-- Modal Hapus -->
+                    <div class="modal fade" id="hapusModal{{ kriteria[0] }}" tabindex="-1" aria-labelledby="hapusModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="hapusModalLabel">Konfirmasi Hapus</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Yakin ingin menghapus data kriteria: {{ kriteria[2] }}?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                    <form action="/hapus_data_kriteria/{{ kriteria[0] }}" method="post">
+                                        <input type="hidden" name="_method" value="DELETE">  <!-- Optional: You can use a hidden input to mimic the DELETE method -->
+                                        <button type="submit" class="btn btn-danger">Hapus</button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- Button trigger modal -->
-                        
-                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                data-bs-target="#exampleModal">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        
-                        <!-- Modal -->
-                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
-                            aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        ...
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                            data-bs-dismiss="modal">Close</button>
-                                        <button type="button" class="btn btn-primary">Save changes</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    </div>
 
                     </td>
                     {% endif %}
