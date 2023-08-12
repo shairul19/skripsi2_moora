@@ -61,6 +61,10 @@ Nilai Pemain
                         {% endfor %}
                         {% if 'user_id' in session and session['role'] == 'admin' %}
                         <td>
+                        <!-- Button for editing -->
+                        <a class="btn btn-primary btn-sm" href="/edit_nilai_pemain/{{ nisn }}">
+                            <i class="fa-solid fa-edit"></i>
+                        </a>
                         <!-- Button for deleting -->
                         <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
                         data-bs-target="#hapusModal{{ nisn }}">

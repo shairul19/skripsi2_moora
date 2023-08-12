@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}
+Edit Nilai Pemain
+{% endblock %}
+
+{% block content %}
+<!--Main-->
+<main class="mt-5 pt-3">
+    <div class="col-md-12 p-4 pt-2">
+
+        <h3> <i class="fa-solid fa-edit icon"></i> Edit Nilai Pemain</h3>
+        <hr>
+
+        <div class="row">
+            <div class="col-md-12">
+                <h4>Nilai Pemain (NISN: {{ nisn }})</h4>
+                <form method="post">
+                    <table class="table table-sm table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>No</th>
+                                <th>Nama Kriteria</th>
+                                <th>Nilai</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in data_nilai_kriteria %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ row[2] }}</td>
+                                <td>
+                                    <input type="number" name="edited_nilai_{{ row[0] }}" value="{{ row[1] }}" required>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+<!--Main-->
+{% endblock %}

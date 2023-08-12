@@ -560,7 +560,7 @@ def data_tbl_nilai_kriteria():
     else:
         return redirect('/login')
 """
-
+# Halaman Data Nilai Pemain
 @app.route('/data_nilai_pemain', methods=['GET', 'POST'])
 def data_nilai_pemain():
     if 'user_id' in session:  
@@ -600,7 +600,32 @@ def data_nilai_pemain():
     else:
         return redirect('/login')
 
+@app.route('/edit_nilai_pemain/<nisn>', methods=['GET', 'POST'])
+def edit_nilai_pemain(nisn):
+    if 'user_id' in session and session['role'] == 'admin':
+        # Query data dari tabel tbl_nilai_kriteria untuk nisn tertentu
+        cur.execute("SELECT nk.id_kriteria, nk.nilai, k.nama_kriteria "
+                    "FROM tbl_nilai_kriteria nk "
+                    "JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria "
+                    "WHERE nk.nisn = %s", (nisn,))
+        data_nilai_kriteria = cur.fetchall()
 
+        if request.method == 'POST':
+            for row in data_nilai_kriteria:
+                kriteria_id = row[0]
+                edited_nilai = float(request.form.get(f'edited_nilai_{kriteria_id}', row[1]))
+                
+                # Update nilai dalam tabel tbl_nilai_kriteria
+                cur.execute("UPDATE tbl_nilai_kriteria SET nilai = %s WHERE nisn = %s AND id_kriteria = %s",
+                            (edited_nilai, nisn, kriteria_id))
+                conn.commit()
+
+            flash("Nilai berhasil diubah.", "success")
+            return redirect('/data_nilai_pemain')
+
+        return render_template('edit_nilai_pemain.html', nisn=nisn, data_nilai_kriteria=data_nilai_kriteria)
+
+    return redirect('/data_nilai_pemain')
 
 
 # Halaman Delete nilai pemain
