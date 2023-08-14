@@ -610,6 +610,10 @@ def edit_nilai_pemain(nisn):
                     "WHERE nk.nisn = %s", (nisn,))
         data_nilai_kriteria = cur.fetchall()
 
+        # Query untuk mendapatkan informasi nama pemain
+        cur.execute("SELECT nama_pemain FROM tbl_pemain WHERE nisn = %s", (nisn,))
+        nama_pemain = cur.fetchone()[0]
+
         if request.method == 'POST':
             for row in data_nilai_kriteria:
                 kriteria_id = row[0]
@@ -623,7 +627,7 @@ def edit_nilai_pemain(nisn):
             flash("Nilai berhasil diubah.", "success")
             return redirect('/data_nilai_pemain')
 
-        return render_template('edit_nilai_pemain.html', nisn=nisn, data_nilai_kriteria=data_nilai_kriteria)
+        return render_template('edit_nilai_pemain.html', nisn=nisn, nama_pemain=nama_pemain, data_nilai_kriteria=data_nilai_kriteria)
 
     return redirect('/data_nilai_pemain')
 
