@@ -53,7 +53,7 @@ Data Pemain
                         
                             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
                                 data-bs-target="#exampleModal">
-                                <i class="fa-solid fa-pen-to-square"></i>
+                                <i class="fa-solid fa-pen-to-square"></i>Edit
                             </button>
                         
                         <!-- Modal -->
@@ -80,33 +80,30 @@ Data Pemain
                         
                         <!-- Button trigger modal -->
                         
-                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                                data-bs-target="#exampleModal">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
+                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#hapusModal{{ pemain[0] }}">
+                            <i class="fa-solid fa-trash-can"></i>Hapus
+                        </button>
                         
-                        <!-- Modal -->
-                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
-                            aria-hidden="true">
+                        <!-- Modal Konfirmasi Hapus -->
+                        <div class="modal fade" id="hapusModal{{ pemain[0] }}" tabindex="-1" aria-labelledby="hapusModalLabel" aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Close"></button>
+                                        <h5 class="modal-title" id="hapusModalLabel">Konfirmasi Hapus</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
-                                        ...
+                                        Apakah Anda yakin ingin menghapus data pemain ini?
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                            data-bs-dismiss="modal">Close</button>
-                                        <button type="button" class="btn btn-primary">Save changes</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                        <form method="POST" action="/hapus_data_pemain/{{ pemain[0] }}">
+                                            <button type="submit" class="btn btn-danger">Hapus</button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                     </td>
                     {% endif %}
                 </tr>

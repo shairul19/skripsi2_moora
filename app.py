@@ -368,6 +368,35 @@ def lihat_data_pemain():
     else:
         return redirect('/login')
 
+@app.route('/hapus_data_pemain/<string:nisn>', methods=['POST'])
+def hapus_data_pemain(nisn):
+    if 'user_id' in session and session['role'] == 'admin':
+        try:
+            # Hapus data pemain dari tbl_nilai_kriteria
+            cur.execute("DELETE FROM tbl_nilai_kriteria WHERE nisn = %s", (nisn,))
+            conn.commit()
+
+            # Hapus data pemain dari tbl_pemain
+            cur.execute("DELETE FROM tbl_pemain WHERE nisn = %s", (nisn,))
+            conn.commit()
+            
+            # Hapus data pengguna dari tbl_users
+            # Ubah nilai user_data_completed pada tbl_users menjadi False
+            cur.execute("UPDATE tbl_users SET user_data_completed = FALSE WHERE id_user = (SELECT id_user FROM tbl_pemain WHERE nisn = %s)", (nisn,))
+            conn.commit()
+            
+
+            flash('Data pemain berhasil dihapus', 'success')
+            return redirect('/lihat_data_pemain')
+        except Exception as e:
+            print("Error:", e)
+            conn.rollback()
+            flash('Terjadi kesalahan saat menghapus data pemain', 'error')
+            return redirect('/lihat_data_pemain')
+    else:
+        return redirect('/login')
+
+
 # Halaman lihat data tim seleksi
 @app.route('/lihat_data_tim_seleksi', methods=['GET', 'POST'])
 def lihat_data_tim_seleksi():
