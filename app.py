@@ -479,16 +479,72 @@ def lihat_data_tim_seleksi():
         if request.method == 'POST':
             jabatan = request.form['jabatan']
 
+            #menghitung total data
             if jabatan == 'semua':
-                cur.execute("SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE nama_admin != 'SUPERADMIN'")
+                total_data_query = "SELECT COUNT(*) FROM tbl_admin"
+                cur.execute(total_data_query)
             else:
-                cur.execute("SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE jabatan = %s AND nama_admin != 'SUPERADMIN'", (jabatan,))
+                total_data_query = "SELECT COUNT(*) FROM tbl_admin WHERE jabatan = %s"
+                cur.execute(total_data_query, (jabatan,))
+
+            total_data = cur.fetchone()[0]
+
+            # Jumlah data per halaman
+            per_page = 10
+            total_pages = math.ceil(total_data / per_page)
+
+            # Mendapatkan halaman saat ini dari parameter URL
+            page = request.args.get('page', 1, type=int)
+            offset = (page - 1) * per_page
+
+
+            # Mengambil Data admin untuk halaman tertentu
+            if jabatan == 'semua':
+                query = "SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE nama_admin != 'SUPERADMIN' LIMIT %s OFFSET %s"
+                cur.execute(query, (per_page, offset))
+            else:
+                query = "SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE jabatan = %s AND nama_admin != 'SUPERADMIN' LIMIT %s OFFSET %s"
+                cur.execute(query, (jabatan, per_page, offset))
 
             data_tim_seleksi = cur.fetchall()
 
-            return render_template('lihat_data_tim_seleksi.html', data_tim_seleksi=data_tim_seleksi)
+            return render_template('lihat_data_tim_seleksi.html', data_tim_seleksi=data_tim_seleksi, total_pages=total_pages, current_page=page, jabatan=jabatan, per_page=per_page)
 
-        return render_template('lihat_data_tim_seleksi.html')
+        else:
+            #Mengambil jabatan dari parameter URL saat berpindah halaman
+            jabatan = request.args.get('jabatan', 'semua')
+
+            #menghitung total data
+            if jabatan == 'semua':
+                total_data_query = "SELECT COUNT(*) FROM tbl_admin"
+                cur.execute(total_data_query)
+            else:
+                total_data_query = "SELECT COUNT(*) FROM tbl_admin WHERE jabatan = %s"
+                cur.execute(total_data_query, (jabatan,))
+
+            total_data = cur.fetchone()[0]
+
+            # Jumlah data per halaman
+            per_page = 10
+            total_pages = math.ceil(total_data / per_page)
+
+            # Mendapatkan halaman saat ini dari parameter URL
+            page = request.args.get('page', 1, type=int)
+            offset = (page - 1) * per_page
+
+
+            # Mengambil Data admin untuk halaman tertentu
+            if jabatan == 'semua':
+                query = "SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE nama_admin != 'SUPERADMIN' LIMIT %s OFFSET %s"
+                cur.execute(query, (per_page, offset))
+            else:
+                query = "SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE jabatan = %s AND nama_admin != 'SUPERADMIN' LIMIT %s OFFSET %s"
+                cur.execute(query, (jabatan, per_page, offset))
+
+            data_tim_seleksi = cur.fetchall()
+
+            return render_template('lihat_data_tim_seleksi.html', data_tim_seleksi=data_tim_seleksi, total_pages=total_pages, current_page=page, jabatan=jabatan, per_page=per_page)
+
     else:
         return redirect('/login')
 

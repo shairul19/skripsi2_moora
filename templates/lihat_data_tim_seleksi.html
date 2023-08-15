@@ -1,56 +1,59 @@
 {% extends "base.html" %}
 
 {% block title %}
-    Data Tim Seleksi
+Data Tim Seleksi
 {% endblock %}
 
 {% block content %}
-    <!--Main-->  
-    <main class="mt-5 pt-3">
-          <div class="col-md-12 p-4 pt-2">
-            
-          <h3><i class="fa-solid fa-user-tie icon"></i></i> Data Tim Seleksi</h3><hr>
-                        
-              <div class="row">
-                <form method="POST" action="/lihat_data_tim_seleksi">
-                    <label for="jabatan">Pilih Jabatan:</label>
-                    <select name="jabatan" id="jabatan">
-                        <option value="semua">Lihat Semua</option>
-                        <option value="Head Coach">Head Coach</option>
-                        <option value="Asst. Coach">Asst. Coach</option>
-                        <option value="Scout Staff">Scout Staff</option>
-                    </select>
-                    <button type="submit">Tampilkan</button>
-                </form>
-                <br><br>
-                
-                <table class="table table-sm table-striped table-hover">
-                    <tr class="table-dark">
-                        <th>No.</th>
-                        <th>Nama</th>
-                        <th>Tanggal Lahir</th>
-                        <th>Jabatan</th>
-                        {% if 'user_id' in session and session['role'] == 'admin' %}
-                        <th>Aksi</th>
-                        {% endif %}
-                    </tr>
-                    {% if data_tim_seleksi %}
-                    {% for tim in data_tim_seleksi %}
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <td>{{ tim[1] }}</td>
-                        <td>{{ tim[2] }}</td>
-                        <td>{{ tim[3] }}</td>
-                        {% if 'user_id' in session and session['role'] == 'admin' %}
-                        <td>
-                           
+<!--Main-->
+<main class="mt-5 pt-3">
+    <div class="col-md-12 p-4 pt-2">
+
+        <h3><i class="fa-solid fa-user-tie icon"></i></i> Data Tim Seleksi</h3>
+        <hr>
+
+        <div class="row">
+            <form method="POST" action="/lihat_data_tim_seleksi">
+                <label for="jabatan">Pilih Jabatan:</label>
+                <select name="jabatan" id="jabatan">
+                    <option value="semua" {% if jabatan == 'semua' %}selected{% endif %}>Lihat Semua</option>
+                    <option value="Head Coach" {% if jabatan == 'Head Coach' %}selected{% endif %}>Head Coach</option>
+                    <option value="Asst. Coach" {% if jabatan == 'Asst. Coach' %}selected{% endif %}>Asst. Coach
+                    </option>
+                    <option value="Scout Staff" {% if jabatan == 'Scout Staff' %}selected{% endif %}>Scout Staff
+                    </option>
+                </select>
+                <button type="submit">Tampilkan</button>
+            </form>
+            <br><br>
+
+            <table class="table table-sm table-striped table-hover">
+                <tr class="table-dark">
+                    <th>No.</th>
+                    <th>Nama</th>
+                    <th>Tanggal Lahir</th>
+                    <th>Jabatan</th>
+                    {% if 'user_id' in session and session['role'] == 'admin' %}
+                    <th>Aksi</th>
+                    {% endif %}
+                </tr>
+                {% if data_tim_seleksi %}
+                {% for tim in data_tim_seleksi %}
+                <tr>
+                    <td>{{ (current_page - 1) * per_page + loop.index }}</td>
+                    <td>{{ tim[1] }}</td>
+                    <td>{{ tim[2] }}</td>
+                    <td>{{ tim[3] }}</td>
+                    {% if 'user_id' in session and session['role'] == 'admin' %}
+                    <td>
+
                         <!-- Button trigger modal -->
-                        
-                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                data-bs-target="#exampleModal">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                        
+
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#exampleModal">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+
                         <!-- Modal -->
                         <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
                             aria-hidden="true">
@@ -72,13 +75,13 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Button trigger modal -->
                         <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
                             data-bs-target="#exampleModal">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
-                        
+
                         <!-- Modal -->
                         <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
                             aria-hidden="true">
@@ -100,14 +103,35 @@
                                 </div>
                             </div>
                         </div>
-                        </td>
-                        {% endif %}
-                    </tr>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </table>
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if current_page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ current_page - 1 }}&jabatan={{ jabatan }}">Previous</a>
+                    </li>
+                    {% endif %}
+
+                    {% for page_num in range(1, total_pages + 1) %}
+                    <li class="page-item {% if page_num == current_page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ page_num }}&jabatan={{ jabatan }}">{{ page_num }}</a>
+                    </li>
                     {% endfor %}
-                </table>
-                {% endif %}
-             </div>
-          </div>
-    </main>
-    <!--Main-->
+
+                    {% if current_page < total_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ current_page + 1 }}&jabatan={{ jabatan }}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</main>
+<!--Main-->
 {% endblock %}
