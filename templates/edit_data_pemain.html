@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}
+Edit Data Pemain
+{% endblock %}
+
+{% block content %}
+<!--Main-->
+<main class="mt-5 pt-3">
+    <div class="col-md-12 p-4 pt-2">
+
+        <h3><i class="fa-solid fa-people-group"></i> EDIT DATA PEMAIN</h3>
+        <hr>
+
+        <div class="row">
+            <div class="col-lg-12">
+            <form method="POST" action="/edit_data_pemain/{{ data_pemain[0] }}">
+                <p class="card-text">
+                <label for="nama">NISN</label>
+                <input class="form-control" type="text" name="nisn" id="nama"  value="{{ data_pemain[0] }}" required disabled>
+                </p>
+
+                <p class="card-text">
+                <label for="nama">Nama Pemain:</label>
+                <input class="form-control" type="text" name="nama" id="nama" value="{{ data_pemain[1] }}" required>
+                </p>
+
+                <p class="card-text">
+                <label for="posisi">Posisi:</label>
+                <select class="form-select" name="posisi" id="posisi" >
+                    <option value="GK" {% if data_pemain[2] == 'GK' %}selected{% endif %}>GK</option>
+                    <option value="DF" {% if data_pemain[2] == 'DF' %}selected{% endif %}>DF</option>
+                    <option value="MF" {% if data_pemain[2] == 'MF' %}selected{% endif %}>MF</option>
+                    <option value="FW" {% if data_pemain[2] == 'FW' %}selected{% endif %}>FW</option>
+                </select>
+                </p>
+
+                <p class="card-text">
+                <label for="tgl_lahir">Tanggal Lahir:</label>
+                <input class="form-control" type="date" name="tgl_lahir" id="tgl_lahir" value="{{ data_pemain[3] }}" required>
+                </p>
+
+                <p class="card-text">
+                <label for="asal_sekolah">Asal Sekolah:</label>
+                <input class="form-control" type="text" name="asal_sekolah" id="asal_sekolah" value="{{ data_pemain[4] }}" required>
+                </p>
+                <button type="submit" class="btn btn-primary btn-sm">Simpan Perubahan</button>
+            </form>
+        </div>
+        </div>
+    </div>
+</main>
+<!--Main-->
+{% endblock %}

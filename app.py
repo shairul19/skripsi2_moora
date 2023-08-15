@@ -368,6 +368,33 @@ def lihat_data_pemain():
     else:
         return redirect('/login')
 
+
+@app.route('/edit_data_pemain/<nisn>', methods=['GET', 'POST'])
+def edit_data_pemain(nisn):
+    if 'user_id' in session:
+        if request.method == 'POST':
+            nama_baru = request.form['nama'].upper()
+            posisi_baru = request.form['posisi']
+            tgl_lahir_baru = request.form['tgl_lahir']
+            asal_sekolah_baru = request.form['asal_sekolah'].upper()
+            
+            # Update data pemain dalam database
+            cur.execute("UPDATE tbl_pemain SET nama_pemain = %s, posisi = %s, tgl_lahir_pemain = %s, asal_sekolah = %s WHERE nisn = %s",
+                        (nama_baru, posisi_baru, tgl_lahir_baru, asal_sekolah_baru, nisn))
+            
+            # Commit perubahan ke database
+            conn.commit()
+            
+            return redirect('/lihat_data_pemain')
+        
+        # Ambil data pemain berdasarkan nisn
+        cur.execute("SELECT nisn, nama_pemain, posisi, tgl_lahir_pemain, asal_sekolah FROM tbl_pemain WHERE nisn = %s", (nisn,))
+        data_pemain = cur.fetchone()
+
+        return render_template('edit_data_pemain.html', data_pemain=data_pemain)
+    else:
+        return redirect('/login')
+
 @app.route('/hapus_data_pemain/<string:nisn>', methods=['POST'])
 def hapus_data_pemain(nisn):
     if 'user_id' in session and session['role'] == 'admin':
