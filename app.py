@@ -355,16 +355,70 @@ def lihat_data_pemain():
         if request.method == 'POST':
             posisi = request.form['posisi']
 
-            if posisi == 'semua':  # Menampilkan semua pemain
-                cur.execute("SELECT nisn, nama_pemain, posisi, tgl_lahir_pemain, asal_sekolah FROM tbl_pemain")
+            # Menghitung total data
+            if posisi == 'semua':
+                total_data_query = "SELECT COUNT(*) FROM tbl_pemain"
+                cur.execute(total_data_query)
             else:
-                cur.execute("SELECT nisn, nama_pemain, posisi, tgl_lahir_pemain, asal_sekolah FROM tbl_pemain WHERE posisi = %s", (posisi,))
+                total_data_query = "SELECT COUNT(*) FROM tbl_pemain WHERE posisi = %s"
+                cur.execute(total_data_query, (posisi,))
+
+            total_data = cur.fetchone()[0]
+
+            # Jumlah data per halaman
+            per_page = 10
+            total_pages = math.ceil(total_data / per_page)
+
+            # Mendapatkan halaman saat ini dari parameter URL
+            page = request.args.get('page', 1, type=int)
+            offset = (page - 1) * per_page
+
+            # Mengambil data pemain untuk halaman tertentu
+            if posisi == 'semua':
+                query = "SELECT nisn, nama_pemain, posisi, tgl_lahir_pemain, asal_sekolah FROM tbl_pemain LIMIT %s OFFSET %s"
+                cur.execute(query, (per_page, offset))
+            else:
+                query = "SELECT nisn, nama_pemain, posisi, tgl_lahir_pemain, asal_sekolah FROM tbl_pemain WHERE posisi = %s LIMIT %s OFFSET %s"
+                cur.execute(query, (posisi, per_page, offset))
 
             data_pemain = cur.fetchall()
 
-            return render_template('lihat_data_pemain.html', data_pemain=data_pemain)
+            return render_template('lihat_data_pemain.html', data_pemain=data_pemain, total_pages=total_pages, current_page=page, posisi=posisi, per_page=per_page)
 
-        return render_template('lihat_data_pemain.html')
+        else:
+            # Mengambil posisi dari parameter URL saat berpindah halaman
+            posisi = request.args.get('posisi', 'semua')
+            
+            # Menghitung total data
+            if posisi == 'semua':
+                total_data_query = "SELECT COUNT(*) FROM tbl_pemain"
+                cur.execute(total_data_query)
+            else:
+                total_data_query = "SELECT COUNT(*) FROM tbl_pemain WHERE posisi = %s"
+                cur.execute(total_data_query, (posisi,))
+
+            total_data = cur.fetchone()[0]
+
+            # Jumlah data per halaman
+            per_page = 10
+            total_pages = math.ceil(total_data / per_page)
+
+            # Mendapatkan halaman saat ini dari parameter URL
+            page = request.args.get('page', 1, type=int)
+            offset = (page - 1) * per_page
+
+            # Mengambil data pemain untuk halaman tertentu
+            if posisi == 'semua':
+                query = "SELECT nisn, nama_pemain, posisi, tgl_lahir_pemain, asal_sekolah FROM tbl_pemain LIMIT %s OFFSET %s"
+                cur.execute(query, (per_page, offset))
+            else:
+                query = "SELECT nisn, nama_pemain, posisi, tgl_lahir_pemain, asal_sekolah FROM tbl_pemain WHERE posisi = %s LIMIT %s OFFSET %s"
+                cur.execute(query, (posisi, per_page, offset))
+
+            data_pemain = cur.fetchall()
+
+            return render_template('lihat_data_pemain.html', data_pemain=data_pemain, total_pages=total_pages, current_page=page, posisi=posisi, per_page=per_page)
+
     else:
         return redirect('/login')
 
