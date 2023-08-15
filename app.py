@@ -380,12 +380,6 @@ def hapus_data_pemain(nisn):
             cur.execute("DELETE FROM tbl_pemain WHERE nisn = %s", (nisn,))
             conn.commit()
             
-            # Hapus data pengguna dari tbl_users
-            # Ubah nilai user_data_completed pada tbl_users menjadi False
-            cur.execute("UPDATE tbl_users SET user_data_completed = FALSE WHERE id_user = (SELECT id_user FROM tbl_pemain WHERE nisn = %s)", (nisn,))
-            conn.commit()
-            
-
             flash('Data pemain berhasil dihapus', 'success')
             return redirect('/lihat_data_pemain')
         except Exception as e:
