@@ -548,23 +548,79 @@ def lihat_data_tim_seleksi():
     else:
         return redirect('/login')
 
-# Halaman lihat data kriteria berdasarkan posisi atau semua posisi
+# Halaman lihat data kriteria
 @app.route('/lihat_data_kriteria', methods=['GET', 'POST'])
 def lihat_data_kriteria():
-    if request.method == 'POST':
-        posisi = request.form['posisi']
+    if 'user_id' in session:
+        if request.method == 'POST':
+            posisi = request.form['posisi']
 
-        if posisi == 'semua':
-            cur.execute("SELECT id_kriteria, kode_kriteria, nama_kriteria, posisi, bobot, tipe FROM tbl_kriteria")
+            # Menghitung total data
+            if posisi == 'semua':
+                total_data_query = "SELECT COUNT(*) FROM tbl_kriteria"
+                cur.execute(total_data_query)
+            else:
+                total_data_query = "SELECT COUNT(*) FROM tbl_kriteria WHERE posisi = %s"
+                cur.execute(total_data_query, (posisi,))
+
+            total_data = cur.fetchone()[0]
+
+            # Jumlah data per halaman
+            per_page = 10
+            total_pages = math.ceil(total_data / per_page)
+
+            # Mendapatkan halaman saat ini dari parameter URL
+            page = request.args.get('page', 1, type=int)
+            offset = (page - 1) * per_page
+
+            # Mengambil data pemain untuk halaman tertentu
+            if posisi == 'semua':
+                query = "SELECT id_kriteria, kode_kriteria, nama_kriteria, posisi, bobot, tipe FROM tbl_kriteria LIMIT %s OFFSET %s"
+                cur.execute(query, (per_page, offset))
+            else:
+                query = "SELECT id_kriteria, kode_kriteria, nama_kriteria, posisi, bobot, tipe FROM tbl_kriteria WHERE posisi = %s LIMIT %s OFFSET %s"
+                cur.execute(query, (posisi, per_page, offset))
+
+            data_kriteria = cur.fetchall()
+
+            return render_template('lihat_data_kriteria.html', data_kriteria=data_kriteria, total_pages=total_pages, current_page=page, posisi=posisi, per_page=per_page)
+
         else:
-            cur.execute("SELECT id_kriteria, kode_kriteria, nama_kriteria, posisi, bobot, tipe FROM tbl_kriteria WHERE posisi = %s", (posisi,))
-       
-        data_kriteria = cur.fetchall()
+            # Mengambil posisi dari parameter URL saat berpindah halaman
+            posisi = request.args.get('posisi', 'semua')
+            
+            # Menghitung total data
+            if posisi == 'semua':
+                total_data_query = "SELECT COUNT(*) FROM tbl_kriteria"
+                cur.execute(total_data_query)
+            else:
+                total_data_query = "SELECT COUNT(*) FROM tbl_kriteria WHERE posisi = %s"
+                cur.execute(total_data_query, (posisi,))
 
-        
-        return render_template('lihat_data_kriteria.html', data_kriteria=data_kriteria)
+            total_data = cur.fetchone()[0]
 
-    return render_template('lihat_data_kriteria.html')
+            # Jumlah data per halaman
+            per_page = 10
+            total_pages = math.ceil(total_data / per_page)
+
+            # Mendapatkan halaman saat ini dari parameter URL
+            page = request.args.get('page', 1, type=int)
+            offset = (page - 1) * per_page
+
+            # Mengambil data pemain untuk halaman tertentu
+            if posisi == 'semua':
+                query = "SELECT id_kriteria, kode_kriteria, nama_kriteria, posisi, bobot, tipe FROM tbl_kriteria LIMIT %s OFFSET %s"
+                cur.execute(query, (per_page, offset))
+            else:
+                query = "SELECT id_kriteria, kode_kriteria, nama_kriteria, posisi, bobot, tipe FROM tbl_kriteria WHERE posisi = %s LIMIT %s OFFSET %s"
+                cur.execute(query, (posisi, per_page, offset))
+
+            data_kriteria = cur.fetchall()
+
+            return render_template('lihat_data_kriteria.html', data_kriteria=data_kriteria, total_pages=total_pages, current_page=page, posisi=posisi, per_page=per_page)
+
+    else:
+        return redirect('/login')
 
 
 
@@ -607,11 +663,11 @@ def edit_kriteria(id_kriteria):
         kriteria = cur.fetchone()
 
         if request.method == 'POST':
-            kode_kriteria = request.form['kode_kriteria']
+            kode_kriteria = kriteria[1]
             nama_kriteria = request.form['nama_kriteria']
-            posisi = request.form['posisi']
+            posisi = kriteria[3]
             tipe = request.form['tipe']
-            bobot = float(request.form['bobot'])  # Pastikan bobot diubah menjadi float
+            bobot = float(request.form['bobot'])  
 
             cur.execute("UPDATE tbl_kriteria "
                         "SET kode_kriteria = %s, nama_kriteria = %s, posisi = %s, tipe = %s, bobot = %s "
