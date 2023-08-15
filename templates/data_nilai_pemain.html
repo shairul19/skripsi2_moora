@@ -23,7 +23,8 @@ Nilai Pemain
             {% endwith %}
             {% if 'user_id' in session and session['role'] == 'admin' %}
             <div class="col-sm-2">
-                <a class="btn btn-success" href="/penilaian_pemain" role="button"><i class="fa-solid fa-square-plus"> </i> Tambah</a>
+                <a class="btn btn-success" href="/penilaian_pemain" role="button"><i class="fa-solid fa-square-plus">
+                    </i> Tambah</a>
             </div><br><br>
             {% endif %}
             <form method="post">
@@ -52,51 +53,79 @@ Nilai Pemain
                     </tr>
                 </thead>
                 <tbody>
-                    {% for nisn, data in table_data.items() %}
+                    {% for data_dict in table_data %}
                     <tr>
-                        <td>{{ loop.index }}</td>
-                        <td>{{ data['nama_pemain'] }}</td>
+                        <td>{{ (current_page - 1) * per_page + loop.index }}</td>
+                        <td>{{ data_dict['nama_pemain'] }}</td>
                         {% for kriteria_id, kriteria_name in kriteria_list.items() %}
-                        <td>{{ data.get(kriteria_id, '') }}</td>
+                        <td>{{ data_dict.get(kriteria_id, '') }}</td>
                         {% endfor %}
                         {% if 'user_id' in session and session['role'] == 'admin' %}
                         <td>
-                        <!-- Button for editing -->
-                        <a class="btn btn-primary btn-sm" href="/edit_nilai_pemain/{{ nisn }}">
-                            <i class="fa-solid fa-edit"></i>
-                        </a>
-                        <!-- Button for deleting -->
-                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                        data-bs-target="#hapusModal{{ nisn }}">
-                        <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                        <!-- Modal for deleting -->
-                        <div class="modal fade" id="hapusModal{{ nisn }}" tabindex="-1" aria-labelledby="hapusModalLabel"
-                        aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="hapusModalLabel">Konfirmasi Hapus</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                        aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    Yakin ingin menghapus nilai untuk {{ data['nama_pemain'] }}?
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                    <a href="/hapus_nilai/{{ nisn }}" class="btn btn-danger">Hapus</a>
+                            <!-- Button for editing -->
+                            <a class="btn btn-primary btn-sm" href="/edit_nilai_pemain/{{ data_dict['nisn'] }}">
+                                <i class="fa-solid fa-edit"></i>
+                            </a>
+                            <!-- Button for deleting -->
+                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#hapusModal{{ data_dict['nisn'] }}">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                            <!-- Modal for deleting -->
+                            <div class="modal fade" id="hapusModal{{ data_dict['nisn'] }}" tabindex="-1"
+                                aria-labelledby="hapusModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="hapusModalLabel">Konfirmasi Hapus</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Yakin ingin menghapus nilai untuk {{ data_dict['nama_pemain'] }}?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Batal</button>
+                                            <a href="/hapus_nilai/{{ data_dict['nisn'] }}" class="btn btn-danger">Hapus</a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        </div>
-
                         </td>
                         {% endif %}
                     </tr>
                     {% endfor %}
                 </tbody>
+               
+                
+                
+                
+                
             </table>
+            <!-- Pagination -->
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if current_page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ current_page - 1 }}&posisi_pemain={{ posisi_pemain }}">Previous</a>
+                    </li>
+                    {% endif %}
+                    {% for page_num in range(1, total_pages + 1) %}
+                    <li class="page-item {% if page_num == current_page %}active{% endif %}">
+                        <a class="page-link"
+                            href="?page={{ page_num }}&posisi_pemain={{ posisi_pemain }}">{{ page_num }}</a>
+                    </li>
+                    {% endfor %}
+                    {% if current_page < total_pages %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?page={{ current_page + 1 }}&posisi_pemain={{ posisi_pemain }}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
             {% endif %}
         </div>
     </div>

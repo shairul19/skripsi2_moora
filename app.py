@@ -777,13 +777,14 @@ def data_tbl_nilai_kriteria():
         return redirect('/login')
 """
 # Halaman Data Nilai Pemain
+# Halaman Data Nilai Pemain
 @app.route('/data_nilai_pemain', methods=['GET', 'POST'])
 def data_nilai_pemain():
-    if 'user_id' in session:  
+    if 'user_id' in session:
+        
         if request.method == 'POST':
             posisi_pemain = request.form['posisi_pemain']
 
-            # Query data dari tabel tbl_nilai_kriteria dan gabungkan dengan tbl_pemain dan tbl_kriteria
             cur.execute("SELECT p.nisn, p.nama_pemain, k.id_kriteria, nk.nilai "
                         "FROM tbl_nilai_kriteria nk "
                         "JOIN tbl_pemain p ON nk.nisn = p.nisn "
@@ -791,7 +792,6 @@ def data_nilai_pemain():
                         "WHERE p.posisi = %s", (posisi_pemain,))
             data_nilai_kriteria = cur.fetchall()
 
-            # Create a dictionary to store data for each player
             table_data = {}
 
             for row in data_nilai_kriteria:
@@ -804,15 +804,34 @@ def data_nilai_pemain():
                     table_data[nisn] = {'nama_pemain': nama_pemain, 'nisn': nisn}
                 table_data[nisn][id_kriteria] = nilai
 
-            # Get the list of criteria names for the selected position
             cur.execute("SELECT k.id_kriteria, k.nama_kriteria "
                         "FROM tbl_kriteria k "
                         "WHERE k.posisi = %s", (posisi_pemain,))
             kriteria_list = {row[0]: row[1] for row in cur.fetchall()}
 
-            return render_template('data_nilai_pemain.html', table_data=table_data, kriteria_list=kriteria_list, positions=get_player_positions(), posisi_pemain=posisi_pemain)
+            # Pagination
+            per_page = 10
+            total_pages = math.ceil(len(table_data) / per_page)
+            page = request.args.get('page', 1, type=int)
+            offset = (page - 1) * per_page
 
-        return render_template('data_nilai_pemain.html', positions=get_player_positions())
+            data_to_display = list(table_data.values())[offset : offset + per_page]
+
+            return render_template(
+                'data_nilai_pemain.html',
+                table_data=data_to_display,
+                kriteria_list=kriteria_list,
+                positions=get_player_positions(),
+                posisi_pemain=posisi_pemain,
+                current_page=page,
+                total_pages=total_pages, per_page=page
+            )
+
+        return render_template(
+            'data_nilai_pemain.html',
+           
+            positions=get_player_positions(),
+        )
     else:
         return redirect('/login')
 
