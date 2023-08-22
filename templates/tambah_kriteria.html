@@ -1,70 +1,126 @@
 {% extends "base.html" %}
 
 {% block title %}
-    Tambah Kriteria
+Tambah Kriteria
 {% endblock %}
 
 {% block content %}
-    <!--Main-->  
-    <main class="mt-5 pt-3">
-          <div class="col-md-12 p-4 pt-2">
-            
-          <h3>Tambah Kriteria</h3><hr>
-                        
-              <div class="row">
-                <form method="POST">
-                    <table>
-                    <tr>
-                    <td><label for="kode_kriteria">Kode Kriteria</label></td>
-                    <td><input type="text" id="kode_kriteria" class="form-control" name="kode_kriteria" placeholder="Masukan Kode Kriteria" required></td>
-                    </tr>
-                    <tr>     
-                    <td><label for="nama_kriteria">Nama Kriteria:</label></td>
-                    <td><input type="text" id="nama_kriteria" placeholder="Masukan Nama Kriteria" class="form-control" name="nama_kriteria" required></td>
-                    </tr>  
-                    <tr>       
-                    <td><label for="posisi">Posisi:</label></td>
-                    <td><select id="posisi" class="form-select" name="posisi">
-                        <option value="" disabled selected>--Pilih Posisi--</option>
-                        <option value="GK">GK</option>
-                        <option value="DF">DF</option>
-                        <option value="MF">MF</option>
-                        <option value="FW">FW</option>
-                    </select></td>
-                    </tr>  
-                    <tr>
-                    <td><label for="bobot">Bobot:</label></td>
-                    <td><input type="number" class="form-control" placeholder="Masukan Bobot" step="0.01" id="bobot" name="bobot" required></td>
-                    </tr>
-                    <tr>
-                    <td><label for="tipe">Tipe:</label></td>
-                    <td><select id="tipe" class="form-select" name="tipe">
-                        <option value="" selected disabled>--Pilih Tipe Kriteria--</option>
-                        <option value="cost">Cost</option>
-                        <option value="benefit">Benefit</option>
-                    </select></td>
-                    </tr>
-                </table>
-                <br>
-                <button type="submit" class="btn btn-success" value="Submit">Simpan</button>
-                    <a class="btn btn-danger" href="/lihat_data_kriteria" role="button">Batal</a>
-                </form>
-             </div>
-          </div>
-    </main>
-    <!--Main-->
+<!--Main-->
+<main class="mt-5 pt-3">
+    <div class="col-md-12 p-4 pt-2">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="alert alert-danger alert-dismissible" role="alert">
+            {{ messages[0] }}
+        </div>
+        {% endif %}
+        {% endwith %}
+        <h3>Tambah Kriteria</h3>
+        <hr>
+
+        <div class="row">
+            <div class="container py-2">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="card text-left p-2">
+                            <div class="card-body">
+                                <form method="POST">
+                                    <table>
+                                        <tr>
+                                            <td><label for="kode_kriteria">Kode Kriteria:</label></td>
+                                            <td><input type="text" id="kode_kriteria" class="form-control"
+                                                    name="kode_kriteria" placeholder="Masukan Kode Kriteria" required>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><label for="nama_kriteria">Nama Kriteria:</label></td>
+                                            <td><input type="text" id="nama_kriteria"
+                                                    placeholder="Masukan Nama Kriteria" class="form-control"
+                                                    name="nama_kriteria" required></td>
+                                        </tr>
+                                        <tr>
+                                            <td><label for="posisi">Posisi:</label></td>
+                                            <td><select id="posisi" class="form-select" name="posisi">
+                                                    <option value="" disabled selected>--Pilih Posisi--</option>
+                                                    <option value="GK">GK</option>
+                                                    <option value="DF">DF</option>
+                                                    <option value="MF">MF</option>
+                                                    <option value="FW">FW</option>
+                                                </select></td>
+                                        </tr>
+                                        <tr>
+                                            <td><label for="bobot">Bobot:</label></td>
+                                            <td><input type="number" class="form-control" placeholder="Masukan Bobot"
+                                                    step="0.01" id="bobot" name="bobot" required></td>
+                                        </tr>
+                                        <tr>
+                                            <td><label for="tipe">Tipe:</label></td>
+                                            <td><select id="tipe" class="form-select" name="tipe">
+                                                    <option value="" selected disabled>--Pilih Tipe Kriteria--</option>
+                                                    <option value="cost">Cost</option>
+                                                    <option value="benefit">Benefit</option>
+                                                </select></td>
+                                        </tr>
+                                    </table>
+                                    <br>
+                                    <button type="submit" class="btn btn-success" value="Submit">Simpan</button>
+                                    <a class="btn btn-danger" href="/lihat_data_kriteria" role="button">Batal</a>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-8">
+                        <div class="shadow border rounded p-4 mb-2">
+                            <h4>Informasi Total Bobot Tiap Posisi</h4>
+                            <hr>
+                            <div class="row">
+                                <p class="card-text">
+                                    <table class="table table-sm table-striped table-hover">
+                                        <tr class="table table-dark">
+                                            <th>No</th>
+                                            <th>Posisi</th>
+                                            <th>Total Bobot</th>
+                                        </tr>
+                                        {% for pos, total in total_bobot_posisi.items() %}
+                                        <tr>
+                                            <td>{{ loop.index }}</td>
+                                            <td>
+                                                {{ pos }}
+                                            </td>
+                                            <td>{{ total }}</td>
+                                            {% endfor %}
+                                        </tr>
+                                    </table>
+                                </p>
+                            </div>
+                            </hr>
+                        </div>
+
+
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+</main>
+<!--Main-->
 {% endblock %}
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
+
 <body>
     <h1>Tambah Kriteria</h1>
 
-   
+
 </body>
+
 </html>

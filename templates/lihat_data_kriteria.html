@@ -66,15 +66,27 @@ Data Kriteria
                         <td>{{ kriteria[5] }}</td>
                         {% if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin') %}
                         <td>
+                            {% if kriteria[0] not in id_kriteria_nilai %}
                             <a href="/edit_kriteria/{{ kriteria[0] }}" class="btn btn-primary btn-sm">
                                 <i class="fa-solid fa-pen-to-square"></i> Edit
                             </a>
-
 
                             <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
                                 data-bs-target="#hapusModal{{ kriteria[0] }}">
                                 <i class="fa-solid fa-trash-can"></i> Delete
                             </button>
+
+                            {% else %}
+                            <button type="button" class="btn btn-primary btn-sm" disabled>
+                                <i class="fa-solid fa-pen-to-square"></i> Edit
+                            </button>
+
+                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#hapusModal{{ kriteria[0] }}" disabled>
+                                <i class="fa-solid fa-trash-can"></i> Delete
+                            </button>
+                            {% endif %}
+
 
                             <!-- Modal Hapus -->
                             <div class="modal fade" id="hapusModal{{ kriteria[0] }}" tabindex="-1"

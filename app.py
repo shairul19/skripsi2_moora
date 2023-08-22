@@ -624,8 +624,11 @@ def lihat_data_kriteria():
                 cur.execute(query, (posisi, per_page, offset))
 
             data_kriteria = cur.fetchall()
+            # Mengambil semua id_kriteria dari tbl_nilai_kriteria
+            cur.execute("SELECT DISTINCT id_kriteria FROM tbl_nilai_kriteria")
+            id_kriteria_nilai = [row[0] for row in cur.fetchall()]
 
-            return render_template('lihat_data_kriteria.html', data_kriteria=data_kriteria, total_pages=total_pages, current_page=page, posisi=posisi, per_page=per_page)
+            return render_template('lihat_data_kriteria.html', data_kriteria=data_kriteria, total_pages=total_pages, current_page=page, posisi=posisi, per_page=per_page, id_kriteria_nilai=id_kriteria_nilai)
 
         else:
             # Mengambil posisi dari parameter URL saat berpindah halaman
@@ -659,13 +662,17 @@ def lihat_data_kriteria():
 
             data_kriteria = cur.fetchall()
 
-            return render_template('lihat_data_kriteria.html', data_kriteria=data_kriteria, total_pages=total_pages, current_page=page, posisi=posisi, per_page=per_page)
+            cur.execute("SELECT DISTINCT id_kriteria FROM tbl_nilai_kriteria")
+            id_kriteria_nilai = [row[0] for row in cur.fetchall()]
+
+            return render_template('lihat_data_kriteria.html', data_kriteria=data_kriteria, total_pages=total_pages, current_page=page, posisi=posisi, per_page=per_page, id_kriteria_nilai=id_kriteria_nilai)
 
     else:
         return redirect('/login')
 
+# Halaman Tambah Kriteria
 
-# Halaman tambah kriteria
+
 @app.route('/tambah_kriteria', methods=['GET', 'POST'])
 def tambah_kriteria():
     if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
@@ -673,19 +680,40 @@ def tambah_kriteria():
             kode_kriteria = request.form['kode_kriteria'].upper()
             nama_kriteria = request.form['nama_kriteria']
             posisi = request.form['posisi']
-            bobot = request.form['bobot']
+            bobot = Decimal(request.form['bobot'])
             tipe = request.form['tipe']
 
+            # Mengambil total bobot untuk setiap posisi dari database
+            cur.execute(
+                "SELECT posisi, SUM(bobot) FROM tbl_kriteria GROUP BY posisi")
+            total_bobot_per_position = {row[0]: row[1]
+                                        for row in cur.fetchall()}
+
+            # Mendapatkan total bobot untuk posisi tertentu
+            total_bobot_posisi = total_bobot_per_position.get(
+                posisi, Decimal(0))
+
+            # Memeriksa apakah total bobot untuk posisi tertentu melebihi 1.0
+            if total_bobot_posisi + bobot > 1.0:
+                flash('Total Bobot sudah lebih dari 1.0, harap cek kembali kriteria lainnya pada posisi tersebut',
+                      'danger')
+                return render_template('tambah_kriteria.html', total_bobot_posisi=total_bobot_per_position)
+
+            # Jika total bobot masih dalam batas, simpan data ke database
             cur.execute("INSERT INTO tbl_kriteria (kode_kriteria, nama_kriteria, posisi, bobot, tipe) VALUES (%s, %s, %s, %s, %s)",
                         (kode_kriteria, nama_kriteria, posisi, bobot, tipe))
             conn.commit()
 
             return redirect('/lihat_data_kriteria')
 
-        return render_template('tambah_kriteria.html')
+        # Mengambil total bobot untuk setiap posisi dari database
+        cur.execute(
+            "SELECT posisi, SUM(bobot) FROM tbl_kriteria GROUP BY posisi")
+        total_bobot_per_position = {row[0]: row[1] for row in cur.fetchall()}
+
+        return render_template('tambah_kriteria.html', total_bobot_posisi=total_bobot_per_position)
     else:
-        flash('Anda tidak memiliki izin untuk menambah data kriteria',
-              'danger')  # Tampilkan pesan error
+        flash('Anda tidak memiliki izin untuk menambah data kriteria', 'danger')
         return redirect('/lihat_data_kriteria')
 
 

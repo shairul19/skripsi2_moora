@@ -5,7 +5,7 @@
 -- Dumped from database version 15.4
 -- Dumped by pg_dump version 15.4
 
--- Started on 2023-08-22 17:38:39
+-- Started on 2023-08-22 20:46:09
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -234,9 +234,9 @@ ALTER TABLE ONLY public.tbl_users ALTER COLUMN id_user SET DEFAULT nextval('publ
 --
 
 COPY public.tbl_admin (id_admin, id_user, nama_admin, tgl_lahir_admin, jabatan, created_at, updated_at) FROM stdin;
-7	73	WAWAN HENDRA	1970-03-17	Head Coach	2023-08-09 17:34:06.823263	2023-08-09 17:34:06.823263
 8	74	MUKTI HERIANSYAH	1981-10-13	Asst. Coach	2023-08-09 18:13:00.872024	2023-08-09 18:13:00.872024
 6	30	SUPERADMIN	1970-01-04	superadmin	2023-08-09 13:55:56.273797	2023-08-09 13:55:56.273797
+7	73	WAWAN HENDRAWAN	1970-03-17	Head Coach	2023-08-09 17:34:06.823263	2023-08-09 17:34:06.823263
 \.
 
 
@@ -291,7 +291,7 @@ COPY public.tbl_kriteria (id_kriteria, kode_kriteria, nama_kriteria, posisi, tip
 50	CFW10	Shoot	FW	benefit	0.15
 51	CFW11	Finishing	FW	benefit	0.15
 52	CFW12	Drible	FW	benefit	0.08
-58	CFW13	Serenity	FW	benefit	0.07
+60	CFW13	Serenity	FW	benefit	0.07
 \.
 
 
@@ -361,6 +361,7 @@ COPY public.tbl_pemain (nisn, id_user, nama_pemain, tgl_lahir_pemain, posisi, as
 0082914887	33	PAHRI MAUL	2008-03-18	GK	SMAN 7 KABUPATEN TANGERANG	2023-08-09 15:41:54.95004	2023-08-09 15:41:54.95004
 0092908938	34	FARHAN SEPTI	2009-12-03	GK	SMAN 6 KABUPATEN TANGERANG	2023-08-09 15:51:30.277078	2023-08-09 15:51:30.277078
 0095656740	70	FAREL PUTRA S	2009-09-09	FW	SMPN 1 PAKUHAJI	2023-08-09 16:57:12.642096	2023-08-09 16:57:12.642096
+0089769870	79	MUHAMMAD FATURRAHMAN	2008-10-10	DF	SMAN 7 KABUPATEN TANGERANG	2023-08-22 18:18:03.158379	2023-08-22 18:18:03.158379
 \.
 
 
@@ -413,8 +414,8 @@ COPY public.tbl_users (id_user, username, password, role, created_at, updated_at
 73	wawan	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	admin	2023-08-09 17:33:45.822058	2023-08-09 17:33:45.822058	t	f
 74	mukti	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	admin	2023-08-09 17:34:47.168467	2023-08-09 17:34:47.168467	t	f
 30	superadmin	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	superadmin	2023-08-09 13:55:20.476741	2023-08-09 13:55:20.476741	t	f
-79	fatur	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	user	2023-08-22 16:16:37.955689	2023-08-22 16:16:37.955689	f	f
 80	ferry	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	admin	2023-08-22 16:20:32.318094	2023-08-22 16:20:32.318094	t	f
+79	fatur	a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3	user	2023-08-22 16:16:37.955689	2023-08-22 16:16:37.955689	f	t
 \.
 
 
@@ -433,7 +434,7 @@ SELECT pg_catalog.setval('public.tbl_admin_id_admin_seq', 9, true);
 -- Name: tbl_kriteria_id_kriteria_seq; Type: SEQUENCE SET; Schema: public; Owner: shairul
 --
 
-SELECT pg_catalog.setval('public.tbl_kriteria_id_kriteria_seq', 58, true);
+SELECT pg_catalog.setval('public.tbl_kriteria_id_kriteria_seq', 60, true);
 
 
 --
@@ -526,7 +527,7 @@ ALTER TABLE ONLY public.tbl_pemain
     ADD CONSTRAINT tbl_pemain_id_user_fkey FOREIGN KEY (id_user) REFERENCES public.tbl_users(id_user);
 
 
--- Completed on 2023-08-22 17:38:40
+-- Completed on 2023-08-22 20:46:09
 
 --
 -- PostgreSQL database dump complete
