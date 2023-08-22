@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}
+Data Pengguna
+{% endblock %}
+
+{% block content %}
+<!--Main-->
+<main class="mt-5 pt-3">
+    <div class="col-md-12 p-4 pt-2">
+
+        <h3><i class="fa-solid fa-people-group"></i> DATA PENGGUNA</h3>
+        <hr>
+
+        <div class="row">
+            <table class="table table-sm table-striped table-hover">
+                <tr class="table-dark">
+                    <th>No.</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Created At</th>
+                    <th>Aksi</th>
+                </tr>
+                {% if data_users %}
+                {% for user in data_users %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ user[1] }}</td>
+                    <td>{{ user[2] }}</td>
+                    <td>{{ user[3] }}</td>
+                    <td>
+                        <!-- Button trigger modal -->
+
+                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#hapusModal{{ user[0] }}">
+                            <i class="fa-solid fa-trash-can"></i>Hapus
+                        </button>
+
+                        <!-- Modal Konfirmasi Hapus -->
+                        <div class="modal fade" id="hapusModal{{ user[0] }}" tabindex="-1"
+                            aria-labelledby="hapusModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="hapusModalLabel">Konfirmasi Hapus</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Apakah Anda yakin ingin menghapus data {{user[1]}}?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Batal</button>
+                                        <form method="POST" action="/hapus_data_user/{{ user[0] }}">
+                                            <button type="submit" class="btn btn-danger">Hapus</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
+        </div>
+    </div>
+</main>
+<!--Main-->
+{% endblock %}
