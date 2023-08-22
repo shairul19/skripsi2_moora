@@ -35,17 +35,15 @@ def cek_username(username):
     count = cur.fetchone()[0]
     return count > 0
 
+
 # Function untuk mengenkripsi password menggunakan SHA256
-
-
 def hash_password(password):
     sha256_hash = hashlib.sha256()
     sha256_hash.update(password.encode('utf-8'))
     return sha256_hash.hexdigest()
 
+
 # Function lengkapi data user
-
-
 def lengkapi_data_user(nisn, user_id, nama_pemain, tgl_lahir_pemain, posisi, asal_sekolah):
     # Masukkan data ke tabel tbl_pemain
     cur.execute("INSERT INTO tbl_pemain (nisn, id_user, nama_pemain, tgl_lahir_pemain, posisi, asal_sekolah) VALUES (%s, %s, %s, %s, %s, %s)",
@@ -70,9 +68,8 @@ def lengkapi_data_admin(user_id, nama_admin, tgl_lahir_admin, jabatan):
         "UPDATE tbl_users SET admin_data_completed = TRUE WHERE id_user = %s", (user_id,))
     conn.commit()
 
+
 # Function mengambil data untuk profil pemain
-
-
 def get_user_profile(user_id):
     cur.execute("SELECT u.id_user, u.username, p.nisn, p.nama_pemain, p.tgl_lahir_pemain, p.posisi, p.asal_sekolah "
                 "FROM tbl_users u "
@@ -81,9 +78,8 @@ def get_user_profile(user_id):
     user_profile = cur.fetchone()
     return user_profile
 
+
 # Function mengambil data untuk profil admin
-
-
 def get_admin_profile(user_id):
     cur.execute("SELECT a.id_user, a.id_admin, a.nama_admin, a.tgl_lahir_admin, a.Jabatan, u.username "
                 "FROM tbl_admin a "
@@ -92,18 +88,16 @@ def get_admin_profile(user_id):
     admin_profile = cur.fetchone()
     return admin_profile
 
+
 # Fungsi cek id_kriteria pada tbl_nilai_kriteria
-
-
 def is_kriteria_used(id_kriteria):
     cur.execute(
         "SELECT COUNT(*) FROM tbl_nilai_kriteria WHERE id_kriteria = %s", (id_kriteria,))
     count = cur.fetchone()[0]
     return count > 0
 
+
 # function cek id_user pada tbl_pemain
-
-
 def check_pemain_for_user(user_id):
     # Lakukan query untuk memeriksa apakah ada data pemain terkait dengan user_id
     query = "SELECT COUNT(*) FROM tbl_pemain WHERE id_user = %s"
@@ -201,9 +195,8 @@ def login():
 
     return render_template('login.html')
 
+
 # Halaman Logout
-
-
 @app.route('/logout')
 def logout():
     # Membersihkan Session
@@ -219,39 +212,7 @@ def logout():
     return response
 
 
-# Halaman tambah user oleh admin
-@app.route('/tambah_user', methods=['GET', 'POST'])
-def add_user():
-    if request.method == 'POST':
-        username = request.form['username'].lower()
-        password = request.form['password']
-        role = request.form['role']
-
-        if cek_username(username):
-            # Username sudah ada, tampilkan pesan error
-            error_message = "Username sudah terdaftar. Silakan pilih username lain."
-            return render_template('tambah_user.html', error_message=error_message)
-
-        # Enkripsi password
-        hashed_password = hash_password(password)
-
-        try:
-            cur.execute("INSERT INTO tbl_users (username, password, role) VALUES (%s, %s, %s)",
-                        (username, hashed_password, role))
-            conn.commit()
-            # Pendaftaran berhasil
-            success = "User berhasil didaftarkan"
-            return render_template('tambah_user.html', success=success)
-        except Exception as e:
-            # Gagal memasukkan data, tampilkan pesan error
-            error_message_db = "Gagal mendaftarkan user. Silakan coba lagi."
-            return render_template('tambah_user.html', error_message_db=error_message_db)
-
-    return render_template('tambah_user.html')
-
 # Halaman lengkapi data user
-
-
 @app.route('/lengkapi_data_user', methods=['GET', 'POST'])
 def lengkapi_data_user_page():
     if 'user_id' in session and session['role'] == 'user':
@@ -269,66 +230,6 @@ def lengkapi_data_user_page():
             return redirect('/halaman_pengguna')
 
         return render_template('lengkapi_data_user.html')
-    else:
-        return redirect('/login')
-
-# Halaman Profil Pemain
-
-
-@app.route('/profil')
-def profil():
-    if 'user_id' in session and session['role'] == 'user':
-        user_id = session['user_id']
-        user_profile = get_user_profile(user_id)
-        return render_template('profil_pemain.html', user_profile=user_profile)
-    else:
-        user_id = session['user_id']
-        admin_profile = get_admin_profile(user_id)
-        return render_template('profil_admin.html', admin_profile=admin_profile)
-
-    return redirect('/login')
-
-
-# Halaman update profil
-@app.route('/update_profil', methods=['GET', 'POST'])
-def update_profil():
-    if 'user_id' in session:
-        user_id = session['user_id']
-        role = session['role']
-
-        if role == 'user':
-            user_profile = get_user_profile(user_id)
-
-            if request.method == 'POST':
-                nama_pemain = request.form['nama_pemain'].upper()
-                tgl_lahir_pemain = request.form['tgl_lahir_pemain']
-                asal_sekolah = request.form['asal_sekolah'].upper()
-
-                # Update data profil pemain
-                cur.execute("UPDATE tbl_pemain SET nama_pemain = %s, tgl_lahir_pemain = %s, asal_sekolah = %s WHERE id_user = %s",
-                            (nama_pemain, tgl_lahir_pemain, asal_sekolah, user_id))
-                conn.commit()
-
-                return redirect('/profil')
-
-            return render_template('update_profil.html', user_profile=user_profile)
-
-        elif role == 'admin':
-            admin_profile = get_admin_profile(user_id)
-
-            if request.method == 'POST':
-                nama_admin = request.form['nama_admin'].upper()
-                tgl_lahir_admin = request.form['tgl_lahir_admin']
-                jabatan = request.form['jabatan']
-
-                # Update data profil admin
-                cur.execute("UPDATE tbl_admin SET nama_admin = %s, tgl_lahir_admin = %s, jabatan = %s WHERE id_user = %s",
-                            (nama_admin, tgl_lahir_admin, jabatan, user_id))
-                conn.commit()
-
-                return redirect('/profil')
-
-            return render_template('update_profil.html', admin_profile=admin_profile)
     else:
         return redirect('/login')
 
@@ -390,6 +291,65 @@ def halaman_admin():
         jumlah_pemain_dinilai = cur.fetchone()[0]
 
         return render_template('dashboard.html', jumlah_pemain=jumlah_pemain, jumlah_penilai=jumlah_penilai, jumlah_pemain_dinilai=jumlah_pemain_dinilai)
+    else:
+        return redirect('/login')
+
+
+# Halaman Profil Pemain
+@app.route('/profil')
+def profil():
+    if 'user_id' in session and session['role'] == 'user':
+        user_id = session['user_id']
+        user_profile = get_user_profile(user_id)
+        return render_template('profil_pemain.html', user_profile=user_profile)
+    else:
+        user_id = session['user_id']
+        admin_profile = get_admin_profile(user_id)
+        return render_template('profil_admin.html', admin_profile=admin_profile)
+
+    return redirect('/login')
+
+
+# Halaman update profil
+@app.route('/update_profil', methods=['GET', 'POST'])
+def update_profil():
+    if 'user_id' in session:
+        user_id = session['user_id']
+        role = session['role']
+
+        if role == 'user':
+            user_profile = get_user_profile(user_id)
+
+            if request.method == 'POST':
+                nama_pemain = request.form['nama_pemain'].upper()
+                tgl_lahir_pemain = request.form['tgl_lahir_pemain']
+                asal_sekolah = request.form['asal_sekolah'].upper()
+
+                # Update data profil pemain
+                cur.execute("UPDATE tbl_pemain SET nama_pemain = %s, tgl_lahir_pemain = %s, asal_sekolah = %s WHERE id_user = %s",
+                            (nama_pemain, tgl_lahir_pemain, asal_sekolah, user_id))
+                conn.commit()
+
+                return redirect('/profil')
+
+            return render_template('update_profil.html', user_profile=user_profile)
+
+        elif role == 'admin':
+            admin_profile = get_admin_profile(user_id)
+
+            if request.method == 'POST':
+                nama_admin = request.form['nama_admin'].upper()
+                tgl_lahir_admin = request.form['tgl_lahir_admin']
+                jabatan = request.form['jabatan']
+
+                # Update data profil admin
+                cur.execute("UPDATE tbl_admin SET nama_admin = %s, tgl_lahir_admin = %s, jabatan = %s WHERE id_user = %s",
+                            (nama_admin, tgl_lahir_admin, jabatan, user_id))
+                conn.commit()
+
+                return redirect('/profil')
+
+            return render_template('update_profil.html', admin_profile=admin_profile)
     else:
         return redirect('/login')
 
@@ -468,12 +428,11 @@ def lihat_data_pemain():
     else:
         return redirect('/login')
 
+
 # Halaman Edit Data Pemain
-
-
 @app.route('/edit_data_pemain/<nisn>', methods=['GET', 'POST'])
 def edit_data_pemain(nisn):
-    if 'user_id' in session:
+    if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
         if request.method == 'POST':
             nama_baru = request.form['nama'].upper()
             posisi_baru = request.form['posisi']
@@ -496,11 +455,10 @@ def edit_data_pemain(nisn):
 
         return render_template('edit_data_pemain.html', data_pemain=data_pemain)
     else:
-        return redirect('/login')
+        return redirect('/lihat_data_pemain')
+
 
 # Halaman Hapus Data Pemain
-
-
 @app.route('/hapus_data_pemain/<string:nisn>', methods=['POST'])
 def hapus_data_pemain(nisn):
     if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
@@ -616,9 +574,8 @@ def hapus_data_admin(id_admin):
               'danger')  # Tampilkan pesan error
         return redirect('/lihat_data_tim_seleksi')
 
+
 # Halaman lihat data kriteria
-
-
 @app.route('/lihat_data_kriteria', methods=['GET', 'POST'])
 def lihat_data_kriteria():
     if 'user_id' in session:
@@ -696,24 +653,28 @@ def lihat_data_kriteria():
 # Halaman tambah kriteria
 @app.route('/tambah_kriteria', methods=['GET', 'POST'])
 def tambah_kriteria():
-    if request.method == 'POST':
-        kode_kriteria = request.form['kode_kriteria'].upper()
-        nama_kriteria = request.form['nama_kriteria']
-        posisi = request.form['posisi']
-        bobot = request.form['bobot']
-        tipe = request.form['tipe']
+    if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
+        if request.method == 'POST':
+            kode_kriteria = request.form['kode_kriteria'].upper()
+            nama_kriteria = request.form['nama_kriteria']
+            posisi = request.form['posisi']
+            bobot = request.form['bobot']
+            tipe = request.form['tipe']
 
-        cur.execute("INSERT INTO tbl_kriteria (kode_kriteria, nama_kriteria, posisi, bobot, tipe) VALUES (%s, %s, %s, %s, %s)",
-                    (kode_kriteria, nama_kriteria, posisi, bobot, tipe))
-        conn.commit()
+            cur.execute("INSERT INTO tbl_kriteria (kode_kriteria, nama_kriteria, posisi, bobot, tipe) VALUES (%s, %s, %s, %s, %s)",
+                        (kode_kriteria, nama_kriteria, posisi, bobot, tipe))
+            conn.commit()
 
+            return redirect('/lihat_data_kriteria')
+
+        return render_template('tambah_kriteria.html')
+    else:
+        flash('Anda tidak memiliki izin untuk menambah data kriteria',
+              'danger')  # Tampilkan pesan error
         return redirect('/lihat_data_kriteria')
 
-    return render_template('tambah_kriteria.html')
 
 # Fungsi Hapus Kriteria
-
-
 @app.route('/hapus_data_kriteria/<int:id_kriteria>', methods=['POST'])
 def hapus_data_kriteria(id_kriteria):
     if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
@@ -729,9 +690,8 @@ def hapus_data_kriteria(id_kriteria):
               'danger')  # Tampilkan pesan error
         return redirect('/lihat_data_kriteria')
 
+
 # Fungsi untuk mengedit kriteria
-
-
 @app.route('/edit_kriteria/<int:id_kriteria>', methods=['GET', 'POST'])
 def edit_kriteria(id_kriteria):
     if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
@@ -755,11 +715,12 @@ def edit_kriteria(id_kriteria):
 
         return render_template('edit_kriteria.html', kriteria=kriteria)
     else:
-        return redirect('/login')
+        flash('Anda tidak memiliki izin untuk mengedit data kriteria',
+              'danger')
+        return redirect('/lihat_data_kriteria')
+
 
 # Halaman penilaian pemain
-
-
 @app.route('/penilaian_pemain', methods=['GET', 'POST'])
 def penilaian_pemain():
     if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
@@ -783,11 +744,10 @@ def penilaian_pemain():
 
         return render_template('penilaian_pemain.html', data_posisi=data_posisi)
     else:
-        return redirect('/login')
+        return redirect('/data_nilai_pemain')
+
 
 # Halaman input nilai pemain
-
-
 @app.route('/input_nilai_pemain/<nisn>', methods=['GET', 'POST'])
 def input_nilai(nisn):
     if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
@@ -819,12 +779,11 @@ def input_nilai(nisn):
     else:
         return redirect('/login')
 
+
 # Halaman Data User
-
-
 @app.route('/lihat_data_user', methods=['GET'])
 def lihat_data_user():
-    if 'user_id' in session:
+    if 'user_id' in session and session['role'] == 'superadmin':
         if request.method == 'GET':
             # Mengambil data pengguna dari tabel tbl_users
             query = "SELECT id_user, username, role, created_at, updated_at, admin_data_completed, user_data_completed FROM tbl_users"
@@ -832,13 +791,11 @@ def lihat_data_user():
             data_users = cur.fetchall()
 
             return render_template('lihat_data_user.html', data_users=data_users, check_pemain_for_user=check_pemain_for_user, check_admin_for_user=check_admin_for_user)
-
     else:
-        return redirect('/login')
+        return redirect('/lihat_data_pemain')
+
 
 # Fungsi Hapus User
-
-
 @app.route('/hapus_data_user/<int:id_user>', methods=['POST'])
 def hapus_data_user(id_user):
     if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
@@ -854,8 +811,6 @@ def hapus_data_user(id_user):
               'danger')  # Tampilkan pesan error
         return redirect('/lihat_data_user')
 
-# Baris untuk routing (end) ========================
-
 
 # Fungsi untuk mendapatkan data posisi pemain
 def get_player_positions():
@@ -863,9 +818,8 @@ def get_player_positions():
     positions = cur.fetchall()
     return [posisi[0] for posisi in positions]
 
+
 # Halaman Data Nilai Pemain
-
-
 @app.route('/data_nilai_pemain', methods=['GET', 'POST'])
 def data_nilai_pemain():
     if 'user_id' in session:
@@ -925,9 +879,8 @@ def data_nilai_pemain():
     else:
         return redirect('/login')
 
+
 # Halaman edit nilai pemain
-
-
 @app.route('/edit_nilai_pemain/<nisn>', methods=['GET', 'POST'])
 def edit_nilai_pemain(nisn):
     if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
@@ -977,6 +930,40 @@ def hapus_nilai(nisn):
         return redirect('/data_nilai_pemain')
     else:
         return redirect('/login')
+
+
+# Halaman tambah user oleh admin
+@app.route('/tambah_user', methods=['GET', 'POST'])
+def add_user():
+    if request.method == 'POST':
+        username = request.form['username'].lower()
+        password = request.form['password']
+        role = request.form['role']
+
+        if cek_username(username):
+            # Username sudah ada, tampilkan pesan error
+            error_message = "Username sudah terdaftar. Silakan pilih username lain."
+            return render_template('tambah_user.html', error_message=error_message)
+
+        # Enkripsi password
+        hashed_password = hash_password(password)
+
+        try:
+            cur.execute("INSERT INTO tbl_users (username, password, role) VALUES (%s, %s, %s)",
+                        (username, hashed_password, role))
+            conn.commit()
+            # Pendaftaran berhasil
+            success = "User berhasil didaftarkan"
+            return render_template('tambah_user.html', success=success)
+        except Exception as e:
+            # Gagal memasukkan data, tampilkan pesan error
+            error_message_db = "Gagal mendaftarkan user. Silakan coba lagi."
+            return render_template('tambah_user.html', error_message_db=error_message_db)
+
+    return render_template('tambah_user.html')
+
+# Baris untuk routing (end) ========================
+
 
 # Halaman perhitungan_pemangkatan
 
