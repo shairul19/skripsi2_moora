@@ -35,7 +35,7 @@ Data Pemain
                     <th>Posisi</th>
                     <th>Tanggal Lahir</th>
                     <th>Asal Sekolah</th>
-                    {% if 'user_id' in session and session['role'] == 'admin' %}
+                    {% if 'user_id' in session and session['role'] == 'admin' or session['role'] == 'superadmin' %}
                     <th>Aksi</th>
                     {% endif %}
                 </tr>
@@ -48,33 +48,38 @@ Data Pemain
                     <td>{{ pemain[2] }}</td>
                     <td>{{ pemain[3] }}</td>
                     <td>{{ pemain[4] }}</td>
-                    {% if 'user_id' in session and session['role'] == 'admin' %}
-                    <td><!-- Button trigger modal -->
-                        
-                            <!-- Button trigger modal -->
-                            <a href="/edit_data_pemain/{{ pemain[0] }}" class="btn btn-primary btn-sm">
-                                <i class="fa-solid fa-pen-to-square"></i>Edit
-                            </a>
-                        
+                    {% if 'user_id' in session and session['role'] == 'admin' or session['role'] == 'superadmin' %}
+                    <td>
                         <!-- Button trigger modal -->
-                        
-                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#hapusModal{{ pemain[0] }}">
+
+                        <!-- Button trigger modal -->
+                        <a href="/edit_data_pemain/{{ pemain[0] }}" class="btn btn-primary btn-sm">
+                            <i class="fa-solid fa-pen-to-square"></i>Edit
+                        </a>
+
+                        <!-- Button trigger modal -->
+
+                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#hapusModal{{ pemain[0] }}">
                             <i class="fa-solid fa-trash-can"></i>Hapus
                         </button>
-                        
+
                         <!-- Modal Konfirmasi Hapus -->
-                        <div class="modal fade" id="hapusModal{{ pemain[0] }}" tabindex="-1" aria-labelledby="hapusModalLabel" aria-hidden="true">
+                        <div class="modal fade" id="hapusModal{{ pemain[0] }}" tabindex="-1"
+                            aria-labelledby="hapusModalLabel" aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
                                         <h5 class="modal-title" id="hapusModalLabel">Konfirmasi Hapus</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
                                         Apakah Anda yakin ingin menghapus data pemain ini?
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Batal</button>
                                         <form method="POST" action="/hapus_data_pemain/{{ pemain[0] }}">
                                             <button type="submit" class="btn btn-danger">Hapus</button>
                                         </form>
@@ -94,13 +99,13 @@ Data Pemain
                         <a class="page-link" href="?page={{ current_page - 1 }}&posisi={{ posisi }}">Previous</a>
                     </li>
                     {% endif %}
-                    
+
                     {% for page_num in range(1, total_pages + 1) %}
                     <li class="page-item {% if page_num == current_page %}active{% endif %}">
                         <a class="page-link" href="?page={{ page_num }}&posisi={{ posisi }}">{{ page_num }}</a>
                     </li>
                     {% endfor %}
-                    
+
                     {% if current_page < total_pages %}
                     <li class="page-item">
                         <a class="page-link" href="?page={{ current_page + 1 }}&posisi={{ posisi }}">Next</a>
@@ -108,7 +113,7 @@ Data Pemain
                     {% endif %}
                 </ul>
             </nav>
-            
+
             {% endif %}
         </div>
     </div>

@@ -77,7 +77,7 @@
                         </div>
                     </li>
                     <li class="my-2">
-                        <a href="{% if 'role' in session and session['role'] == 'admin' %}/halaman_admin{% else %}/halaman_pengguna{% endif %}"
+                        <a href="{% if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin') %}/halaman_admin{% else %}/halaman_pengguna{% endif %}"
                             class="nav-link px-3 active">
                             <span class="me-2 ">
                                 <i class="fa-solid fa-chart-line icon"></i>
@@ -148,7 +148,7 @@
                         <hr class='dropdown-divider'>
                     </li>
 
-                    {% if 'user_id' in session and session['role'] == 'admin' %}
+                    {% if 'user_id' in session and  session['role'] == 'superadmin' %}
                     <li class='my-2'>
                         <a href='/lihat_data_user' class='nav-link px-3 active'>
                             <span class='me-2'>
@@ -162,7 +162,7 @@
                     </li>
                     {% endif %}
 
-                    {% if 'user_id' in session and session['role'] == 'admin' %}
+                    {% if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin') %}
                     <li class='my-2'>
                         <a href='/tambah_user' class='nav-link px-3 active'>
                             <span class='me-2'>

@@ -1,18 +1,19 @@
 {% extends "base.html" %}
 
 {% block title %}
-    Data Kriteria
+Data Kriteria
 {% endblock %}
 
 {% block content %}
-    <!--Main-->  
-    <main class="mt-5 pt-3">
-          <div class="col-md-12 p-4 pt-2">
-            
-          <h3> <i class="fa-solid fa-clipboard-list icon"></i>Data Kriteria</h3><hr>
-                        
-              <div class="row">
-                 {% with messages = get_flashed_messages() %}
+<!--Main-->
+<main class="mt-5 pt-3">
+    <div class="col-md-12 p-4 pt-2">
+
+        <h3> <i class="fa-solid fa-clipboard-list icon"></i>Data Kriteria</h3>
+        <hr>
+
+        <div class="row">
+            {% with messages = get_flashed_messages() %}
             {% if messages %}
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 {{ messages[0] }}
@@ -20,112 +21,118 @@
             </div>
             {% endif %}
             {% endwith %}
-                {% if 'user_id' in session and session['role'] == 'admin' %}
-                <div class="col-sm-2">
-                    <a class="btn btn-success" href="/tambah_kriteria" role="button"><i class="fa-solid fa-square-plus"> </i> Tambah</a>
-                </div><br><br>
-                {% endif %}
-                
-                <form method="POST">
-                    <label for="posisi">Pilih Posisi:</label>
-                    <select name="posisi" id="posisi">
-                        <option value="semua" {% if posisi == 'semua' %}selected{% endif %}>Semua</option>
-                        <option value="GK" {% if posisi == 'GK' %}selected{% endif %}>Penjaga Gawang (GK)</option>
-                        <option value="DF" {% if posisi == 'DF' %}selected{% endif %}>Bek (DF)</option>
-                        <option value="MF" {% if posisi == 'MF' %}selected{% endif %}>Gelandang (MF)</option>
-                        <option value="FW" {% if posisi == 'FW' %}selected{% endif %}>Penyerang (FW)</option>
-                    </select>
-                    <button type="submit" class="btn btn-secondary btn-sm">Tampilkan</button>
-                </form>
-                <br><br>
-               
-                <table class="table table-sm table-striped table-hover">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>No</th>
-                            <th>Kode Kriteria</th>
-                            <th>Nama Kriteria</th>
-                            <th>Posisi</th>
-                            <th>Bobot</th>
-                            <th>Tipe</th>
-                            {% if 'user_id' in session and session['role'] == 'admin' %}
-                            <th>Aksi</th>
-                            {% endif %}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for kriteria in data_kriteria %}
-                        <tr>
-                            <td>{{ (current_page - 1) * per_page + loop.index }}</td>
-                            <td>{{ kriteria[1] }}</td>
-                            <td>{{ kriteria[2] }}</td>
-                            <td>{{ kriteria[3] }}</td>
-                            <td>{{ kriteria[4] }}</td>
-                            <td>{{ kriteria[5] }}</td>
-                            {% if 'user_id' in session and session['role'] == 'admin' %}
-                    <td>
-                        <a href="/edit_kriteria/{{ kriteria[0] }}" class="btn btn-primary btn-sm">
-                            <i class="fa-solid fa-pen-to-square"></i> Edit
-                        </a>
-                        
-                        
-                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#hapusModal{{ kriteria[0] }}">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                    
-                    <!-- Modal Hapus -->
-                    <div class="modal fade" id="hapusModal{{ kriteria[0] }}" tabindex="-1" aria-labelledby="hapusModalLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="hapusModalLabel">Konfirmasi Hapus</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    Yakin ingin menghapus data kriteria: {{ kriteria[2] }}?
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                    <form action="/hapus_data_kriteria/{{ kriteria[0] }}" method="post">
-                                        <input type="hidden" name="_method" value="DELETE">  <!-- Optional: You can use a hidden input to mimic the DELETE method -->
-                                        <button type="submit" class="btn btn-danger">Hapus</button>
-                                    </form>
+            {% if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin') %}
+            <div class="col-sm-2">
+                <a class="btn btn-success" href="/tambah_kriteria" role="button"><i class="fa-solid fa-square-plus">
+                    </i> Tambah</a>
+            </div><br><br>
+            {% endif %}
+
+            <form method="POST">
+                <label for="posisi">Pilih Posisi:</label>
+                <select name="posisi" id="posisi">
+                    <option value="semua" {% if posisi == 'semua' %}selected{% endif %}>Semua</option>
+                    <option value="GK" {% if posisi == 'GK' %}selected{% endif %}>Penjaga Gawang (GK)</option>
+                    <option value="DF" {% if posisi == 'DF' %}selected{% endif %}>Bek (DF)</option>
+                    <option value="MF" {% if posisi == 'MF' %}selected{% endif %}>Gelandang (MF)</option>
+                    <option value="FW" {% if posisi == 'FW' %}selected{% endif %}>Penyerang (FW)</option>
+                </select>
+                <button type="submit" class="btn btn-secondary btn-sm">Tampilkan</button>
+            </form>
+            <br><br>
+
+            <table class="table table-sm table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>No</th>
+                        <th>Kode Kriteria</th>
+                        <th>Nama Kriteria</th>
+                        <th>Posisi</th>
+                        <th>Bobot</th>
+                        <th>Tipe</th>
+                        {% if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin') %}
+                        <th>Aksi</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for kriteria in data_kriteria %}
+                    <tr>
+                        <td>{{ (current_page - 1) * per_page + loop.index }}</td>
+                        <td>{{ kriteria[1] }}</td>
+                        <td>{{ kriteria[2] }}</td>
+                        <td>{{ kriteria[3] }}</td>
+                        <td>{{ kriteria[4] }}</td>
+                        <td>{{ kriteria[5] }}</td>
+                        {% if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin') %}
+                        <td>
+                            <a href="/edit_kriteria/{{ kriteria[0] }}" class="btn btn-primary btn-sm">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit
+                            </a>
+
+
+                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#hapusModal{{ kriteria[0] }}">
+                                <i class="fa-solid fa-trash-can"></i> Delete
+                            </button>
+
+                            <!-- Modal Hapus -->
+                            <div class="modal fade" id="hapusModal{{ kriteria[0] }}" tabindex="-1"
+                                aria-labelledby="hapusModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="hapusModalLabel">Konfirmasi Hapus</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Yakin ingin menghapus data kriteria: {{ kriteria[2] }}?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Batal</button>
+                                            <form action="/hapus_data_kriteria/{{ kriteria[0] }}" method="post">
+                                                <input type="hidden" name="_method" value="DELETE">
+                                                <!-- Optional: You can use a hidden input to mimic the DELETE method -->
+                                                <button type="submit" class="btn btn-danger">Hapus</button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    </td>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <br>
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if current_page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ current_page - 1 }}&posisi={{ posisi }}">Previous</a>
+                    </li>
                     {% endif %}
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <br>
-                <nav aria-label="Page navigation">
-                    <ul class="pagination justify-content-center">
-                        {% if current_page > 1 %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ current_page - 1 }}&posisi={{ posisi }}">Previous</a>
-                        </li>
-                        {% endif %}
-                        
-                        {% for page_num in range(1, total_pages + 1) %}
-                        <li class="page-item {% if page_num == current_page %}active{% endif %}">
-                            <a class="page-link" href="?page={{ page_num }}&posisi={{ posisi }}">{{ page_num }}</a>
-                        </li>
-                        {% endfor %}
-                        
-                        {% if current_page < total_pages %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ current_page + 1 }}&posisi={{ posisi }}">Next</a>
-                        </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-                
-             </div>
-          </div>
-    </main>
-    <!--Main-->
+
+                    {% for page_num in range(1, total_pages + 1) %}
+                    <li class="page-item {% if page_num == current_page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ page_num }}&posisi={{ posisi }}">{{ page_num }}</a>
+                    </li>
+                    {% endfor %}
+
+                    {% if current_page < total_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ current_page + 1 }}&posisi={{ posisi }}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+        </div>
+    </div>
+</main>
+<!--Main-->
 {% endblock %}

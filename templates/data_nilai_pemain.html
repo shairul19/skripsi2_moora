@@ -21,7 +21,7 @@ Nilai Pemain
             </div>
             {% endif %}
             {% endwith %}
-            {% if 'user_id' in session and session['role'] == 'admin' %}
+            {% if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin') %}
             <div class="col-sm-2">
                 <a class="btn btn-success" href="/penilaian_pemain" role="button"><i class="fa-solid fa-square-plus">
                     </i> Tambah</a>
@@ -47,7 +47,7 @@ Nilai Pemain
                         {% for kriteria_id, kriteria_name in kriteria_list.items() %}
                         <th>{{ kriteria_name }}</th>
                         {% endfor %}
-                        {% if 'user_id' in session and session['role'] == 'admin' %}
+                        {% if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin') %}
                         <th>Aksi</th>
                         {% endif %}
                     </tr>
@@ -60,7 +60,7 @@ Nilai Pemain
                         {% for kriteria_id, kriteria_name in kriteria_list.items() %}
                         <td>{{ data_dict.get(kriteria_id, '') }}</td>
                         {% endfor %}
-                        {% if 'user_id' in session and session['role'] == 'admin' %}
+                        {% if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin') %}
                         <td>
                             <!-- Button for editing -->
                             <a class="btn btn-primary btn-sm" href="/edit_nilai_pemain/{{ data_dict['nisn'] }}">
@@ -87,7 +87,8 @@ Nilai Pemain
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary"
                                                 data-bs-dismiss="modal">Batal</button>
-                                            <a href="/hapus_nilai/{{ data_dict['nisn'] }}" class="btn btn-danger">Hapus</a>
+                                            <a href="/hapus_nilai/{{ data_dict['nisn'] }}"
+                                                class="btn btn-danger">Hapus</a>
                                         </div>
                                     </div>
                                 </div>
@@ -97,11 +98,11 @@ Nilai Pemain
                     </tr>
                     {% endfor %}
                 </tbody>
-               
-                
-                
-                
-                
+
+
+
+
+
             </table>
             <!-- Pagination -->
             <nav aria-label="Page navigation">

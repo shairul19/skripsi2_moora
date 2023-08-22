@@ -19,7 +19,9 @@ Data Pengguna
                     <th>Username</th>
                     <th>Role</th>
                     <th>Created At</th>
+                    {% if 'user_id' in session and session['role'] == 'superadmin' %}
                     <th>Aksi</th>
+                    {% endif %}
                 </tr>
                 {% if data_users %}
                 {% for user in data_users %}
@@ -28,13 +30,22 @@ Data Pengguna
                     <td>{{ user[1] }}</td>
                     <td>{{ user[2] }}</td>
                     <td>{{ user[3] }}</td>
+                    {% if 'user_id' in session and session['role'] == 'superadmin' %}
                     <td>
-                        <!-- Button trigger modal -->
 
+                        <!-- Button trigger modal -->
+                        {% if check_admin_for_user(user[0]) or check_pemain_for_user(user[0]) %}
+                        <!-- Button trigger modal -->
+                        <button type="button" class="btn btn-danger btn-sm" disabled>
+                            <i class="fa-solid fa-trash-can"></i>Hapus
+                        </button>
+                        {% else %}
                         <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
                             data-bs-target="#hapusModal{{ user[0] }}">
                             <i class="fa-solid fa-trash-can"></i>Hapus
                         </button>
+
+                        {% endif %}
 
                         <!-- Modal Konfirmasi Hapus -->
                         <div class="modal fade" id="hapusModal{{ user[0] }}" tabindex="-1"
@@ -60,7 +71,7 @@ Data Pengguna
                             </div>
                         </div>
                     </td>
-                    </td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </table>

@@ -101,6 +101,27 @@ def is_kriteria_used(id_kriteria):
     count = cur.fetchone()[0]
     return count > 0
 
+# function cek id_user pada tbl_pemain
+
+
+def check_pemain_for_user(user_id):
+    # Lakukan query untuk memeriksa apakah ada data pemain terkait dengan user_id
+    query = "SELECT COUNT(*) FROM tbl_pemain WHERE id_user = %s"
+    cur.execute(query, (user_id,))
+    count = cur.fetchone()[0]
+
+    return count > 0  # Mengembalikan True jika ada data pemain, False jika tidak
+
+
+# function cek id_user pada tbl_admin
+def check_admin_for_user(user_id):
+    query = "SELECT COUNT(*) FROM tbl_admin WHERE id_user = %s"
+    cur.execute(query, (user_id,))
+    count = cur.fetchone()[0]
+
+    return count > 0
+
+
 # Baris Function (END) ===============================
 
 
@@ -166,7 +187,7 @@ def login():
                 else:
                     # Jika role user dan data sudah lengkap, arahkan ke halaman lain untuk pengguna yang sudah login
                     return redirect('/halaman_pengguna')
-            elif role == 'admin':
+            elif role == 'admin' or role == 'superadmin':
                 if not admin_data_completed:
                     # Jika role admin dan data belum lengkap, arahkan ke halaman lengkapi data admin
                     return redirect('/lengkapi_data_admin')
@@ -315,7 +336,7 @@ def update_profil():
 # Halaman lengkapi data admin
 @app.route('/lengkapi_data_admin', methods=['GET', 'POST'])
 def lengkapi_data_admin_page():
-    if 'user_id' in session and session['role'] == 'admin':
+    if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
         if request.method == 'POST':
             nama_admin = request.form['nama_admin'].upper()
             tgl_lahir_admin = request.form['tgl_lahir_admin']
@@ -355,7 +376,7 @@ def halaman_pengguna():
 # Halaman admin setelah login
 @app.route('/halaman_admin')
 def halaman_admin():
-    if 'user_id' in session and session['role'] == 'admin':
+    if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
         cur.execute("SELECT COUNT (*) FROM tbl_pemain")
         conn.commit()
         jumlah_pemain = cur.fetchone()[0]
@@ -447,6 +468,8 @@ def lihat_data_pemain():
     else:
         return redirect('/login')
 
+# Halaman Edit Data Pemain
+
 
 @app.route('/edit_data_pemain/<nisn>', methods=['GET', 'POST'])
 def edit_data_pemain(nisn):
@@ -475,10 +498,12 @@ def edit_data_pemain(nisn):
     else:
         return redirect('/login')
 
+# Halaman Hapus Data Pemain
+
 
 @app.route('/hapus_data_pemain/<string:nisn>', methods=['POST'])
 def hapus_data_pemain(nisn):
-    if 'user_id' in session and session['role'] == 'admin':
+    if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
         try:
             # Hapus data pemain dari tbl_nilai_kriteria
             cur.execute(
@@ -527,10 +552,10 @@ def lihat_data_tim_seleksi():
 
             # Mengambil Data admin untuk halaman tertentu
             if jabatan == 'semua':
-                query = "SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE nama_admin != 'SUPERADMIN' LIMIT %s OFFSET %s"
+                query = "SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin LIMIT %s OFFSET %s"
                 cur.execute(query, (per_page, offset))
             else:
-                query = "SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE jabatan = %s AND nama_admin != 'SUPERADMIN' LIMIT %s OFFSET %s"
+                query = "SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE jabatan = %s LIMIT %s OFFSET %s"
                 cur.execute(query, (jabatan, per_page, offset))
 
             data_tim_seleksi = cur.fetchall()
@@ -561,10 +586,10 @@ def lihat_data_tim_seleksi():
 
             # Mengambil Data admin untuk halaman tertentu
             if jabatan == 'semua':
-                query = "SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE nama_admin != 'SUPERADMIN' LIMIT %s OFFSET %s"
+                query = "SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin LIMIT %s OFFSET %s"
                 cur.execute(query, (per_page, offset))
             else:
-                query = "SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE jabatan = %s AND nama_admin != 'SUPERADMIN' LIMIT %s OFFSET %s"
+                query = "SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE jabatan = %s LIMIT %s OFFSET %s"
                 cur.execute(query, (jabatan, per_page, offset))
 
             data_tim_seleksi = cur.fetchall()
@@ -573,6 +598,23 @@ def lihat_data_tim_seleksi():
 
     else:
         return redirect('/login')
+
+
+# Halaman Hapus Data Tim Seleksi
+@app.route('/hapus_data_admin/<int:id_admin>', methods=['POST'])
+def hapus_data_admin(id_admin):
+    if 'user_id' in session and session['role'] == 'superadmin':
+        # Lakukan operasi delete di sini, misalnya dengan menggunakan query SQL
+        cur.execute(
+            "DELETE FROM tbl_admin WHERE id_admin = %s", (id_admin,))
+        conn.commit()  # Jangan lupa untuk commit perubahan
+        # Tampilkan pesan sukses
+        flash('Data Admin berhasil dihapus', 'success')
+        return redirect('/lihat_data_tim_seleksi')
+    else:
+        flash('Anda tidak memiliki izin untuk menghapus data kriteria',
+              'danger')  # Tampilkan pesan error
+        return redirect('/lihat_data_tim_seleksi')
 
 # Halaman lihat data kriteria
 
@@ -655,7 +697,7 @@ def lihat_data_kriteria():
 @app.route('/tambah_kriteria', methods=['GET', 'POST'])
 def tambah_kriteria():
     if request.method == 'POST':
-        kode_kriteria = request.form['kode_kriteria']
+        kode_kriteria = request.form['kode_kriteria'].upper()
         nama_kriteria = request.form['nama_kriteria']
         posisi = request.form['posisi']
         bobot = request.form['bobot']
@@ -674,7 +716,7 @@ def tambah_kriteria():
 
 @app.route('/hapus_data_kriteria/<int:id_kriteria>', methods=['POST'])
 def hapus_data_kriteria(id_kriteria):
-    if 'user_id' in session and session['role'] == 'admin':
+    if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
         # Lakukan operasi delete di sini, misalnya dengan menggunakan query SQL
         cur.execute(
             "DELETE FROM tbl_kriteria WHERE id_kriteria = %s", (id_kriteria,))
@@ -692,7 +734,7 @@ def hapus_data_kriteria(id_kriteria):
 
 @app.route('/edit_kriteria/<int:id_kriteria>', methods=['GET', 'POST'])
 def edit_kriteria(id_kriteria):
-    if 'user_id' in session and session['role'] == 'admin':
+    if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
         cur.execute("SELECT id_kriteria, kode_kriteria, nama_kriteria, posisi, tipe, bobot "
                     "FROM tbl_kriteria WHERE id_kriteria = %s", (id_kriteria,))
         kriteria = cur.fetchone()
@@ -720,7 +762,7 @@ def edit_kriteria(id_kriteria):
 
 @app.route('/penilaian_pemain', methods=['GET', 'POST'])
 def penilaian_pemain():
-    if 'user_id' in session and session['role'] == 'admin':
+    if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
         # Mengambil data posisi pemain dari tabel tbl_pemain
         cur.execute("SELECT DISTINCT posisi FROM tbl_pemain")
         data_posisi = cur.fetchall()
@@ -748,7 +790,7 @@ def penilaian_pemain():
 
 @app.route('/input_nilai_pemain/<nisn>', methods=['GET', 'POST'])
 def input_nilai(nisn):
-    if 'user_id' in session and session['role'] == 'admin':
+    if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
         # Mendapatkan data pemain berdasarkan NISN
         cur.execute(
             "SELECT nisn, nama_pemain, posisi FROM tbl_pemain WHERE nisn = %s", (nisn,))
@@ -789,7 +831,7 @@ def lihat_data_user():
             cur.execute(query)
             data_users = cur.fetchall()
 
-            return render_template('lihat_data_user.html', data_users=data_users)
+            return render_template('lihat_data_user.html', data_users=data_users, check_pemain_for_user=check_pemain_for_user, check_admin_for_user=check_admin_for_user)
 
     else:
         return redirect('/login')
@@ -799,7 +841,7 @@ def lihat_data_user():
 
 @app.route('/hapus_data_user/<int:id_user>', methods=['POST'])
 def hapus_data_user(id_user):
-    if 'user_id' in session and session['role'] == 'admin':
+    if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
         # Lakukan operasi delete di sini, misalnya dengan menggunakan query SQL
         cur.execute(
             "DELETE FROM tbl_users WHERE id_user = %s", (id_user,))
@@ -815,48 +857,12 @@ def hapus_data_user(id_user):
 # Baris untuk routing (end) ========================
 
 
-# Function to get the list of available player positions
+# Fungsi untuk mendapatkan data posisi pemain
 def get_player_positions():
     cur.execute("SELECT DISTINCT posisi FROM tbl_pemain")
     positions = cur.fetchall()
     return [posisi[0] for posisi in positions]
 
-
-"""
-# Halaman data_tbl_nilai_kriteria
-@app.route('/data_tbl_nilai_kriteria', methods=['GET', 'POST'])
-def data_tbl_nilai_kriteria():
-    if 'user_id' in session:  # Make sure the user is logged in (adjust as per your requirements)
-        if request.method == 'POST':
-            posisi_pemain = request.form['posisi_pemain']
-
-            # Query data dari tabel tbl_nilai_kriteria dan gabungkan dengan tbl_pemain dan tbl_kriteria
-            cur.execute("SELECT p.nisn, p.nama_pemain, k.nama_kriteria, nk.nilai, k.id_kriteria "
-                        "FROM tbl_nilai_kriteria nk "
-                        "JOIN tbl_pemain p ON nk.nisn = p.nisn "
-                        "JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria "
-                        "WHERE p.posisi = %s", (posisi_pemain,))
-            data_nilai_kriteria = cur.fetchall()
-
-            # Create a DataFrame
-            df = pd.DataFrame(data_nilai_kriteria, columns=['nisn','nama_pemain', 'nama_kriteria', 'nilai', 'id_kriteria'])
-
-            # Use pivot to reshape the DataFrame
-            pivot_df = df.pivot(index='nama_pemain', columns='id_kriteria', values='nilai')
-
-            # Reset the column names to use "nama_kriteria" instead of "id_kriteria"
-            pivot_df.columns = [kriteria for kriteria in df['nama_kriteria'].unique()]
-
-            # Convert the pivot DataFrame to a list of dictionaries
-            table_data = pivot_df.reset_index().to_dict(orient='records')
-
-            return render_template('data_tbl_nilai_kriteria.html', table_data=table_data, positions=get_player_positions(), posisi_pemain=posisi_pemain)
-
-        return render_template('data_tbl_nilai_kriteria.html', positions=get_player_positions())
-    else:
-        return redirect('/login')
-"""
-# Halaman Data Nilai Pemain
 # Halaman Data Nilai Pemain
 
 
@@ -919,10 +925,12 @@ def data_nilai_pemain():
     else:
         return redirect('/login')
 
+# Halaman edit nilai pemain
+
 
 @app.route('/edit_nilai_pemain/<nisn>', methods=['GET', 'POST'])
 def edit_nilai_pemain(nisn):
-    if 'user_id' in session and session['role'] == 'admin':
+    if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
         # Query data dari tabel tbl_nilai_kriteria untuk nisn tertentu
         cur.execute("SELECT nk.id_kriteria, nk.nilai, k.nama_kriteria "
                     "FROM tbl_nilai_kriteria nk "
@@ -957,7 +965,7 @@ def edit_nilai_pemain(nisn):
 # Halaman Delete nilai pemain
 @app.route('/hapus_nilai/<nisn>', methods=['GET', 'POST'])
 def hapus_nilai(nisn):
-    if 'user_id' in session and session['role'] == 'admin':
+    if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
         # Perform the deletion operation here, e.g., using a database query
         cur.execute("DELETE FROM tbl_nilai_kriteria WHERE nisn = %s", (nisn,))
         conn.commit()  # Commit the transaction
@@ -1059,6 +1067,8 @@ def perhitungan_jumlah_pemangkatan():
         return render_template('perhitungan_jumlah_pemangkatan.html', positions=get_player_positions())
     else:
         return redirect('/login')
+
+# Function
 
 
 def calculate_sum_of_squared_values(data):

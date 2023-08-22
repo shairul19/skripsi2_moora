@@ -17,6 +17,7 @@ Data Tim Seleksi
                 <label for="jabatan">Pilih Jabatan:</label>
                 <select name="jabatan" id="jabatan">
                     <option value="semua" {% if jabatan == 'semua' %}selected{% endif %}>Lihat Semua</option>
+                    <option value="superadmin" {% if jabatan == 'superadmin' %}selected{% endif %}>Superadmin</option>
                     <option value="Head Coach" {% if jabatan == 'Head Coach' %}selected{% endif %}>Head Coach</option>
                     <option value="Asst. Coach" {% if jabatan == 'Asst. Coach' %}selected{% endif %}>Asst. Coach
                     </option>
@@ -33,7 +34,9 @@ Data Tim Seleksi
                     <th>Nama</th>
                     <th>Tanggal Lahir</th>
                     <th>Jabatan</th>
-                   
+                    {% if 'user_id' in session and session['role'] == 'superadmin' %}
+                    <th>Aksi</th>
+                    {% endif %}
                 </tr>
                 {% if data_tim_seleksi %}
                 {% for tim in data_tim_seleksi %}
@@ -42,7 +45,39 @@ Data Tim Seleksi
                     <td>{{ tim[1] }}</td>
                     <td>{{ tim[2] }}</td>
                     <td>{{ tim[3] }}</td>
-                    
+                    {% if 'user_id' in session and session['role'] == 'superadmin' %}
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#hapusModal{{ tim[0] }}">
+                            <i class="fa-solid fa-trash-can"></i>Hapus
+                        </button>
+
+                        <!-- Modal Konfirmasi Hapus -->
+                        <div class="modal fade" id="hapusModal{{ tim[0] }}" tabindex="-1"
+                            aria-labelledby="hapusModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="hapusModalLabel">Konfirmasi Hapus</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Apakah Anda yakin ingin menghapus data {{tim[1]}}?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Batal</button>
+                                        <form method="POST" action="/hapus_data_admin/{{ tim[0] }}">
+                                            <button type="submit" class="btn btn-danger">Hapus</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                    </td>
                 </tr>
                 {% endfor %}
             </table>
