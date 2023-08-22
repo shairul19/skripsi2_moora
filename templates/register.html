@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -9,10 +10,12 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='sweetalert/sweetalert2.min.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
 <body>
   <div class="container">
     <div class="register">
-      <form method="POST" action="/register" id="registerForm"> <!-- Add id="registerForm" to the form -->
+      <form method="POST" action="/register" id="registerForm">
+        <!-- Add id="registerForm" to the form -->
         <h1>Daftar</h1>
         <hr>
         {% if error_message %}
@@ -32,16 +35,17 @@
           {{success}}
         </div>
         {% endif %}
-  
+
         <label for="">Username</label>
         <input type="text" id="username" name="username" placeholder="Username" required>
         <label for="">Password</label>
-        <input type="password" id="password" name="password" placeholder="Password" required> <!-- Use lowercase "password" for the input type -->
+        <input type="password" id="password" name="password" placeholder="Password" required>
+        <!-- Use lowercase "password" for the input type -->
         <label for="">Role</label>
         <select name="role" id="role" required>
-            <option value="user" selected>User</option>
+          <option value="user" selected>User</option>
         </select>
-        
+
         <button type="submit" value="Register">Daftar</button>
         <p>
           <a href="/login">Login</a>
@@ -58,6 +62,7 @@
   <script src="{{ url_for('static', filename='sweetalert/sweetalert2.min.js') }}"></script>
 
   <!-- JavaScript code to show SweetAlert 2 notification -->
-  
+
 </body>
+
 </html>

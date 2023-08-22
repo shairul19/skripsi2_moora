@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -8,25 +9,41 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css')  }}">
     <title>Lengkapi Data User</title>
 </head>
+
 <body>
-    
+
     <div class="global-container">
         <div class="card lengkapi-data-user-form">
             <div class="card-text">
                 <h2 class="card-title text-center">Lengkapi Data User</h2>
                 <hr>
+                {% if error_message %}
+                <div class="notification-red">
+                    {{error_message}}
+                </div>
+                {% endif %}
+
+                {% if error_message_db %}
+                <div class="notification-red">
+                    {{error_message_db}}
+                </div>
+                {% endif %}
+
                 <form method="POST" action="/lengkapi_data_user">
                     <div class="mb-3">
                         <label for="nisn" class="form-label">NISN</label>
-                        <input type="text" pattern="[0-9]{10}" name="nisn" class="form-control" id="nisn" aria-describedby="nama_admin" placeholder="NISN" required>
-                      </div>
+                        <input type="text" pattern="[0-9]{10}" name="nisn" class="form-control" id="nisn"
+                            aria-describedby="nama_admin" placeholder="NISN" required>
+                    </div>
                     <div class="mb-3">
-                      <label for="nama-pemain" class="form-label">Nama Pemain</label>
-                      <input type="text" name="nama_pemain" class="form-control" id="nama_pemain" aria-describedby="nama_pemain" placeholder="Nama Lengkap" required>
+                        <label for="nama-pemain" class="form-label">Nama Pemain</label>
+                        <input type="text" name="nama_pemain" class="form-control" id="nama_pemain"
+                            aria-describedby="nama_pemain" placeholder="Nama Lengkap" required>
                     </div>
                     <div class="mb-3">
                         <label for="tgl_lahir" class="form-label">Tanggal Lahir</label>
-                        <input type="date" name="tgl_lahir_pemain" class="form-control" id="tgl_lahir_pemain" aria-describedby="tgl_lahir_pemain" required>
+                        <input type="date" name="tgl_lahir_pemain" class="form-control" id="tgl_lahir_pemain"
+                            aria-describedby="tgl_lahir_pemain" required>
                     </div>
                     <div class="mb-3">
                         <label for="posisi" class="form-label">Posisi</label>
@@ -40,7 +57,8 @@
                     </div>
                     <div class="mb-3">
                         <label for="asal_sekolah" class="form-label">Asal Sekolah</label>
-                        <input type="text" name="asal_sekolah" class="form-control" id="asal_sekolah" aria-describedby="asal_sekolah" placeholder="Asal Sekolah" required>
+                        <input type="text" name="asal_sekolah" class="form-control" id="asal_sekolah"
+                            aria-describedby="asal_sekolah" placeholder="Asal Sekolah" required>
                     </div>
                     <button type="submit" value="Simpan" class="btn btn-primary">Submit</button>
                 </form>
@@ -50,4 +68,5 @@
 
     <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js')  }}"></script>
 </body>
+
 </html>

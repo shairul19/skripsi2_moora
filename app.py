@@ -43,7 +43,16 @@ def hash_password(password):
     return sha256_hash.hexdigest()
 
 
+# Function cek nisn
+def cek_nisn(nisn):
+    cur.execute(
+        "SELECT COUNT(*) FROM tbl_pemain WHERE nisn = %s", (nisn,))
+    count = cur.fetchone()[0]
+    return count > 0
+
 # Function lengkapi data user
+
+
 def lengkapi_data_user(nisn, user_id, nama_pemain, tgl_lahir_pemain, posisi, asal_sekolah):
     # Masukkan data ke tabel tbl_pemain
     cur.execute("INSERT INTO tbl_pemain (nisn, id_user, nama_pemain, tgl_lahir_pemain, posisi, asal_sekolah) VALUES (%s, %s, %s, %s, %s, %s)",
@@ -223,7 +232,13 @@ def lengkapi_data_user_page():
             posisi = request.form['posisi']
             asal_sekolah = request.form['asal_sekolah'].upper()
 
+            if cek_nisn(nisn):
+                # nisn sudah ada, tampilkan pesan error
+                error_message = "nisn sudah terdaftar. Silakan hubungi admin."
+                return render_template('lengkapi_data_user.html', error_message=error_message)
+
             user_id = session['user_id']
+
             lengkapi_data_user(nisn, user_id, nama_pemain,
                                tgl_lahir_pemain, posisi, asal_sekolah)
 
