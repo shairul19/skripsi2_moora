@@ -1,61 +1,73 @@
 <!doctype html>
 <html lang="en">
-  <head>
+
+<head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-dashboard/bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet"
+        href="{{ url_for('static', filename='bootstrap-dashboard/bootstrap/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style-dashboard.css') }}">
     <!-- Boxicons CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/all.min.css') }}">
- <!-- SweetAlert 2 JS -->
- <script src="{{ url_for('static', filename='sweetalert/sweetalert2.min.js') }}"></script>
+    <!-- SweetAlert 2 JS -->
+    <script src="{{ url_for('static', filename='sweetalert/sweetalert2.min.js') }}"></script>
     <title>{% block title %}{% endblock %}</title>
-  </head>
-  <body>
+</head>
+
+<body>
     <!--navbar-->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container-fluid">
             <!--offcanvas triger-->
-            <button class="navbar-toggler me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
+            <button class="navbar-toggler me-2" type="button" data-bs-toggle="offcanvas"
+                data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
                 <span class="navbar-toggler-icon" data-bs-target="#offcanvasExample"></span>
-              </button>
+            </button>
             <!--offcanvas triger-->
-          <a class="navbar-brand fw-bold me-auto" href="">SPK MOORA</a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            
-            <form class="d-flex ms-auto">
-              <div class="input-group my-3 my-lg-0">
-                <input type="text" class="form-control" placeholder="Search" aria-label="Search" aria-describedby="button-addon2">
-                <button class="btn btn-primary" type="button" id="button-addon2"><i class="fa-solid fa-magnifying-glass"></i></button>
-              </div>
-            </form>
-            <ul class="navbar-nav mb-2 mb-lg-0">
-              
-                <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fa-solid fa-circle-user"></i>
-                  </a>
-                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                    <li><a class="dropdown-item" href="/profil">Profil</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="">Ubah Password</a></li>
-                  </ul>
-                </li>
-              </ul>
-          </div>
+            <a class="navbar-brand fw-bold me-auto" href="">SPK MOORA</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+                <form class="d-flex ms-auto">
+                    <div class="input-group my-3 my-lg-0">
+                        <input type="text" class="form-control" placeholder="Search" aria-label="Search"
+                            aria-describedby="button-addon2">
+                        <button class="btn btn-primary" type="button" id="button-addon2"><i
+                                class="fa-solid fa-magnifying-glass"></i></button>
+                    </div>
+                </form>
+                <ul class="navbar-nav mb-2 mb-lg-0">
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-circle-user"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="/profil">Profil</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="">Ubah Password</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
         </div>
-      </nav>
+    </nav>
     <!--navbar-->
 
     <!--offcanvas-->
-      <div class="offcanvas offcanvas-start sidebar-nav bg-dark text-white" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
-        
+    <div class="offcanvas offcanvas-start sidebar-nav bg-dark text-white" tabindex="-1" id="offcanvasExample"
+        aria-labelledby="offcanvasExampleLabel">
+
         <div class="offcanvas-body p-0">
             <nav class="navbar-dark">
                 <ul class="navbar-nav">
@@ -65,7 +77,8 @@
                         </div>
                     </li>
                     <li class="my-2">
-                        <a href="{% if 'role' in session and session['role'] == 'admin' %}/halaman_admin{% else %}/halaman_pengguna{% endif %}" class="nav-link px-3 active">
+                        <a href="{% if 'role' in session and session['role'] == 'admin' %}/halaman_admin{% else %}/halaman_pengguna{% endif %}"
+                            class="nav-link px-3 active">
                             <span class="me-2 ">
                                 <i class="fa-solid fa-chart-line icon"></i>
                             </span>
@@ -87,18 +100,18 @@
                     <li>
                         <hr class="dropdown-divider">
                     </li>
-                    
-                            <li class='my-2'>
-                                <a href='/lihat_data_tim_seleksi' class='nav-link px-3 active'>
-                                    <span class='me-2'>
-                                        <i class="fa-solid fa-user-tie icon"></i>
-                                    </span>
-                                    <span>Data Tim Seleksi</span>
-                                </a>
-                            </li>
-                            <li>
-                                <hr class='dropdown-divider'>
-                            </li>
+
+                    <li class='my-2'>
+                        <a href='/lihat_data_tim_seleksi' class='nav-link px-3 active'>
+                            <span class='me-2'>
+                                <i class="fa-solid fa-user-tie icon"></i>
+                            </span>
+                            <span>Data Tim Seleksi</span>
+                        </a>
+                    </li>
+                    <li>
+                        <hr class='dropdown-divider'>
+                    </li>
                     <li class="my-2">
                         <a href="/lihat_data_kriteria" class="nav-link px-3 active">
                             <span class="me-2 ">
@@ -110,12 +123,12 @@
                     <li>
                         <hr class="dropdown-divider">
                     </li>
-                    
+
                     <li class='my-2'>
                         <a href='/data_nilai_pemain' class='nav-link px-3 active'>
                             <span class='me-2'>
                                 <i class="fa-solid fa-file-pen icon"></i>
-                             </span>
+                            </span>
                             <span>Nilai Pemain</span>
                         </a>
                     </li>
@@ -127,7 +140,7 @@
                         <a href='/perhitungan_divisi_akar' class='nav-link px-3 active'>
                             <span class='me-2'>
                                 <i class="fa-solid fa-ranking-star icon"></i>
-                             </span>
+                            </span>
                             <span>Hasil MOORA</span>
                         </a>
                     </li>
@@ -137,10 +150,24 @@
 
                     {% if 'user_id' in session and session['role'] == 'admin' %}
                     <li class='my-2'>
+                        <a href='/data_user' class='nav-link px-3 active'>
+                            <span class='me-2'>
+                                <i class="fa-solid fa-user-plus icon"></i>
+                            </span>
+                            <span>Data User</span>
+                        </a>
+                    </li>
+                    <li>
+                        <hr class='dropdown-divider'>
+                    </li>
+                    {% endif %}
+
+                    {% if 'user_id' in session and session['role'] == 'admin' %}
+                    <li class='my-2'>
                         <a href='/tambah_user' class='nav-link px-3 active'>
                             <span class='me-2'>
                                 <i class="fa-solid fa-user-plus icon"></i>
-                             </span>
+                            </span>
                             <span>Tambah User</span>
                         </a>
                     </li>
@@ -154,7 +181,7 @@
                         <a href='/logout' class='nav-link px-3 active'>
                             <span class='me-2'>
                                 <i class="fa-solid fa-right-from-bracket icon"></i>
-                             </span>
+                            </span>
                             <span>Logout</span>
                         </a>
                     </li>
@@ -165,10 +192,10 @@
                 </ul>
             </nav>
         </div>
-      </div>
+    </div>
     <!--offcanvas-->
 
-    <!--Main-->  
+    <!--Main-->
     {% block content %}{% endblock %}
     <!--Main-->
 
@@ -176,10 +203,11 @@
 
     <!-- js -->
     <script src="{{ url_for('static', filename='bootstrap-dashboard/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-   
+
     <!-- js -->
 
     {% block js %} {% endblock %}
-    
-  </body>
+
+</body>
+
 </html>
