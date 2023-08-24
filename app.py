@@ -1317,7 +1317,7 @@ def perhitungan_divisi_akar():
             table_data.sort(key=lambda x: x['Nilai Moora'], reverse=True)
 
             # Pagination
-            per_page = 2
+            per_page = 10
             total_pages = math.ceil(len(table_data) / per_page)
             page = request.args.get('page', 1, type=int)
             offset = (page - 1) * per_page
@@ -1382,7 +1382,7 @@ def perhitungan_divisi_akar():
             table_data.sort(key=lambda x: x['Nilai Moora'], reverse=True)
 
             # Pagination
-            per_page = 2
+            per_page = 10
             total_pages = math.ceil(len(table_data) / per_page)
             page = request.args.get('page', 1, type=int)
             offset = (page - 1) * per_page
