@@ -767,25 +767,69 @@ def edit_kriteria(id_kriteria):
 @app.route('/penilaian_pemain', methods=['GET', 'POST'])
 def penilaian_pemain():
     if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
-        # Mengambil data posisi pemain dari tabel tbl_pemain
-        cur.execute("SELECT DISTINCT posisi FROM tbl_pemain")
-        data_posisi = cur.fetchall()
 
         # Mengambil NISN pemain yang sudah memiliki nilai dalam tbl_nilai_kriteria
         cur.execute("SELECT DISTINCT nisn FROM tbl_nilai_kriteria")
         data_nilai_pemain = [row[0] for row in cur.fetchall()]
 
-        if request.method == 'POST' and 'pilih_posisi' in request.form:
-            posisi_pemain = request.form['posisi_pemain']
+        if request.method == 'POST':
+            posisi = request.form['posisi']
 
-            # Mengambil data pemain berdasarkan posisi yang dipilih
-            cur.execute(
-                "SELECT nisn, nama_pemain, posisi FROM tbl_pemain WHERE posisi = %s", (posisi_pemain,))
+            if posisi == 'semua':
+                total_data_query = "SELECT COUNT(*) FROM tbl_pemain"
+                cur.execute(total_data_query)
+            else:
+                total_data_query = "SELECT COUNT(*) FROM tbl_pemain WHERE posisi = %s"
+                cur.execute(total_data_query, (posisi,))
+
+            total_data = cur.fetchone()[0]
+            # Jumlah data per halaman
+            per_page = 10
+            total_pages = math.ceil(total_data / per_page)
+
+            # Mendapatkan halaman saat ini dari parameter URL
+            page = request.args.get('page', 1, type=int)
+            offset = (page - 1) * per_page
+
+            if posisi == 'semua':
+                query = "SELECT nisn, nama_pemain, posisi FROM tbl_pemain LIMIT %s OFFSET %s"
+                cur.execute(query, (per_page, offset))
+            else:
+                query = "SELECT nisn, nama_pemain, posisi FROM tbl_pemain WHERE posisi = %s LIMIT %s OFFSET %s"
+                cur.execute(query, (posisi, per_page, offset))
+
             data_pemain = cur.fetchall()
 
-            return render_template('penilaian_pemain.html', data_posisi=data_posisi, data_pemain=data_pemain, data_nilai_pemain=data_nilai_pemain)
+            return render_template('penilaian_pemain.html', data_pemain=data_pemain, data_nilai_pemain=data_nilai_pemain, total_pages=total_pages, current_page=page, posisi=posisi, per_page=per_page)
+        else:
+            posisi = request.args.get('posisi', 'semua')
 
-        return render_template('penilaian_pemain.html', data_posisi=data_posisi)
+            if posisi == 'semua':
+                total_data_query = "SELECT COUNT(*) FROM tbl_pemain"
+                cur.execute(total_data_query)
+            else:
+                total_data_query = "SELECT COUNT(*) FROM tbl_pemain WHERE posisi = %s"
+                cur.execute(total_data_query, (posisi,))
+
+            total_data = cur.fetchone()[0]
+            # Jumlah data per halaman
+            per_page = 10
+            total_pages = math.ceil(total_data / per_page)
+
+            # Mendapatkan halaman saat ini dari parameter URL
+            page = request.args.get('page', 1, type=int)
+            offset = (page - 1) * per_page
+
+            if posisi == 'semua':
+                query = "SELECT nisn, nama_pemain, posisi FROM tbl_pemain LIMIT %s OFFSET %s"
+                cur.execute(query, (per_page, offset))
+            else:
+                query = "SELECT nisn, nama_pemain, posisi FROM tbl_pemain WHERE posisi = %s LIMIT %s OFFSET %s"
+                cur.execute(query, (posisi, per_page, offset))
+
+            data_pemain = cur.fetchall()
+
+            return render_template('penilaian_pemain.html', data_pemain=data_pemain, data_nilai_pemain=data_nilai_pemain, total_pages=total_pages, current_page=page, posisi=posisi, per_page=per_page)
     else:
         return redirect('/data_nilai_pemain')
 
