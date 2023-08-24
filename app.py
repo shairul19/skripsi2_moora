@@ -772,6 +772,8 @@ def penilaian_pemain():
         cur.execute("SELECT DISTINCT nisn FROM tbl_nilai_kriteria")
         data_nilai_pemain = [row[0] for row in cur.fetchall()]
 
+        # Hitung total bobot untuk posisi pemain yang dipilih
+
         if request.method == 'POST':
             posisi = request.form['posisi']
 
