@@ -5,7 +5,7 @@
 -- Dumped from database version 15.4
 -- Dumped by pg_dump version 15.4
 
--- Started on 2023-08-22 20:46:09
+-- Started on 2023-08-24 19:35:41
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -312,6 +312,26 @@ COPY public.tbl_nilai_kriteria (nisn, id_kriteria, nilai) FROM stdin;
 0085702480	15	65.00
 0085702480	16	80.00
 0085702480	17	85.00
+0086006326	8	14.00
+0086006326	9	177.00
+0086006326	10	90.00
+0086006326	11	76.00
+0086006326	12	80.00
+0086006326	13	90.00
+0086006326	14	99.00
+0086006326	15	88.00
+0086006326	16	80.00
+0086006326	17	76.00
+0084596941	8	15.00
+0084596941	9	176.00
+0084596941	10	90.00
+0084596941	11	78.00
+0084596941	12	87.00
+0084596941	13	88.00
+0084596941	14	60.00
+0084596941	15	90.00
+0084596941	16	90.00
+0084596941	17	90.00
 \.
 
 
@@ -527,7 +547,7 @@ ALTER TABLE ONLY public.tbl_pemain
     ADD CONSTRAINT tbl_pemain_id_user_fkey FOREIGN KEY (id_user) REFERENCES public.tbl_users(id_user);
 
 
--- Completed on 2023-08-22 20:46:09
+-- Completed on 2023-08-24 19:35:42
 
 --
 -- PostgreSQL database dump complete
