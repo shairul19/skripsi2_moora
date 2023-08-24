@@ -995,7 +995,7 @@ def data_nilai_pemain():
             kriteria_list = {row[0]: row[1] for row in cur.fetchall()}
 
             # Pagination
-            per_page = 10
+            per_page = 2
             total_pages = math.ceil(len(table_data) / per_page)
             page = request.args.get('page', 1, type=int)
             offset = (page - 1) * per_page
@@ -1254,6 +1254,8 @@ def perhitungan_akar_jumlah_pemangkatan():
     else:
         return redirect('/login')
 
+# Halaman Hasil MOORA
+
 
 @app.route('/perhitungan_divisi_akar', methods=['GET', 'POST'])
 def perhitungan_divisi_akar():
@@ -1306,7 +1308,7 @@ def perhitungan_divisi_akar():
                 elif tipe_kriteria == 'cost':
                     pivot_df_divisi_akar['Total Cost'] += nilai_kriteria
 
-            #   Calculate the Moora value for each player
+            # Calculate the Moora value for each player
             pivot_df_divisi_akar['Nilai Moora'] = pivot_df_divisi_akar['Total Benefit'] - \
                 pivot_df_divisi_akar['Total Cost']
 
@@ -1314,13 +1316,84 @@ def perhitungan_divisi_akar():
             table_data = pivot_df_divisi_akar.reset_index().to_dict(orient='records')
             table_data.sort(key=lambda x: x['Nilai Moora'], reverse=True)
 
-            # Render the HTML template with the calculated Moora values and other data
-            return render_template('perhitungan_divisi_akar.html', table_data=table_data,
-                                   criteria=pivot_df_divisi_akar.columns, positions=get_player_positions(), posisi_pemain=posisi_pemain)
+            # Pagination
+            per_page = 2
+            total_pages = math.ceil(len(table_data) / per_page)
+            page = request.args.get('page', 1, type=int)
+            offset = (page - 1) * per_page
 
-        # If the request method is GET (initial page load)
-        # Render the initial page with the dropdown list of player positions
-        return render_template('perhitungan_divisi_akar.html', positions=get_player_positions())
+            data_to_display = table_data[offset: offset + per_page]
+
+            # Render the HTML template with the calculated Moora values, pagination, and other data
+            return render_template('perhitungan_divisi_akar.html', table_data=data_to_display,
+                                   criteria=pivot_df_divisi_akar.columns, positions=get_player_positions(), posisi_pemain=posisi_pemain,
+                                   current_page=page, total_pages=total_pages, per_page=per_page)
+        else:
+            posisi_pemain = request.args.get('posisi_pemain', 'GK')
+
+            # Query data from the database for the selected player position
+            # and join data from multiple tables to get criteria values
+            cur.execute("SELECT p.nama_pemain, k.nama_kriteria, nk.nilai, k.id_kriteria "
+                        "FROM tbl_nilai_kriteria nk "
+                        "JOIN tbl_pemain p ON nk.nisn = p.nisn "
+                        "JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria "
+                        "WHERE p.posisi = %s", (posisi_pemain,))
+            data_nilai_kriteria = cur.fetchall()
+
+            # Calculate the sum of squared values for each criterion
+            sum_data = calculate_sum_of_squared_values(data_nilai_kriteria)
+
+            # Create a DataFrame and perform the calculation: nilai * nilai for each criterion
+            pivot_df_squared = create_pivot_df(
+                data_nilai_kriteria, squared=True)
+
+            # Create a new DataFrame for the division operation
+            pivot_df_divisi_akar = create_pivot_df_divisi_akar(
+                pivot_df_squared, sum_data, posisi_pemain, cur)
+
+            # Convert the values in pivot_df_divisi_akar to decimal.Decimal
+            pivot_df_divisi_akar = pivot_df_divisi_akar.applymap(
+                decimal.Decimal)
+
+            # Fetch the criteria types (benefit or cost) from the tbl_kriteria table based on the player's position (posisi_pemain)
+            cur.execute(
+                "SELECT nama_kriteria, tipe FROM tbl_kriteria WHERE posisi = %s", (posisi_pemain,))
+            criteria_types = dict(cur.fetchall())
+
+            # Calculate the Moora value for each player
+            pivot_df_divisi_akar['Total Benefit'] = decimal.Decimal(0.0)
+            pivot_df_divisi_akar['Total Cost'] = decimal.Decimal(0.0)
+
+            for kriteria in pivot_df_divisi_akar.columns:
+                nilai_kriteria = pivot_df_divisi_akar[kriteria]
+                tipe_kriteria = criteria_types.get(kriteria)
+
+                if tipe_kriteria == 'benefit':
+                    pivot_df_divisi_akar['Total Benefit'] += nilai_kriteria
+                elif tipe_kriteria == 'cost':
+                    pivot_df_divisi_akar['Total Cost'] += nilai_kriteria
+
+            # Calculate the Moora value for each player
+            pivot_df_divisi_akar['Nilai Moora'] = pivot_df_divisi_akar['Total Benefit'] - \
+                pivot_df_divisi_akar['Total Cost']
+
+            # Convert the pivot DataFrame to a list of dictionaries
+            table_data = pivot_df_divisi_akar.reset_index().to_dict(orient='records')
+            table_data.sort(key=lambda x: x['Nilai Moora'], reverse=True)
+
+            # Pagination
+            per_page = 2
+            total_pages = math.ceil(len(table_data) / per_page)
+            page = request.args.get('page', 1, type=int)
+            offset = (page - 1) * per_page
+
+            data_to_display = table_data[offset: offset + per_page]
+
+            # Render the HTML template with the calculated Moora values, pagination, and other data
+            return render_template('perhitungan_divisi_akar.html', table_data=data_to_display,
+                                   criteria=pivot_df_divisi_akar.columns, positions=get_player_positions(), posisi_pemain=posisi_pemain,
+                                   current_page=page, total_pages=total_pages, per_page=per_page)
+
     else:
         # If 'user_id' is not present in the session, redirect to the login page
         return redirect('/login')
