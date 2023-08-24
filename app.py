@@ -868,16 +868,71 @@ def input_nilai(nisn):
 
 
 # Halaman Data User
-@app.route('/lihat_data_user', methods=['GET'])
+@app.route('/lihat_data_user', methods=['GET', 'POST'])
 def lihat_data_user():
     if 'user_id' in session and session['role'] == 'superadmin':
-        if request.method == 'GET':
-            # Mengambil data pengguna dari tabel tbl_users
-            query = "SELECT id_user, username, role, created_at, updated_at, admin_data_completed, user_data_completed FROM tbl_users"
-            cur.execute(query)
+        if request.method == 'POST':
+            role = request.form['role']
+
+            if role == 'semua':
+                total_data_query = "SELECT COUNT(*) FROM tbl_users"
+                cur.execute(total_data_query)
+            else:
+                total_data_query = "SELECT COUNT(*) FROM tbl_users WHERE role = %s"
+                cur.execute(total_data_query, (role,))
+
+            total_data = cur.fetchone()[0]
+
+            # Jumlah data per halaman
+            per_page = 10
+            total_pages = math.ceil(total_data / per_page)
+
+            # Mendapatkan halaman saat ini dari parameter URL
+            page = request.args.get('page', 1, type=int)
+            offset = (page - 1) * per_page
+
+            if role == 'semua':
+                query = "SELECT id_user, username, role, created_at, updated_at, admin_data_completed, user_data_completed FROM tbl_users LIMIT %s OFFSET %s"
+                cur.execute(query, (per_page, offset))
+            else:
+                query = "SELECT id_user, username, role, created_at, updated_at, admin_data_completed, user_data_completed FROM tbl_users WHERE role = %s LIMIT %s OFFSET %s"
+                cur.execute(query, (role, per_page, offset))
+
             data_users = cur.fetchall()
 
-            return render_template('lihat_data_user.html', data_users=data_users, check_pemain_for_user=check_pemain_for_user, check_admin_for_user=check_admin_for_user)
+            return render_template('lihat_data_user.html', check_pemain_for_user=check_pemain_for_user, check_admin_for_user=check_admin_for_user, data_users=data_users,  total_pages=total_pages, current_page=page, role=role, per_page=per_page)
+
+        else:
+            role = request.args.get('role', 'semua')
+
+            if role == 'semua':
+                total_data_query = "SELECT COUNT(*) FROM tbl_users"
+                cur.execute(total_data_query)
+            else:
+                total_data_query = "SELECT COUNT(*) FROM tbl_users WHERE role = %s"
+                cur.execute(total_data_query, (role,))
+
+            total_data = cur.fetchone()[0]
+
+            # Jumlah data per halaman
+            per_page = 10
+            total_pages = math.ceil(total_data / per_page)
+
+            # Mendapatkan halaman saat ini dari parameter URL
+            page = request.args.get('page', 1, type=int)
+            offset = (page - 1) * per_page
+
+            if role == 'semua':
+                query = "SELECT id_user, username, role, created_at, updated_at, admin_data_completed, user_data_completed FROM tbl_users LIMIT %s OFFSET %s"
+                cur.execute(query, (per_page, offset))
+            else:
+                query = "SELECT id_user, username, role, created_at, updated_at, admin_data_completed, user_data_completed FROM tbl_users WHERE role = %s LIMIT %s OFFSET %s"
+                cur.execute(query, (role, per_page, offset))
+
+            data_users = cur.fetchall()
+
+            return render_template('lihat_data_user.html', check_pemain_for_user=check_pemain_for_user, check_admin_for_user=check_admin_for_user,  data_users=data_users,  total_pages=total_pages, current_page=page, role=role, per_page=per_page)
+
     else:
         return redirect('/lihat_data_pemain')
 

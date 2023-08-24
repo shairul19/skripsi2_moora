@@ -13,6 +13,18 @@ Data Pengguna
         <hr>
 
         <div class="row">
+            <form method="POST" action="/lihat_data_user">
+                <label for="role">Semua Role</label>
+                <select name="role" id="role">
+                    <option value="semua" {% if role == 'semua' %}selected{% endif %}>Semua Role</option>
+                    <option value="superadmin" {% if role == 'superadmin' %}selected{% endif %}>Superadmin</option>
+                    <option value="admin" {% if role == 'admin' %}selected{% endif %}>Admin</option>
+                    <option value="user" {% if role == 'user' %}selected{% endif %}>User</option>
+                </select>
+                <button type="submit" class="btn btn-secondary btn-sm">Tampilkan</button>
+            </form>
+            <br><br>
+
             <table class="table table-sm table-striped table-hover">
                 <tr class="table-dark">
                     <th>No.</th>
@@ -26,7 +38,7 @@ Data Pengguna
                 {% if data_users %}
                 {% for user in data_users %}
                 <tr>
-                    <td>{{ loop.index }}</td>
+                    <td>{{ (current_page - 1) * per_page + loop.index }}</td>
                     <td>{{ user[1] }}</td>
                     <td>{{ user[2] }}</td>
                     <td>{{ user[3] }}</td>
@@ -75,6 +87,27 @@ Data Pengguna
                 </tr>
                 {% endfor %}
             </table>
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if current_page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ current_page - 1 }}&role={{ role }}">Previous</a>
+                    </li>
+                    {% endif %}
+
+                    {% for page_num in range(1, total_pages + 1) %}
+                    <li class="page-item {% if page_num == current_page %}active{% endif %}">
+                        <a class="page-link" href="?page={{ page_num }}&role={{ role }}">{{ page_num }}</a>
+                    </li>
+                    {% endfor %}
+
+                    {% if current_page < total_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ current_page + 1 }}&role={{ role }}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
             {% endif %}
         </div>
     </div>
