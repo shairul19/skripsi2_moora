@@ -968,7 +968,54 @@ def data_nilai_pemain():
 
         if request.method == 'POST':
             posisi_pemain = request.form['posisi_pemain']
+            # query
+            cur.execute("SELECT p.nisn, p.nama_pemain, k.id_kriteria, nk.nilai "
+                        "FROM tbl_nilai_kriteria nk "
+                        "JOIN tbl_pemain p ON nk.nisn = p.nisn "
+                        "JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria "
+                        "WHERE p.posisi = %s", (posisi_pemain,))
+            data_nilai_kriteria = cur.fetchall()
 
+            table_data = {}
+
+            for row in data_nilai_kriteria:
+                nisn = row[0]
+                nama_pemain = row[1]
+                id_kriteria = row[2]
+                nilai = row[3]
+
+                if nisn not in table_data:
+                    table_data[nisn] = {
+                        'nama_pemain': nama_pemain, 'nisn': nisn}
+                table_data[nisn][id_kriteria] = nilai
+
+            cur.execute("SELECT k.id_kriteria, k.nama_kriteria "
+                        "FROM tbl_kriteria k "
+                        "WHERE k.posisi = %s", (posisi_pemain,))
+            kriteria_list = {row[0]: row[1] for row in cur.fetchall()}
+
+            # Pagination
+            per_page = 2
+            total_pages = math.ceil(len(table_data) / per_page)
+            page = request.args.get('page', 1, type=int)
+            offset = (page - 1) * per_page
+
+            data_to_display = list(table_data.values())[
+                offset: offset + per_page]
+
+            return render_template(
+                'data_nilai_pemain.html',
+                table_data=data_to_display,
+                kriteria_list=kriteria_list,
+                positions=get_player_positions(),
+                posisi_pemain=posisi_pemain,
+                current_page=page,
+                total_pages=total_pages, per_page=page
+            )
+        else:
+            posisi_pemain = request.args.get('posisi_pemain', 'GK')
+
+            # query
             cur.execute("SELECT p.nisn, p.nama_pemain, k.id_kriteria, nk.nilai "
                         "FROM tbl_nilai_kriteria nk "
                         "JOIN tbl_pemain p ON nk.nisn = p.nisn "
@@ -1013,11 +1060,6 @@ def data_nilai_pemain():
                 total_pages=total_pages, per_page=page
             )
 
-        return render_template(
-            'data_nilai_pemain.html',
-
-            positions=get_player_positions(),
-        )
     else:
         return redirect('/login')
 
