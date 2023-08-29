@@ -77,8 +77,18 @@ def lengkapi_data_admin(user_id, nama_admin, tgl_lahir_admin, jabatan):
         "UPDATE tbl_users SET admin_data_completed = TRUE WHERE id_user = %s", (user_id,))
     conn.commit()
 
+# FUnction mengambil username
+
+
+def get_username(user_id):
+    cur.execute("SELECT username FROM tbl_users WHERE id_user = %s", (user_id,))
+    conn.commit()
+    username = cur.fetchone()[0]
+    return username
 
 # Function mengambil data untuk profil pemain
+
+
 def get_user_profile(user_id):
     cur.execute("SELECT u.id_user, u.username, p.nisn, p.nama_pemain, p.tgl_lahir_pemain, p.posisi, p.asal_sekolah "
                 "FROM tbl_users u "
@@ -284,7 +294,11 @@ def halaman_pengguna():
         conn.commit()
         jumlah_pemain_dinilai = cur.fetchone()[0]
 
-        return render_template('dashboard.html', jumlah_pemain=jumlah_pemain, jumlah_penilai=jumlah_penilai, jumlah_pemain_dinilai=jumlah_pemain_dinilai)
+        # Mengambil username untuk ditampilkan di navbar
+        user_id = session['user_id']
+        username = get_username(user_id)
+
+        return render_template('dashboard.html', username=username, jumlah_pemain=jumlah_pemain, jumlah_penilai=jumlah_penilai, jumlah_pemain_dinilai=jumlah_pemain_dinilai)
     else:
         return redirect('/login')
 
@@ -306,7 +320,11 @@ def halaman_admin():
         conn.commit()
         jumlah_pemain_dinilai = cur.fetchone()[0]
 
-        return render_template('dashboard.html', jumlah_pemain=jumlah_pemain, jumlah_penilai=jumlah_penilai, jumlah_pemain_dinilai=jumlah_pemain_dinilai)
+        # Mengambil username untuk ditampilkan di navbar
+        user_id = session['user_id']
+        username = get_username(user_id)
+
+        return render_template('dashboard.html', username=username, jumlah_pemain=jumlah_pemain, jumlah_penilai=jumlah_penilai, jumlah_pemain_dinilai=jumlah_pemain_dinilai)
     else:
         return redirect('/login')
 
@@ -317,11 +335,17 @@ def profil():
     if 'user_id' in session and session['role'] == 'user':
         user_id = session['user_id']
         user_profile = get_user_profile(user_id)
-        return render_template('profil_pemain.html', user_profile=user_profile)
+        # Mengambil username untuk ditampilkan di navbar
+
+        username = get_username(user_id)
+
+        return render_template('profil_pemain.html', username=username, user_profile=user_profile)
     else:
         user_id = session['user_id']
         admin_profile = get_admin_profile(user_id)
-        return render_template('profil_admin.html', admin_profile=admin_profile)
+
+        username = get_username(user_id)
+        return render_template('profil_admin.html', username=username, admin_profile=admin_profile)
 
     return redirect('/login')
 
@@ -332,6 +356,8 @@ def update_profil():
     if 'user_id' in session:
         user_id = session['user_id']
         role = session['role']
+        # Mengambil username untuk ditampilkan di navbar
+        username = get_username(user_id)
 
         if role == 'user':
             user_profile = get_user_profile(user_id)
@@ -348,7 +374,7 @@ def update_profil():
 
                 return redirect('/profil')
 
-            return render_template('update_profil.html', user_profile=user_profile)
+            return render_template('update_profil.html', username=username, user_profile=user_profile)
 
         elif role == 'admin' or role == 'superadmin':
             admin_profile = get_admin_profile(user_id)
@@ -365,7 +391,7 @@ def update_profil():
 
                 return redirect('/profil')
 
-            return render_template('update_profil.html', admin_profile=admin_profile)
+            return render_template('update_profil.html', username=username, admin_profile=admin_profile)
     else:
         return redirect('/login')
 
@@ -374,22 +400,30 @@ def update_profil():
 @app.route('/lihat_data_pemain', methods=['GET', 'POST'])
 def lihat_data_pemain():
     if 'user_id' in session:
+        # Mengambil username untuk ditampilkan di navbar
+        user_id = session['user_id']
+        username = get_username(user_id)
         if request.method == 'POST':
             posisi = request.form['posisi']
+            search = request.form.get('search', '')
 
-            # Menghitung total data
+
+# Menghitung total data setelah menerapkan filter pencarian
             if posisi == 'semua':
-                total_data_query = "SELECT COUNT(*) FROM tbl_pemain"
-                cur.execute(total_data_query)
+                total_data_query = "SELECT COUNT(*) FROM tbl_pemain WHERE nisn LIKE %s OR nama_pemain LIKE %s OR asal_sekolah LIKE %s"
+                cur.execute(total_data_query,
+                            (f'%{search}%', f'%{search}%', f'%{search}%'))
             else:
-                total_data_query = "SELECT COUNT(*) FROM tbl_pemain WHERE posisi = %s"
-                cur.execute(total_data_query, (posisi,))
-
+                total_data_query = "SELECT COUNT(*) FROM tbl_pemain WHERE posisi = %s AND (nisn LIKE %s OR nama_pemain LIKE %s OR asal_sekolah LIKE %s)"
+                cur.execute(total_data_query, (posisi,
+                            f'%{search}%', f'%{search}%', f'%{search}%'))
             total_data = cur.fetchone()[0]
 
             # Jumlah data per halaman
             per_page = 10
-            total_pages = math.ceil(total_data / per_page)
+
+            # Hitung total halaman setelah filter pencarian
+            total_pages = max(math.ceil(total_data / per_page), 1)
 
             # Mendapatkan halaman saat ini dari parameter URL
             page = request.args.get('page', 1, type=int)
@@ -397,33 +431,46 @@ def lihat_data_pemain():
 
             # Mengambil data pemain untuk halaman tertentu
             if posisi == 'semua':
-                query = "SELECT nisn, nama_pemain, posisi, tgl_lahir_pemain, asal_sekolah FROM tbl_pemain LIMIT %s OFFSET %s"
-                cur.execute(query, (per_page, offset))
+                query = "SELECT nisn, nama_pemain, posisi, tgl_lahir_pemain, asal_sekolah FROM tbl_pemain WHERE nisn LIKE %s OR nama_pemain LIKE %s OR asal_sekolah LIKE %s LIMIT %s OFFSET %s"
+                cur.execute(
+                    query, (f'%{search}%', f'%{search}%', f'%{search}%', per_page, offset))
             else:
-                query = "SELECT nisn, nama_pemain, posisi, tgl_lahir_pemain, asal_sekolah FROM tbl_pemain WHERE posisi = %s LIMIT %s OFFSET %s"
-                cur.execute(query, (posisi, per_page, offset))
+                query = "SELECT nisn, nama_pemain, posisi, tgl_lahir_pemain, asal_sekolah FROM tbl_pemain WHERE (posisi = %s) AND (nisn LIKE %s OR nama_pemain LIKE %s OR asal_sekolah LIKE %s) LIMIT %s OFFSET %s"
+                cur.execute(
+                    query, (posisi, f'%{search}%', f'%{search}%', f'%{search}%', per_page, offset))
 
             data_pemain = cur.fetchall()
 
-            return render_template('lihat_data_pemain.html', data_pemain=data_pemain, total_pages=total_pages, current_page=page, posisi=posisi, per_page=per_page)
-
+            return render_template('lihat_data_pemain.html', username=username, data_pemain=data_pemain, total_pages=total_pages, current_page=page, posisi=posisi, per_page=per_page, search=search)
         else:
             # Mengambil posisi dari parameter URL saat berpindah halaman
             posisi = request.args.get('posisi', 'semua')
+            search = request.args.get('search', '')
 
-            # Menghitung total data
+            # Mengambil username untuk ditampilkan di navbar
+            user_id = session['user_id']
+            cur.execute(
+                "SELECT username FROM tbl_users WHERE id_user = %s", (user_id,))
+            conn.commit()
+
+            username = get_username(user_id)
+
+            # Menghitung total data setelah menerapkan filter pencarian
             if posisi == 'semua':
-                total_data_query = "SELECT COUNT(*) FROM tbl_pemain"
-                cur.execute(total_data_query)
+                total_data_query = "SELECT COUNT(*) FROM tbl_pemain WHERE nisn LIKE %s OR nama_pemain LIKE %s OR asal_sekolah LIKE %s"
+                cur.execute(total_data_query,
+                            (f'%{search}%', f'%{search}%', f'%{search}%'))
             else:
-                total_data_query = "SELECT COUNT(*) FROM tbl_pemain WHERE posisi = %s"
-                cur.execute(total_data_query, (posisi,))
-
+                total_data_query = "SELECT COUNT(*) FROM tbl_pemain WHERE posisi = %s AND (nisn LIKE %s OR nama_pemain LIKE %s OR asal_sekolah LIKE %s)"
+                cur.execute(total_data_query, (posisi,
+                            f'%{search}%', f'%{search}%', f'%{search}%'))
             total_data = cur.fetchone()[0]
 
             # Jumlah data per halaman
             per_page = 10
-            total_pages = math.ceil(total_data / per_page)
+
+            # Hitung total halaman setelah filter pencarian
+            total_pages = max(math.ceil(total_data / per_page), 1)
 
             # Mendapatkan halaman saat ini dari parameter URL
             page = request.args.get('page', 1, type=int)
@@ -431,16 +478,17 @@ def lihat_data_pemain():
 
             # Mengambil data pemain untuk halaman tertentu
             if posisi == 'semua':
-                query = "SELECT nisn, nama_pemain, posisi, tgl_lahir_pemain, asal_sekolah FROM tbl_pemain LIMIT %s OFFSET %s"
-                cur.execute(query, (per_page, offset))
+                query = "SELECT nisn, nama_pemain, posisi, tgl_lahir_pemain, asal_sekolah FROM tbl_pemain WHERE nisn LIKE %s OR nama_pemain LIKE %s OR asal_sekolah LIKE %s LIMIT %s OFFSET %s"
+                cur.execute(
+                    query, (f'%{search}%', f'%{search}%', f'%{search}%', per_page, offset))
             else:
-                query = "SELECT nisn, nama_pemain, posisi, tgl_lahir_pemain, asal_sekolah FROM tbl_pemain WHERE posisi = %s LIMIT %s OFFSET %s"
-                cur.execute(query, (posisi, per_page, offset))
+                query = "SELECT nisn, nama_pemain, posisi, tgl_lahir_pemain, asal_sekolah FROM tbl_pemain WHERE (posisi = %s) AND (nisn LIKE %s OR nama_pemain LIKE %s OR asal_sekolah LIKE %s) LIMIT %s OFFSET %s"
+                cur.execute(
+                    query, (posisi, f'%{search}%', f'%{search}%', f'%{search}%', per_page, offset))
 
             data_pemain = cur.fetchall()
 
-            return render_template('lihat_data_pemain.html', data_pemain=data_pemain, total_pages=total_pages, current_page=page, posisi=posisi, per_page=per_page)
-
+            return render_template('lihat_data_pemain.html', username=username, data_pemain=data_pemain, total_pages=total_pages, current_page=page, posisi=posisi, per_page=per_page, search=search)
     else:
         return redirect('/login')
 
@@ -449,6 +497,9 @@ def lihat_data_pemain():
 @app.route('/edit_data_pemain/<nisn>', methods=['GET', 'POST'])
 def edit_data_pemain(nisn):
     if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
+        # Mengambil username untuk ditampilkan di navbar
+        user_id = session['user_id']
+        username = get_username(user_id)
         if request.method == 'POST':
             nama_baru = request.form['nama'].upper()
             posisi_baru = request.form['posisi']
@@ -469,7 +520,7 @@ def edit_data_pemain(nisn):
             "SELECT nisn, nama_pemain, posisi, tgl_lahir_pemain, asal_sekolah FROM tbl_pemain WHERE nisn = %s", (nisn,))
         data_pemain = cur.fetchone()
 
-        return render_template('edit_data_pemain.html', data_pemain=data_pemain)
+        return render_template('edit_data_pemain.html', username=username, data_pemain=data_pemain)
     else:
         return redirect('/lihat_data_pemain')
 
@@ -503,6 +554,9 @@ def hapus_data_pemain(nisn):
 @app.route('/lihat_data_tim_seleksi', methods=['GET', 'POST'])
 def lihat_data_tim_seleksi():
     if 'user_id' in session:
+        user_id = session['user_id']
+        username = get_username(user_id)
+
         if request.method == 'POST':
             jabatan = request.form['jabatan']
 
@@ -534,7 +588,7 @@ def lihat_data_tim_seleksi():
 
             data_tim_seleksi = cur.fetchall()
 
-            return render_template('lihat_data_tim_seleksi.html', data_tim_seleksi=data_tim_seleksi, total_pages=total_pages, current_page=page, jabatan=jabatan, per_page=per_page)
+            return render_template('lihat_data_tim_seleksi.html', username=username, data_tim_seleksi=data_tim_seleksi, total_pages=total_pages, current_page=page, jabatan=jabatan, per_page=per_page)
 
         else:
             # Mengambil jabatan dari parameter URL saat berpindah halaman
@@ -568,7 +622,7 @@ def lihat_data_tim_seleksi():
 
             data_tim_seleksi = cur.fetchall()
 
-            return render_template('lihat_data_tim_seleksi.html', data_tim_seleksi=data_tim_seleksi, total_pages=total_pages, current_page=page, jabatan=jabatan, per_page=per_page)
+            return render_template('lihat_data_tim_seleksi.html', username=username, data_tim_seleksi=data_tim_seleksi, total_pages=total_pages, current_page=page, jabatan=jabatan, per_page=per_page)
 
     else:
         return redirect('/login')
@@ -595,6 +649,8 @@ def hapus_data_admin(id_admin):
 @app.route('/lihat_data_kriteria', methods=['GET', 'POST'])
 def lihat_data_kriteria():
     if 'user_id' in session:
+        user_id = session['user_id']
+        username = get_username(user_id)
         if request.method == 'POST':
             posisi = request.form['posisi']
 
@@ -629,7 +685,7 @@ def lihat_data_kriteria():
             cur.execute("SELECT DISTINCT id_kriteria FROM tbl_nilai_kriteria")
             id_kriteria_nilai = [row[0] for row in cur.fetchall()]
 
-            return render_template('lihat_data_kriteria.html', data_kriteria=data_kriteria, total_pages=total_pages, current_page=page, posisi=posisi, per_page=per_page, id_kriteria_nilai=id_kriteria_nilai)
+            return render_template('lihat_data_kriteria.html', username=username, data_kriteria=data_kriteria, total_pages=total_pages, current_page=page, posisi=posisi, per_page=per_page, id_kriteria_nilai=id_kriteria_nilai)
 
         else:
             # Mengambil posisi dari parameter URL saat berpindah halaman
@@ -666,7 +722,7 @@ def lihat_data_kriteria():
             cur.execute("SELECT DISTINCT id_kriteria FROM tbl_nilai_kriteria")
             id_kriteria_nilai = [row[0] for row in cur.fetchall()]
 
-            return render_template('lihat_data_kriteria.html', data_kriteria=data_kriteria, total_pages=total_pages, current_page=page, posisi=posisi, per_page=per_page, id_kriteria_nilai=id_kriteria_nilai)
+            return render_template('lihat_data_kriteria.html', username=username, data_kriteria=data_kriteria, total_pages=total_pages, current_page=page, posisi=posisi, per_page=per_page, id_kriteria_nilai=id_kriteria_nilai)
 
     else:
         return redirect('/login')
@@ -677,6 +733,8 @@ def lihat_data_kriteria():
 @app.route('/tambah_kriteria', methods=['GET', 'POST'])
 def tambah_kriteria():
     if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
+        user_id = session['user_id']
+        username = get_username(user_id)
         if request.method == 'POST':
             kode_kriteria = request.form['kode_kriteria'].upper()
             nama_kriteria = request.form['nama_kriteria']
@@ -698,7 +756,7 @@ def tambah_kriteria():
             if total_bobot_posisi + bobot > 1.0:
                 flash('Total Bobot sudah lebih dari 1.0, harap cek kembali kriteria lainnya pada posisi tersebut',
                       'danger')
-                return render_template('tambah_kriteria.html', total_bobot_posisi=total_bobot_per_position)
+                return render_template('tambah_kriteria.html', username=username, total_bobot_posisi=total_bobot_per_position)
 
             # Jika total bobot masih dalam batas, simpan data ke database
             cur.execute("INSERT INTO tbl_kriteria (kode_kriteria, nama_kriteria, posisi, bobot, tipe) VALUES (%s, %s, %s, %s, %s)",
@@ -712,7 +770,7 @@ def tambah_kriteria():
             "SELECT posisi, SUM(bobot) FROM tbl_kriteria GROUP BY posisi")
         total_bobot_per_position = {row[0]: row[1] for row in cur.fetchall()}
 
-        return render_template('tambah_kriteria.html', total_bobot_posisi=total_bobot_per_position)
+        return render_template('tambah_kriteria.html', username=username, total_bobot_posisi=total_bobot_per_position)
     else:
         flash('Anda tidak memiliki izin untuk menambah data kriteria', 'danger')
         return redirect('/lihat_data_kriteria')
@@ -739,6 +797,8 @@ def hapus_data_kriteria(id_kriteria):
 @app.route('/edit_kriteria/<int:id_kriteria>', methods=['GET', 'POST'])
 def edit_kriteria(id_kriteria):
     if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
+        user_id = session['user_id']
+        username = get_username(user_id)
         cur.execute("SELECT id_kriteria, kode_kriteria, nama_kriteria, posisi, tipe, bobot "
                     "FROM tbl_kriteria WHERE id_kriteria = %s", (id_kriteria,))
         kriteria = cur.fetchone()
@@ -757,7 +817,7 @@ def edit_kriteria(id_kriteria):
             conn.commit()
             return redirect('/lihat_data_kriteria')
 
-        return render_template('edit_kriteria.html', kriteria=kriteria)
+        return render_template('edit_kriteria.html', username=username, kriteria=kriteria)
     else:
         flash('Anda tidak memiliki izin untuk mengedit data kriteria',
               'danger')
@@ -768,7 +828,8 @@ def edit_kriteria(id_kriteria):
 @app.route('/penilaian_pemain', methods=['GET', 'POST'])
 def penilaian_pemain():
     if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
-
+        user_id = session['user_id']
+        username = get_username(user_id)
         # Mengambil NISN pemain yang sudah memiliki nilai dalam tbl_nilai_kriteria
         cur.execute("SELECT DISTINCT nisn FROM tbl_nilai_kriteria")
         data_nilai_pemain = [row[0] for row in cur.fetchall()]
@@ -803,7 +864,7 @@ def penilaian_pemain():
 
             data_pemain = cur.fetchall()
 
-            return render_template('penilaian_pemain.html', data_pemain=data_pemain, data_nilai_pemain=data_nilai_pemain, total_pages=total_pages, current_page=page, posisi=posisi, per_page=per_page)
+            return render_template('penilaian_pemain.html', username=username, data_pemain=data_pemain, data_nilai_pemain=data_nilai_pemain, total_pages=total_pages, current_page=page, posisi=posisi, per_page=per_page)
         else:
             posisi = request.args.get('posisi', 'semua')
 
@@ -832,7 +893,7 @@ def penilaian_pemain():
 
             data_pemain = cur.fetchall()
 
-            return render_template('penilaian_pemain.html', data_pemain=data_pemain, data_nilai_pemain=data_nilai_pemain, total_pages=total_pages, current_page=page, posisi=posisi, per_page=per_page)
+            return render_template('penilaian_pemain.html', username=username, data_pemain=data_pemain, data_nilai_pemain=data_nilai_pemain, total_pages=total_pages, current_page=page, posisi=posisi, per_page=per_page)
     else:
         return redirect('/data_nilai_pemain')
 
@@ -841,6 +902,8 @@ def penilaian_pemain():
 @app.route('/input_nilai_pemain/<nisn>', methods=['GET', 'POST'])
 def input_nilai(nisn):
     if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
+        user_id = session['user_id']
+        username = get_username(user_id)
         # Mendapatkan data pemain berdasarkan NISN
         cur.execute(
             "SELECT nisn, nama_pemain, posisi FROM tbl_pemain WHERE nisn = %s", (nisn,))
@@ -865,7 +928,7 @@ def input_nilai(nisn):
             # Mengarahkan pengguna kembali ke halaman penilaian pemain
             return redirect('/penilaian_pemain')
 
-        return render_template('input_nilai_pemain.html', data_pemain=data_pemain, data_kriteria=data_kriteria)
+        return render_template('input_nilai_pemain.html', username=username, data_pemain=data_pemain, data_kriteria=data_kriteria)
     else:
         return redirect('/login')
 
@@ -874,6 +937,8 @@ def input_nilai(nisn):
 @app.route('/lihat_data_user', methods=['GET', 'POST'])
 def lihat_data_user():
     if 'user_id' in session and session['role'] == 'superadmin':
+        user_id = session['user_id']
+        username = get_username(user_id)
         if request.method == 'POST':
             role = request.form['role']
 
@@ -903,7 +968,7 @@ def lihat_data_user():
 
             data_users = cur.fetchall()
 
-            return render_template('lihat_data_user.html', check_pemain_for_user=check_pemain_for_user, check_admin_for_user=check_admin_for_user, data_users=data_users,  total_pages=total_pages, current_page=page, role=role, per_page=per_page)
+            return render_template('lihat_data_user.html', username=username, check_pemain_for_user=check_pemain_for_user, check_admin_for_user=check_admin_for_user, data_users=data_users,  total_pages=total_pages, current_page=page, role=role, per_page=per_page)
 
         else:
             role = request.args.get('role', 'semua')
@@ -934,7 +999,7 @@ def lihat_data_user():
 
             data_users = cur.fetchall()
 
-            return render_template('lihat_data_user.html', check_pemain_for_user=check_pemain_for_user, check_admin_for_user=check_admin_for_user,  data_users=data_users,  total_pages=total_pages, current_page=page, role=role, per_page=per_page)
+            return render_template('lihat_data_user.html', username=username, check_pemain_for_user=check_pemain_for_user, check_admin_for_user=check_admin_for_user,  data_users=data_users,  total_pages=total_pages, current_page=page, role=role, per_page=per_page)
 
     else:
         return redirect('/lihat_data_pemain')
@@ -944,6 +1009,7 @@ def lihat_data_user():
 @app.route('/hapus_data_user/<int:id_user>', methods=['POST'])
 def hapus_data_user(id_user):
     if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
+
         # Lakukan operasi delete di sini, misalnya dengan menggunakan query SQL
         cur.execute(
             "DELETE FROM tbl_users WHERE id_user = %s", (id_user,))
@@ -968,7 +1034,8 @@ def get_player_positions():
 @app.route('/data_nilai_pemain', methods=['GET', 'POST'])
 def data_nilai_pemain():
     if 'user_id' in session:
-
+        user_id = session['user_id']
+        username = get_username(user_id)
         if request.method == 'POST':
             posisi_pemain = request.form['posisi_pemain']
             # query
@@ -1007,7 +1074,7 @@ def data_nilai_pemain():
                 offset: offset + per_page]
 
             return render_template(
-                'data_nilai_pemain.html',
+                'data_nilai_pemain.html', username=username,
                 table_data=data_to_display,
                 kriteria_list=kriteria_list,
                 positions=get_player_positions(),
@@ -1054,7 +1121,7 @@ def data_nilai_pemain():
                 offset: offset + per_page]
 
             return render_template(
-                'data_nilai_pemain.html',
+                'data_nilai_pemain.html', username=username,
                 table_data=data_to_display,
                 kriteria_list=kriteria_list,
                 positions=get_player_positions(),
@@ -1071,6 +1138,8 @@ def data_nilai_pemain():
 @app.route('/edit_nilai_pemain/<nisn>', methods=['GET', 'POST'])
 def edit_nilai_pemain(nisn):
     if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
+        user_id = session['user_id']
+        username = get_username(user_id)
         # Query data dari tabel tbl_nilai_kriteria untuk nisn tertentu
         cur.execute("SELECT nk.id_kriteria, nk.nilai, k.nama_kriteria "
                     "FROM tbl_nilai_kriteria nk "
@@ -1097,7 +1166,7 @@ def edit_nilai_pemain(nisn):
             flash("Nilai berhasil diubah.", "success")
             return redirect('/data_nilai_pemain')
 
-        return render_template('edit_nilai_pemain.html', nisn=nisn, nama_pemain=nama_pemain, data_nilai_kriteria=data_nilai_kriteria)
+        return render_template('edit_nilai_pemain.html', username=username, nisn=nisn, nama_pemain=nama_pemain, data_nilai_kriteria=data_nilai_kriteria)
 
     return redirect('/data_nilai_pemain')
 
@@ -1122,6 +1191,8 @@ def hapus_nilai(nisn):
 # Halaman tambah user oleh admin
 @app.route('/tambah_user', methods=['GET', 'POST'])
 def add_user():
+    user_id = session['user_id']
+    username = get_username(user_id)
     if request.method == 'POST':
         username = request.form['username'].lower()
         password = request.form['password']
@@ -1130,7 +1201,7 @@ def add_user():
         if cek_username(username):
             # Username sudah ada, tampilkan pesan error
             error_message = "Username sudah terdaftar. Silakan pilih username lain."
-            return render_template('tambah_user.html', error_message=error_message)
+            return render_template('tambah_user.html', username=username, error_message=error_message)
 
         # Enkripsi password
         hashed_password = hash_password(password)
@@ -1141,11 +1212,11 @@ def add_user():
             conn.commit()
             # Pendaftaran berhasil
             success = "User berhasil didaftarkan"
-            return render_template('tambah_user.html', success=success)
+            return render_template('tambah_user.html', username=username, success=success)
         except Exception as e:
             # Gagal memasukkan data, tampilkan pesan error
             error_message_db = "Gagal mendaftarkan user. Silakan coba lagi."
-            return render_template('tambah_user.html', error_message_db=error_message_db)
+            return render_template('tambah_user.html', username=username, error_message_db=error_message_db)
 
     return render_template('tambah_user.html')
 
@@ -1278,6 +1349,8 @@ def calculate_sum_of_squared_values(data):
 @app.route('/perhitungan_akar_jumlah_pemangkatan', methods=['GET', 'POST'])
 def perhitungan_akar_jumlah_pemangkatan():
     if 'user_id' in session:
+        user_id = session['user_id']
+        username = get_username(user_id)
         if request.method == 'POST':
             posisi_pemain = request.form['posisi_pemain']
 
@@ -1292,10 +1365,10 @@ def perhitungan_akar_jumlah_pemangkatan():
             # Calculate the sum of squared values for each criterion
             sum_data = calculate_sum_of_squared_values(data_nilai_kriteria)
 
-            return render_template('perhitungan_akar_jumlah_pemangkatan.html', sum_data=sum_data,
+            return render_template('perhitungan_akar_jumlah_pemangkatan.html', username=username, sum_data=sum_data,
                                    positions=get_player_positions(), posisi_pemain=posisi_pemain)
 
-        return render_template('perhitungan_akar_jumlah_pemangkatan.html', positions=get_player_positions())
+        return render_template('perhitungan_akar_jumlah_pemangkatan.html', username=username, positions=get_player_positions())
     else:
         return redirect('/login')
 
@@ -1306,6 +1379,8 @@ def perhitungan_akar_jumlah_pemangkatan():
 def perhitungan_divisi_akar():
     # Check if the 'user_id' is present in the session (user logged in)
     if 'user_id' in session:
+        user_id = session['user_id']
+        username = get_username(user_id)
         # Check if the request method is POST (form submitted)
         if request.method == 'POST':
             # Get the selected player position from the form data
@@ -1370,7 +1445,7 @@ def perhitungan_divisi_akar():
             data_to_display = table_data[offset: offset + per_page]
 
             # Render the HTML template with the calculated Moora values, pagination, and other data
-            return render_template('perhitungan_divisi_akar.html', table_data=data_to_display,
+            return render_template('perhitungan_divisi_akar.html', username=username, table_data=data_to_display,
                                    criteria=pivot_df_divisi_akar.columns, positions=get_player_positions(), posisi_pemain=posisi_pemain,
                                    current_page=page, total_pages=total_pages, per_page=per_page)
         else:
@@ -1435,7 +1510,7 @@ def perhitungan_divisi_akar():
             data_to_display = table_data[offset: offset + per_page]
 
             # Render the HTML template with the calculated Moora values, pagination, and other data
-            return render_template('perhitungan_divisi_akar.html', table_data=data_to_display,
+            return render_template('perhitungan_divisi_akar.html', username=username, table_data=data_to_display,
                                    criteria=pivot_df_divisi_akar.columns, positions=get_player_positions(), posisi_pemain=posisi_pemain,
                                    current_page=page, total_pages=total_pages, per_page=per_page)
 
