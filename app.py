@@ -297,7 +297,8 @@ def halaman_admin():
         conn.commit()
         jumlah_pemain = cur.fetchone()[0]
 
-        cur.execute("SELECT COUNT (*) FROM tbl_admin")
+        cur.execute(
+            "SELECT COUNT (*) FROM tbl_admin WHERE jabatan != 'superadmin' ")
         conn.commit()
         jumlah_penilai = cur.fetchone()[0]
 
@@ -349,7 +350,7 @@ def update_profil():
 
             return render_template('update_profil.html', user_profile=user_profile)
 
-        elif role == 'admin':
+        elif role == 'admin' or role == 'superadmin':
             admin_profile = get_admin_profile(user_id)
 
             if request.method == 'POST':
@@ -525,10 +526,10 @@ def lihat_data_tim_seleksi():
 
             # Mengambil Data admin untuk halaman tertentu
             if jabatan == 'semua':
-                query = "SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin LIMIT %s OFFSET %s"
+                query = "SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE jabatan != 'superadmin' LIMIT %s OFFSET %s"
                 cur.execute(query, (per_page, offset))
             else:
-                query = "SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE jabatan = %s LIMIT %s OFFSET %s"
+                query = "SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE jabatan = %s  LIMIT %s OFFSET %s"
                 cur.execute(query, (jabatan, per_page, offset))
 
             data_tim_seleksi = cur.fetchall()
@@ -559,7 +560,7 @@ def lihat_data_tim_seleksi():
 
             # Mengambil Data admin untuk halaman tertentu
             if jabatan == 'semua':
-                query = "SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin LIMIT %s OFFSET %s"
+                query = "SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin  WHERE jabatan != 'superadmin' LIMIT %s OFFSET %s"
                 cur.execute(query, (per_page, offset))
             else:
                 query = "SELECT id_admin, nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE jabatan = %s LIMIT %s OFFSET %s"
@@ -1484,6 +1485,49 @@ def create_pivot_df_divisi_akar(pivot_df_squared, sum_data, posisi_pemain, cur):
             np.sqrt(pivot_df_divisi_akar[kriteria]) / sum_value_decimal) * bobot
 
     return pivot_df_divisi_akar
+
+# Halaman Ubah Password
+
+
+@app.route('/change_password', methods=['GET', 'POST'])
+def change_password():
+    if 'user_id' not in session:
+        return redirect('/login')
+
+    if request.method == 'POST':
+        user_id = session['user_id']
+        current_password = request.form['current_password']
+        new_password = request.form['new_password']
+        confirm_password = request.form['confirm_password']
+
+        # Fetch the user's current hashed password from the database
+        cur.execute(
+            "SELECT password FROM tbl_users WHERE id_user = %s", (user_id,))
+        current_hashed_password = cur.fetchone()[0]
+
+        # Check if the current password matches the stored hashed password
+        if hashlib.sha256(current_password.encode('utf-8')).hexdigest() != current_hashed_password:
+            error = 'Current password is incorrect.'
+            return render_template('change_password.html', error=error)
+
+        # Check if new password and confirm password match
+        if new_password != confirm_password:
+            error = 'New password and confirm password do not match.'
+            return render_template('change_password.html', error=error)
+
+        # Hash the new password
+        hashed_new_password = hashlib.sha256(
+            new_password.encode('utf-8')).hexdigest()
+
+        # Update the user's password in the database
+        cur.execute("UPDATE tbl_users SET password = %s WHERE id_user = %s",
+                    (hashed_new_password, user_id))
+        conn.commit()
+
+        success = 'Password has been successfully changed.'
+        return render_template('change_password.html', success=success)
+
+    return render_template('change_password.html')
 
 
 if __name__ == '__main__':
