@@ -30,6 +30,7 @@ Hasil MOORA
                     <tr>
 
                         <th>Peringkat</th>
+                        <th>NISN</th>
                         <th>Nama</th>
 
                         <th>Nilai Moora</th>
@@ -41,6 +42,7 @@ Hasil MOORA
                     <tr>
 
                         <td>{{ (current_page - 1) * per_page + loop.index }}</td>
+                        <td>{{ row['nisn'] }}</td>
                         <td>{{ row['nama_pemain'] }}</td>
                         <td>{{ row['Nilai Moora'] |round(7) }}</td>
 

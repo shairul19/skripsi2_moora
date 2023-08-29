@@ -1065,7 +1065,7 @@ def data_nilai_pemain():
             kriteria_list = {row[0]: row[1] for row in cur.fetchall()}
 
             # Pagination
-            per_page = 2
+            per_page = 10
             total_pages = math.ceil(len(table_data) / per_page)
             page = request.args.get('page', 1, type=int)
             offset = (page - 1) * per_page
@@ -1112,7 +1112,7 @@ def data_nilai_pemain():
             kriteria_list = {row[0]: row[1] for row in cur.fetchall()}
 
             # Pagination
-            per_page = 2
+            per_page = 10
             total_pages = math.ceil(len(table_data) / per_page)
             page = request.args.get('page', 1, type=int)
             offset = (page - 1) * per_page
@@ -1191,37 +1191,330 @@ def hapus_nilai(nisn):
 # Halaman tambah user oleh admin
 @app.route('/tambah_user', methods=['GET', 'POST'])
 def add_user():
-    user_id = session['user_id']
-    username = get_username(user_id)
-    if request.method == 'POST':
-        username = request.form['username'].lower()
-        password = request.form['password']
-        role = request.form['role']
+    if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
+        user_id = session['user_id']
+        username = get_username(user_id)
+        if request.method == 'POST':
+            username = request.form['username'].lower()
+            password = request.form['password']
+            role = request.form['role']
 
-        if cek_username(username):
-            # Username sudah ada, tampilkan pesan error
-            error_message = "Username sudah terdaftar. Silakan pilih username lain."
-            return render_template('tambah_user.html', username=username, error_message=error_message)
+            if cek_username(username):
+                # Username sudah ada, tampilkan pesan error
+                error_message = "Username sudah terdaftar. Silakan pilih username lain."
+                return render_template('tambah_user.html', username=username, error_message=error_message)
 
-        # Enkripsi password
-        hashed_password = hash_password(password)
+            # Enkripsi password
+            hashed_password = hash_password(password)
 
-        try:
-            cur.execute("INSERT INTO tbl_users (username, password, role) VALUES (%s, %s, %s)",
-                        (username, hashed_password, role))
-            conn.commit()
-            # Pendaftaran berhasil
-            success = "User berhasil didaftarkan"
-            return render_template('tambah_user.html', username=username, success=success)
-        except Exception as e:
-            # Gagal memasukkan data, tampilkan pesan error
-            error_message_db = "Gagal mendaftarkan user. Silakan coba lagi."
-            return render_template('tambah_user.html', username=username, error_message_db=error_message_db)
+            try:
+                cur.execute("INSERT INTO tbl_users (username, password, role) VALUES (%s, %s, %s)",
+                            (username, hashed_password, role))
+                conn.commit()
+                # Pendaftaran berhasil
+                success = "User berhasil didaftarkan"
+                return render_template('tambah_user.html', username=username, success=success)
+            except Exception as e:
+                # Gagal memasukkan data, tampilkan pesan error
+                error_message_db = "Gagal mendaftarkan user. Silakan coba lagi."
+                return render_template('tambah_user.html', username=username, error_message_db=error_message_db)
 
-    return render_template('tambah_user.html')
+        return render_template('tambah_user.html', username=username)
 
 # Baris untuk routing (end) ========================
 
+
+# Function
+
+
+def calculate_sum_of_squared_values(data):
+    # Create a DataFrame
+    df = pd.DataFrame(
+        data, columns=['nisn', 'nama_pemain', 'nama_kriteria', 'nilai', 'id_kriteria'])
+
+    # Use pivot to reshape the DataFrame
+    pivot_df = df.pivot(index='nama_pemain',
+                        columns='id_kriteria', values='nilai')
+
+    # Reset the column names to use "nama_kriteria" instead of "id_kriteria"
+    pivot_df.columns = [kriteria for kriteria in df['nama_kriteria'].unique()]
+
+    # Perform the calculation: nilai * nilai for each criterion
+    for kriteria in pivot_df.columns:
+        pivot_df[kriteria] = pivot_df[kriteria] ** 2
+
+    # Create a new DataFrame to hold the sum of the squared values for each criterion
+    sum_df = pd.DataFrame(
+        {'kriteria': pivot_df.columns, 'jumlah': pivot_df.sum()})
+
+    # Calculate the square root of the sum for each criterion
+    sum_df['jumlah'] = sum_df['jumlah'].apply(lambda x: math.sqrt(x))
+
+    # Convert the sum DataFrame to a list of dictionaries
+    sum_data = sum_df.to_dict(orient='records')
+
+    return sum_data
+
+
+# Halaman Hasil MOORA
+
+
+@app.route('/perhitungan_divisi_akar', methods=['GET', 'POST'])
+def perhitungan_divisi_akar():
+    # Check if the 'user_id' is present in the session (user logged in)
+    if 'user_id' in session:
+        user_id = session['user_id']
+        username = get_username(user_id)
+        # Check if the request method is POST (form submitted)
+        if request.method == 'POST':
+            # Get the selected player position from the form data
+            posisi_pemain = request.form['posisi_pemain']
+
+            # Query data from the database for the selected player position
+            # and join data from multiple tables to get criteria values
+            cur.execute("SELECT p.nama_pemain, p.nisn, k.nama_kriteria, nk.nilai, k.id_kriteria "
+                        "FROM tbl_nilai_kriteria nk "
+                        "JOIN tbl_pemain p ON nk.nisn = p.nisn "
+                        "JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria "
+                        "WHERE p.posisi = %s", (posisi_pemain,))
+            data_nilai_kriteria = cur.fetchall()
+
+            # Calculate the sum of squared values for each criterion
+            sum_data = calculate_sum_of_squared_values(data_nilai_kriteria)
+
+            # Create a DataFrame and perform the calculation: nilai * nilai for each criterion
+            pivot_df_squared = create_pivot_df(
+                data_nilai_kriteria, squared=True)
+
+            # Create a new DataFrame for the division operation
+            pivot_df_divisi_akar = create_pivot_df_divisi_akar(
+                pivot_df_squared, sum_data, posisi_pemain, cur)
+
+            # Convert the values in pivot_df_divisi_akar to decimal.Decimal
+            pivot_df_divisi_akar = pivot_df_divisi_akar.applymap(
+                decimal.Decimal)
+
+            # Fetch the criteria types (benefit or cost) from the tbl_kriteria table based on the player's position (posisi_pemain)
+            cur.execute(
+                "SELECT nama_kriteria, tipe FROM tbl_kriteria WHERE posisi = %s", (posisi_pemain,))
+            criteria_types = dict(cur.fetchall())
+
+            # Calculate the Moora value for each player
+            pivot_df_divisi_akar['Total Benefit'] = decimal.Decimal(0.0)
+            pivot_df_divisi_akar['Total Cost'] = decimal.Decimal(0.0)
+
+            for kriteria in pivot_df_divisi_akar.columns:
+                nilai_kriteria = pivot_df_divisi_akar[kriteria]
+                tipe_kriteria = criteria_types.get(kriteria)
+
+                if tipe_kriteria == 'benefit':
+                    pivot_df_divisi_akar['Total Benefit'] += nilai_kriteria
+                elif tipe_kriteria == 'cost':
+                    pivot_df_divisi_akar['Total Cost'] += nilai_kriteria
+
+            # Calculate the Moora value for each player
+            pivot_df_divisi_akar['Nilai Moora'] = pivot_df_divisi_akar['Total Benefit'] - \
+                pivot_df_divisi_akar['Total Cost']
+
+            # Convert the pivot DataFrame to a list of dictionaries
+            table_data = pivot_df_divisi_akar.reset_index().to_dict(orient='records')
+            table_data.sort(key=lambda x: x['Nilai Moora'], reverse=True)
+
+            # Pagination
+            per_page = 10
+            total_pages = math.ceil(len(table_data) / per_page)
+            page = request.args.get('page', 1, type=int)
+            offset = (page - 1) * per_page
+
+            data_to_display = table_data[offset: offset + per_page]
+
+            # Render the HTML template with the calculated Moora values, pagination, and other data
+            return render_template('perhitungan_divisi_akar.html', username=username, table_data=data_to_display,
+                                   criteria=pivot_df_divisi_akar.columns, positions=get_player_positions(), posisi_pemain=posisi_pemain,
+                                   current_page=page, total_pages=total_pages, per_page=per_page)
+        else:
+            posisi_pemain = request.args.get('posisi_pemain', 'GK')
+
+            # Query data from the database for the selected player position
+            # and join data from multiple tables to get criteria values
+            cur.execute("SELECT p.nisn, p.nama_pemain, k.nama_kriteria, nk.nilai, k.id_kriteria "
+                        "FROM tbl_nilai_kriteria nk "
+                        "JOIN tbl_pemain p ON nk.nisn = p.nisn "
+                        "JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria "
+                        "WHERE p.posisi = %s", (posisi_pemain,))
+            data_nilai_kriteria = cur.fetchall()
+
+            # Calculate the sum of squared values for each criterion
+            sum_data = calculate_sum_of_squared_values(data_nilai_kriteria)
+
+            # Create a DataFrame and perform the calculation: nilai * nilai for each criterion
+            pivot_df_squared = create_pivot_df(
+                data_nilai_kriteria, squared=True)
+
+            # Create a new DataFrame for the division operation
+            pivot_df_divisi_akar = create_pivot_df_divisi_akar(
+                pivot_df_squared, sum_data, posisi_pemain, cur)
+
+            # Convert the values in pivot_df_divisi_akar to decimal.Decimal
+            pivot_df_divisi_akar = pivot_df_divisi_akar.applymap(
+                decimal.Decimal)
+
+            # Fetch the criteria types (benefit or cost) from the tbl_kriteria table based on the player's position (posisi_pemain)
+            cur.execute(
+                "SELECT nama_kriteria, tipe FROM tbl_kriteria WHERE posisi = %s", (posisi_pemain,))
+            criteria_types = dict(cur.fetchall())
+
+            # Calculate the Moora value for each player
+            pivot_df_divisi_akar['Total Benefit'] = decimal.Decimal(0.0)
+            pivot_df_divisi_akar['Total Cost'] = decimal.Decimal(0.0)
+
+            for kriteria in pivot_df_divisi_akar.columns:
+                nilai_kriteria = pivot_df_divisi_akar[kriteria]
+                tipe_kriteria = criteria_types.get(kriteria)
+
+                if tipe_kriteria == 'benefit':
+                    pivot_df_divisi_akar['Total Benefit'] += nilai_kriteria
+                elif tipe_kriteria == 'cost':
+                    pivot_df_divisi_akar['Total Cost'] += nilai_kriteria
+
+            # Calculate the Moora value for each player
+            pivot_df_divisi_akar['Nilai Moora'] = pivot_df_divisi_akar['Total Benefit'] - \
+                pivot_df_divisi_akar['Total Cost']
+
+            # Convert the pivot DataFrame to a list of dictionaries
+            table_data = pivot_df_divisi_akar.reset_index().to_dict(orient='records')
+            table_data.sort(key=lambda x: x['Nilai Moora'], reverse=True)
+
+            # Pagination
+            per_page = 10
+            total_pages = math.ceil(len(table_data) / per_page)
+            page = request.args.get('page', 1, type=int)
+            offset = (page - 1) * per_page
+
+            data_to_display = table_data[offset: offset + per_page]
+
+            # Render the HTML template with the calculated Moora values, pagination, and other data
+            return render_template('perhitungan_divisi_akar.html', username=username, table_data=data_to_display,
+                                   criteria=pivot_df_divisi_akar.columns, positions=get_player_positions(), posisi_pemain=posisi_pemain,
+                                   current_page=page, total_pages=total_pages, per_page=per_page)
+
+    else:
+        # If 'user_id' is not present in the session, redirect to the login page
+        return redirect('/login')
+
+
+def create_pivot_df(data, squared=False):
+    # Create a DataFrame
+    df = pd.DataFrame(
+        data, columns=['nisn', 'nama_pemain', 'nama_kriteria', 'nilai', 'id_kriteria'])
+
+    # Use pivot to reshape the DataFrame
+    pivot_df = df.pivot(index=['nisn', 'nama_pemain'],
+                        columns='id_kriteria', values='nilai')
+
+    # Reset the column names to use "nama_kriteria" instead of "id_kriteria"
+    pivot_df.columns = [kriteria for kriteria in df['nama_kriteria'].unique()]
+
+    if squared:
+        # Perform the calculation: nilai * nilai for each criterion
+        for kriteria in pivot_df.columns:
+            pivot_df[kriteria] = pivot_df[kriteria] ** 2
+
+    return pivot_df
+
+
+def create_pivot_df_divisi_akar(pivot_df_squared, sum_data, posisi_pemain, cur):
+    # Create a new DataFrame to hold the division values for each criterion
+    pivot_df_divisi_akar = pivot_df_squared.copy()
+
+    # Fetch the weights (bobot) from the tbl_kriteria table based on the player's position (posisi_pemain)
+    cur.execute(
+        "SELECT nama_kriteria, bobot FROM tbl_kriteria WHERE posisi = %s", (posisi_pemain,))
+    kriteria_weights = dict(cur.fetchall())
+
+    # Perform the calculation: (nilai / akar_jumlah_pemangkatan) * bobot for each criterion
+    for kriteria in pivot_df_divisi_akar.columns:
+        sum_value = next(
+            (item['jumlah'] for item in sum_data if item['kriteria'] == kriteria), None)
+        # Convert sum_value to decimal.Decimal
+        sum_value_decimal = decimal.Decimal(sum_value)
+        # Default weight is 1.0 if not found
+        bobot = decimal.Decimal(kriteria_weights.get(kriteria, 1.0))
+        pivot_df_divisi_akar[kriteria] = (
+            np.sqrt(pivot_df_divisi_akar[kriteria]) / sum_value_decimal) * bobot
+
+    return pivot_df_divisi_akar
+
+# Halaman Ubah Password
+
+
+@app.route('/change_password', methods=['GET', 'POST'])
+def change_password():
+    if 'user_id' not in session:
+        return redirect('/login')
+
+    if request.method == 'POST':
+        user_id = session['user_id']
+        current_password = request.form['current_password']
+        new_password = request.form['new_password']
+        confirm_password = request.form['confirm_password']
+
+        # Fetch the user's current hashed password from the database
+        cur.execute(
+            "SELECT password FROM tbl_users WHERE id_user = %s", (user_id,))
+        current_hashed_password = cur.fetchone()[0]
+
+        # Check if the current password matches the stored hashed password
+        if hashlib.sha256(current_password.encode('utf-8')).hexdigest() != current_hashed_password:
+            error = 'Password saat ini salah'
+            return render_template('change_password.html', error=error)
+
+        # Check if new password and confirm password match
+        if new_password != confirm_password:
+            error = 'password baru dan konfirmasi password tidak sesuai'
+            return render_template('change_password.html', error=error)
+
+        # Hash the new password
+        hashed_new_password = hashlib.sha256(
+            new_password.encode('utf-8')).hexdigest()
+
+        # Update the user's password in the database
+        cur.execute("UPDATE tbl_users SET password = %s WHERE id_user = %s",
+                    (hashed_new_password, user_id))
+        conn.commit()
+
+        success = 'Password Berhasil diubah'
+        return render_template('change_password.html', success=success)
+
+    return render_template('change_password.html')
+
+
+# Halaman perhitungan_akar_jumlah_pemangkatan
+@app.route('/perhitungan_akar_jumlah_pemangkatan', methods=['GET', 'POST'])
+def perhitungan_akar_jumlah_pemangkatan():
+    if 'user_id' in session:
+        user_id = session['user_id']
+        username = get_username(user_id)
+        if request.method == 'POST':
+            posisi_pemain = request.form['posisi_pemain']
+
+            # Query data dari tabel tbl_nilai_kriteria dan gabungkan dengan tbl_pemain dan tbl_kriteria
+            cur.execute("SELECT p.nama_pemain, k.nama_kriteria, nk.nilai, k.id_kriteria "
+                        "FROM tbl_nilai_kriteria nk "
+                        "JOIN tbl_pemain p ON nk.nisn = p.nisn "
+                        "JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria "
+                        "WHERE p.posisi = %s", (posisi_pemain,))
+            data_nilai_kriteria = cur.fetchall()
+
+            # Calculate the sum of squared values for each criterion
+            sum_data = calculate_sum_of_squared_values(data_nilai_kriteria)
+
+            return render_template('perhitungan_akar_jumlah_pemangkatan.html', username=username, sum_data=sum_data,
+                                   positions=get_player_positions(), posisi_pemain=posisi_pemain)
+
+        return render_template('perhitungan_akar_jumlah_pemangkatan.html', username=username, positions=get_player_positions())
+    else:
+        return redirect('/login')
 
 # Halaman perhitungan_pemangkatan
 
@@ -1312,297 +1605,6 @@ def perhitungan_jumlah_pemangkatan():
         return render_template('perhitungan_jumlah_pemangkatan.html', positions=get_player_positions())
     else:
         return redirect('/login')
-
-# Function
-
-
-def calculate_sum_of_squared_values(data):
-    # Create a DataFrame
-    df = pd.DataFrame(
-        data, columns=['nama_pemain', 'nama_kriteria', 'nilai', 'id_kriteria'])
-
-    # Use pivot to reshape the DataFrame
-    pivot_df = df.pivot(index='nama_pemain',
-                        columns='id_kriteria', values='nilai')
-
-    # Reset the column names to use "nama_kriteria" instead of "id_kriteria"
-    pivot_df.columns = [kriteria for kriteria in df['nama_kriteria'].unique()]
-
-    # Perform the calculation: nilai * nilai for each criterion
-    for kriteria in pivot_df.columns:
-        pivot_df[kriteria] = pivot_df[kriteria] ** 2
-
-    # Create a new DataFrame to hold the sum of the squared values for each criterion
-    sum_df = pd.DataFrame(
-        {'kriteria': pivot_df.columns, 'jumlah': pivot_df.sum()})
-
-    # Calculate the square root of the sum for each criterion
-    sum_df['jumlah'] = sum_df['jumlah'].apply(lambda x: math.sqrt(x))
-
-    # Convert the sum DataFrame to a list of dictionaries
-    sum_data = sum_df.to_dict(orient='records')
-
-    return sum_data
-
-
-# Halaman perhitungan_akar_jumlah_pemangkatan
-@app.route('/perhitungan_akar_jumlah_pemangkatan', methods=['GET', 'POST'])
-def perhitungan_akar_jumlah_pemangkatan():
-    if 'user_id' in session:
-        user_id = session['user_id']
-        username = get_username(user_id)
-        if request.method == 'POST':
-            posisi_pemain = request.form['posisi_pemain']
-
-            # Query data dari tabel tbl_nilai_kriteria dan gabungkan dengan tbl_pemain dan tbl_kriteria
-            cur.execute("SELECT p.nama_pemain, k.nama_kriteria, nk.nilai, k.id_kriteria "
-                        "FROM tbl_nilai_kriteria nk "
-                        "JOIN tbl_pemain p ON nk.nisn = p.nisn "
-                        "JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria "
-                        "WHERE p.posisi = %s", (posisi_pemain,))
-            data_nilai_kriteria = cur.fetchall()
-
-            # Calculate the sum of squared values for each criterion
-            sum_data = calculate_sum_of_squared_values(data_nilai_kriteria)
-
-            return render_template('perhitungan_akar_jumlah_pemangkatan.html', username=username, sum_data=sum_data,
-                                   positions=get_player_positions(), posisi_pemain=posisi_pemain)
-
-        return render_template('perhitungan_akar_jumlah_pemangkatan.html', username=username, positions=get_player_positions())
-    else:
-        return redirect('/login')
-
-# Halaman Hasil MOORA
-
-
-@app.route('/perhitungan_divisi_akar', methods=['GET', 'POST'])
-def perhitungan_divisi_akar():
-    # Check if the 'user_id' is present in the session (user logged in)
-    if 'user_id' in session:
-        user_id = session['user_id']
-        username = get_username(user_id)
-        # Check if the request method is POST (form submitted)
-        if request.method == 'POST':
-            # Get the selected player position from the form data
-            posisi_pemain = request.form['posisi_pemain']
-
-            # Query data from the database for the selected player position
-            # and join data from multiple tables to get criteria values
-            cur.execute("SELECT p.nama_pemain, k.nama_kriteria, nk.nilai, k.id_kriteria "
-                        "FROM tbl_nilai_kriteria nk "
-                        "JOIN tbl_pemain p ON nk.nisn = p.nisn "
-                        "JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria "
-                        "WHERE p.posisi = %s", (posisi_pemain,))
-            data_nilai_kriteria = cur.fetchall()
-
-            # Calculate the sum of squared values for each criterion
-            sum_data = calculate_sum_of_squared_values(data_nilai_kriteria)
-
-            # Create a DataFrame and perform the calculation: nilai * nilai for each criterion
-            pivot_df_squared = create_pivot_df(
-                data_nilai_kriteria, squared=True)
-
-            # Create a new DataFrame for the division operation
-            pivot_df_divisi_akar = create_pivot_df_divisi_akar(
-                pivot_df_squared, sum_data, posisi_pemain, cur)
-
-            # Convert the values in pivot_df_divisi_akar to decimal.Decimal
-            pivot_df_divisi_akar = pivot_df_divisi_akar.applymap(
-                decimal.Decimal)
-
-            # Fetch the criteria types (benefit or cost) from the tbl_kriteria table based on the player's position (posisi_pemain)
-            cur.execute(
-                "SELECT nama_kriteria, tipe FROM tbl_kriteria WHERE posisi = %s", (posisi_pemain,))
-            criteria_types = dict(cur.fetchall())
-
-            # Calculate the Moora value for each player
-            pivot_df_divisi_akar['Total Benefit'] = decimal.Decimal(0.0)
-            pivot_df_divisi_akar['Total Cost'] = decimal.Decimal(0.0)
-
-            for kriteria in pivot_df_divisi_akar.columns:
-                nilai_kriteria = pivot_df_divisi_akar[kriteria]
-                tipe_kriteria = criteria_types.get(kriteria)
-
-                if tipe_kriteria == 'benefit':
-                    pivot_df_divisi_akar['Total Benefit'] += nilai_kriteria
-                elif tipe_kriteria == 'cost':
-                    pivot_df_divisi_akar['Total Cost'] += nilai_kriteria
-
-            # Calculate the Moora value for each player
-            pivot_df_divisi_akar['Nilai Moora'] = pivot_df_divisi_akar['Total Benefit'] - \
-                pivot_df_divisi_akar['Total Cost']
-
-            # Convert the pivot DataFrame to a list of dictionaries
-            table_data = pivot_df_divisi_akar.reset_index().to_dict(orient='records')
-            table_data.sort(key=lambda x: x['Nilai Moora'], reverse=True)
-
-            # Pagination
-            per_page = 10
-            total_pages = math.ceil(len(table_data) / per_page)
-            page = request.args.get('page', 1, type=int)
-            offset = (page - 1) * per_page
-
-            data_to_display = table_data[offset: offset + per_page]
-
-            # Render the HTML template with the calculated Moora values, pagination, and other data
-            return render_template('perhitungan_divisi_akar.html', username=username, table_data=data_to_display,
-                                   criteria=pivot_df_divisi_akar.columns, positions=get_player_positions(), posisi_pemain=posisi_pemain,
-                                   current_page=page, total_pages=total_pages, per_page=per_page)
-        else:
-            posisi_pemain = request.args.get('posisi_pemain', 'GK')
-
-            # Query data from the database for the selected player position
-            # and join data from multiple tables to get criteria values
-            cur.execute("SELECT p.nama_pemain, k.nama_kriteria, nk.nilai, k.id_kriteria "
-                        "FROM tbl_nilai_kriteria nk "
-                        "JOIN tbl_pemain p ON nk.nisn = p.nisn "
-                        "JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria "
-                        "WHERE p.posisi = %s", (posisi_pemain,))
-            data_nilai_kriteria = cur.fetchall()
-
-            # Calculate the sum of squared values for each criterion
-            sum_data = calculate_sum_of_squared_values(data_nilai_kriteria)
-
-            # Create a DataFrame and perform the calculation: nilai * nilai for each criterion
-            pivot_df_squared = create_pivot_df(
-                data_nilai_kriteria, squared=True)
-
-            # Create a new DataFrame for the division operation
-            pivot_df_divisi_akar = create_pivot_df_divisi_akar(
-                pivot_df_squared, sum_data, posisi_pemain, cur)
-
-            # Convert the values in pivot_df_divisi_akar to decimal.Decimal
-            pivot_df_divisi_akar = pivot_df_divisi_akar.applymap(
-                decimal.Decimal)
-
-            # Fetch the criteria types (benefit or cost) from the tbl_kriteria table based on the player's position (posisi_pemain)
-            cur.execute(
-                "SELECT nama_kriteria, tipe FROM tbl_kriteria WHERE posisi = %s", (posisi_pemain,))
-            criteria_types = dict(cur.fetchall())
-
-            # Calculate the Moora value for each player
-            pivot_df_divisi_akar['Total Benefit'] = decimal.Decimal(0.0)
-            pivot_df_divisi_akar['Total Cost'] = decimal.Decimal(0.0)
-
-            for kriteria in pivot_df_divisi_akar.columns:
-                nilai_kriteria = pivot_df_divisi_akar[kriteria]
-                tipe_kriteria = criteria_types.get(kriteria)
-
-                if tipe_kriteria == 'benefit':
-                    pivot_df_divisi_akar['Total Benefit'] += nilai_kriteria
-                elif tipe_kriteria == 'cost':
-                    pivot_df_divisi_akar['Total Cost'] += nilai_kriteria
-
-            # Calculate the Moora value for each player
-            pivot_df_divisi_akar['Nilai Moora'] = pivot_df_divisi_akar['Total Benefit'] - \
-                pivot_df_divisi_akar['Total Cost']
-
-            # Convert the pivot DataFrame to a list of dictionaries
-            table_data = pivot_df_divisi_akar.reset_index().to_dict(orient='records')
-            table_data.sort(key=lambda x: x['Nilai Moora'], reverse=True)
-
-            # Pagination
-            per_page = 10
-            total_pages = math.ceil(len(table_data) / per_page)
-            page = request.args.get('page', 1, type=int)
-            offset = (page - 1) * per_page
-
-            data_to_display = table_data[offset: offset + per_page]
-
-            # Render the HTML template with the calculated Moora values, pagination, and other data
-            return render_template('perhitungan_divisi_akar.html', username=username, table_data=data_to_display,
-                                   criteria=pivot_df_divisi_akar.columns, positions=get_player_positions(), posisi_pemain=posisi_pemain,
-                                   current_page=page, total_pages=total_pages, per_page=per_page)
-
-    else:
-        # If 'user_id' is not present in the session, redirect to the login page
-        return redirect('/login')
-
-
-def create_pivot_df(data, squared=False):
-    # Create a DataFrame
-    df = pd.DataFrame(
-        data, columns=['nama_pemain', 'nama_kriteria', 'nilai', 'id_kriteria'])
-
-    # Use pivot to reshape the DataFrame
-    pivot_df = df.pivot(index='nama_pemain',
-                        columns='id_kriteria', values='nilai')
-
-    # Reset the column names to use "nama_kriteria" instead of "id_kriteria"
-    pivot_df.columns = [kriteria for kriteria in df['nama_kriteria'].unique()]
-
-    if squared:
-        # Perform the calculation: nilai * nilai for each criterion
-        for kriteria in pivot_df.columns:
-            pivot_df[kriteria] = pivot_df[kriteria] ** 2
-
-    return pivot_df
-
-
-def create_pivot_df_divisi_akar(pivot_df_squared, sum_data, posisi_pemain, cur):
-    # Create a new DataFrame to hold the division values for each criterion
-    pivot_df_divisi_akar = pivot_df_squared.copy()
-
-    # Fetch the weights (bobot) from the tbl_kriteria table based on the player's position (posisi_pemain)
-    cur.execute(
-        "SELECT nama_kriteria, bobot FROM tbl_kriteria WHERE posisi = %s", (posisi_pemain,))
-    kriteria_weights = dict(cur.fetchall())
-
-    # Perform the calculation: (nilai / akar_jumlah_pemangkatan) * bobot for each criterion
-    for kriteria in pivot_df_divisi_akar.columns:
-        sum_value = next(
-            (item['jumlah'] for item in sum_data if item['kriteria'] == kriteria), None)
-        # Convert sum_value to decimal.Decimal
-        sum_value_decimal = decimal.Decimal(sum_value)
-        # Default weight is 1.0 if not found
-        bobot = decimal.Decimal(kriteria_weights.get(kriteria, 1.0))
-        pivot_df_divisi_akar[kriteria] = (
-            np.sqrt(pivot_df_divisi_akar[kriteria]) / sum_value_decimal) * bobot
-
-    return pivot_df_divisi_akar
-
-# Halaman Ubah Password
-
-
-@app.route('/change_password', methods=['GET', 'POST'])
-def change_password():
-    if 'user_id' not in session:
-        return redirect('/login')
-
-    if request.method == 'POST':
-        user_id = session['user_id']
-        current_password = request.form['current_password']
-        new_password = request.form['new_password']
-        confirm_password = request.form['confirm_password']
-
-        # Fetch the user's current hashed password from the database
-        cur.execute(
-            "SELECT password FROM tbl_users WHERE id_user = %s", (user_id,))
-        current_hashed_password = cur.fetchone()[0]
-
-        # Check if the current password matches the stored hashed password
-        if hashlib.sha256(current_password.encode('utf-8')).hexdigest() != current_hashed_password:
-            error = 'Password saat ini salah'
-            return render_template('change_password.html', error=error)
-
-        # Check if new password and confirm password match
-        if new_password != confirm_password:
-            error = 'password baru dan konfirmasi password tidak sesuai'
-            return render_template('change_password.html', error=error)
-
-        # Hash the new password
-        hashed_new_password = hashlib.sha256(
-            new_password.encode('utf-8')).hexdigest()
-
-        # Update the user's password in the database
-        cur.execute("UPDATE tbl_users SET password = %s WHERE id_user = %s",
-                    (hashed_new_password, user_id))
-        conn.commit()
-
-        success = 'Password Berhasil diubah'
-        return render_template('change_password.html', success=success)
-
-    return render_template('change_password.html')
 
 
 if __name__ == '__main__':
