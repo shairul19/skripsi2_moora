@@ -407,8 +407,7 @@ def lihat_data_pemain():
             posisi = request.form['posisi']
             search = request.form.get('search', '')
 
-
-# Menghitung total data setelah menerapkan filter pencarian
+            # Menghitung total data setelah menerapkan filter pencarian
             if posisi == 'semua':
                 total_data_query = "SELECT COUNT(*) FROM tbl_pemain WHERE nisn LIKE %s OR nama_pemain LIKE %s OR asal_sekolah LIKE %s"
                 cur.execute(total_data_query,

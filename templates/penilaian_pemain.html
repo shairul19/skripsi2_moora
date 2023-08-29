@@ -35,6 +35,11 @@ Penilaian Pemain
                 <button type="submit" name="pilih_posisi" value="true">Pilih</button>
             </form>
 
+            <form>
+                <!-- Search input -->
+                <input type="text" id="searchInput" placeholder="Cari nama pemain..." onkeyup="searchTable()">
+            </form>
+
             {% if data_pemain %}
             <table class="table table-sm table-striped table-hover">
                 <thead class="table-dark">
@@ -46,7 +51,7 @@ Penilaian Pemain
                         <th>Action</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="dataTable">
                     {% for pemain in data_pemain %}
                     <tr>
                         <td>{{ (current_page - 1) * per_page + loop.index }}</td>
@@ -94,4 +99,53 @@ Penilaian Pemain
     </div>
 </main>
 <!--Main-->
+
+<script>
+    var tableData = []; // Store all table data here
+
+    // Function to populate table data array
+    function populateTableData() {
+        tableData = []; // Clear existing data
+        var table = document.getElementById("dataTable");
+        var rows = table.getElementsByTagName("tr");
+        for (var i = 0; i < rows.length; i++) {
+            var rowData = [];
+            var cells = rows[i].getElementsByTagName("td");
+            for (var j = 0; j < cells.length; j++) {
+                rowData.push(cells[j].textContent || cells[j].innerText);
+            }
+            tableData.push(rowData);
+        }
+    }
+
+    // Call this function after each page change
+    function onPageChange() {
+        populateTableData();
+        searchTable(); // Apply search after populating the data
+    }
+
+    // Initial population of data
+    document.addEventListener("DOMContentLoaded", function () {
+        onPageChange();
+    });
+
+    function searchTable() {
+        var input, filter, tr, td, i, j, txtValue;
+        input = document.getElementById("searchInput");
+        filter = input.value.toLowerCase();
+        tr = document.getElementById("dataTable").getElementsByTagName("tr");
+
+        for (i = 0; i < tr.length; i++) {
+            tr[i].style.display = "none"; // Hide all rows initially
+            for (j = 0; j < tableData[i].length; j++) {
+                txtValue = tableData[i][j];
+                if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                    tr[i].style.display = ""; // Show row if any cell matches
+                    break;
+                }
+            }
+        }
+    }
+</script>
+
 {% endblock %}

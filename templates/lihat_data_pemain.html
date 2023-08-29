@@ -14,21 +14,35 @@ Data Pemain
 
         <div class="row">
             <form method="POST" action="/lihat_data_pemain">
-                <label for="posisi">Pilih Posisi:</label>
-                <select name="posisi" id="posisi">
-                    <option value="semua" {% if posisi == 'semua' %}selected{% endif %}>Semua Pemain</option>
-                    <option value="GK" {% if posisi == 'GK' %}selected{% endif %}>Penjaga Gawang (GK)</option>
-                    <option value="DF" {% if posisi == 'DF' %}selected{% endif %}>Bek (DF)</option>
-                    <option value="MF" {% if posisi == 'MF' %}selected{% endif %}>Gelandang (MF)</option>
-                    <option value="FW" {% if posisi == 'FW' %}selected{% endif %}>Penyerang (FW)</option>
-                </select>
-                <button type="submit" class="btn btn-secondary btn-sm">Tampilkan</button>
+                <div class="container">
+                    <div class="row">
 
-                <label for="search">Cari Pemain:</label>
-                <input type="text" name="search" id="search" value="{{ search }}"
-                    placeholder="Masukkan NISN atau Nama Pemain">
-                <button type="submit" class="btn btn-primary btn-sm">Cari</button>
+                        <div class="col-md-6">
+                            <label for="posisi">Pilih Posisi:</label>
+                            <select name="posisi" id="posisi">
+                                <option value="semua" {% if posisi == 'semua' %}selected{% endif %}>Semua Pemain
+                                </option>
+                                <option value="GK" {% if posisi == 'GK' %}selected{% endif %}>Penjaga Gawang (GK)
+                                </option>
+                                <option value="DF" {% if posisi == 'DF' %}selected{% endif %}>Bek (DF)</option>
+                                <option value="MF" {% if posisi == 'MF' %}selected{% endif %}>Gelandang (MF)</option>
+                                <option value="FW" {% if posisi == 'FW' %}selected{% endif %}>Penyerang (FW)</option>
+                            </select>
+                            <button type="submit" class="btn btn-secondary btn-sm">Tampilkan</button>
+                        </div>
+
+                        <div class="col-md-6 d-flex justify-content-end">
+                            <input type="text" name="search" id="search" value="{{ search }}"
+                                placeholder="Cari NISN/Nama...." style="text-transform: uppercase;"
+                                oninput="this.value = this.value.toUpperCase();">
+                            <button type="submit">Cari</button>
+                        </div>
+
+
+                    </div>
+                </div>
             </form>
+
             <br><br>
 
 

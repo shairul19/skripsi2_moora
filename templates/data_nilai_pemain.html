@@ -3,7 +3,9 @@
 {% block title %}
 Nilai Pemain
 {% endblock %}
+{% block script %}
 
+{% endblock %}
 {% block content %}
 <!--Main-->
 <main class="mt-5 pt-3">
@@ -27,16 +29,31 @@ Nilai Pemain
                     </i> Tambah</a>
             </div><br><br>
             {% endif %}
-            <form method="post">
-                <label for="posisi_pemain">Pilih Posisi Pemain:</label>
-                <select id="posisi_pemain" name="posisi_pemain">
-                    <option value="">-- Pilih Posisi Pemain --</option>
-                    {% for posisi in positions %}
-                    <option value="{{ posisi }}" {% if posisi==posisi_pemain %}selected{% endif %}>{{ posisi }}</option>
-                    {% endfor %}
-                </select>
-                <input type="submit" value="Tampilkan">
-            </form>
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <form method="post">
+                            <label for="posisi_pemain">Pilih Posisi Pemain:</label>
+                            <select id="posisi_pemain" name="posisi_pemain">
+                                <option value="">-- Pilih Posisi Pemain --</option>
+                                {% for posisi in positions %}
+                                <option value="{{ posisi }}" {% if posisi==posisi_pemain %}selected{% endif %}>
+                                    {{ posisi }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <input type="submit" value="Tampilkan">
+                        </form>
+                    </div>
+                    <div class="col-md-6 d-flex justify-content-end">
+                        <form method="get" action="{{ url_for('data_nilai_pemain') }}">
+                            <input type="text" id="searchInput" placeholder="Cari nama pemain..."
+                                onkeyup="searchTable()">
+                            <button type="submit">Cari</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
             <br><br>
             {% if table_data %}
             <table class="table table-sm table-striped table-hover">
@@ -52,7 +69,7 @@ Nilai Pemain
                         {% endif %}
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="dataTable">
                     {% for data_dict in table_data %}
                     <tr>
                         <td>{{ (current_page - 1) * per_page + loop.index }}</td>
@@ -132,4 +149,25 @@ Nilai Pemain
     </div>
 </main>
 <!--Main-->
+<script>
+    function searchTable() {
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("searchInput");
+        filter = input.value.toLowerCase();
+        table = document.getElementById("dataTable");
+        tr = table.getElementsByTagName("tr");
+
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[1]; // Assuming nama_pemain is in the second column
+            if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+</script>
 {% endblock %}
