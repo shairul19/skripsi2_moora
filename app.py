@@ -1507,12 +1507,12 @@ def change_password():
 
         # Check if the current password matches the stored hashed password
         if hashlib.sha256(current_password.encode('utf-8')).hexdigest() != current_hashed_password:
-            error = 'Current password is incorrect.'
+            error = 'Password saat ini salah'
             return render_template('change_password.html', error=error)
 
         # Check if new password and confirm password match
         if new_password != confirm_password:
-            error = 'New password and confirm password do not match.'
+            error = 'password baru dan konfirmasi password tidak sesuai'
             return render_template('change_password.html', error=error)
 
         # Hash the new password
@@ -1524,7 +1524,7 @@ def change_password():
                     (hashed_new_password, user_id))
         conn.commit()
 
-        success = 'Password has been successfully changed.'
+        success = 'Password Berhasil diubah'
         return render_template('change_password.html', success=success)
 
     return render_template('change_password.html')
