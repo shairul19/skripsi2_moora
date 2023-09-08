@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -7,6 +8,7 @@
   <title>Login</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css')  }}">
 </head>
+
 <body>
   <div class="container">
     <div class="login">
@@ -14,7 +16,7 @@
         <h1>Login</h1>
         <hr>
         {% if error %}
-          <p>{{ error }}</p>
+        <p>{{ error }}</p>
         {%  endif %}
         <br>
         <label for="">Username</label>
@@ -29,8 +31,9 @@
     </div>
 
     <div class="right">
-        <img src="{{ url_for('static', filename='img/login.jpg')}}" alt="login">
+      <img src="{{ url_for('static', filename='img/login.jpg')}}" alt="login">
     </div>
   </div>
 </body>
+
 </html>

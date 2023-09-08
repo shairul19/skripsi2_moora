@@ -171,7 +171,14 @@ def register():
     return render_template('register.html')
 
 
+# Halaman Direct ke login
+@app.route('/')
+def halaman_awal():
+    return redirect('/login')
+
 # Halaman Login
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
