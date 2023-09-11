@@ -5,7 +5,7 @@
 -- Dumped from database version 15.4
 -- Dumped by pg_dump version 15.4
 
--- Started on 2023-09-11 19:44:50
+-- Started on 2023-09-11 20:04:40
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -18,30 +18,27 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-DROP DATABASE db_seleksi;
---
--- TOC entry 3371 (class 1262 OID 16399)
--- Name: db_seleksi; Type: DATABASE; Schema: -; Owner: shairul
---
-
-CREATE DATABASE db_seleksi WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'English_Indonesia.1252';
-
-
-ALTER DATABASE db_seleksi OWNER TO shairul;
-
-\connect db_seleksi
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
-
+ALTER TABLE ONLY public.tbl_pemain DROP CONSTRAINT tbl_pemain_id_user_fkey;
+ALTER TABLE ONLY public.tbl_nilai_kriteria DROP CONSTRAINT tbl_nilai_kriteria_nisn_fkey;
+ALTER TABLE ONLY public.tbl_nilai_kriteria DROP CONSTRAINT tbl_nilai_kriteria_id_kriteria_fkey;
+ALTER TABLE ONLY public.tbl_admin DROP CONSTRAINT tbl_admin_id_user_fkey;
+ALTER TABLE ONLY public.tbl_users DROP CONSTRAINT tbl_users_pkey;
+ALTER TABLE ONLY public.tbl_pemain DROP CONSTRAINT tbl_pemain_pkey;
+ALTER TABLE ONLY public.tbl_nilai_kriteria DROP CONSTRAINT tbl_nilai_kriteria_pkey;
+ALTER TABLE ONLY public.tbl_kriteria DROP CONSTRAINT tbl_kriteria_pkey;
+ALTER TABLE ONLY public.tbl_admin DROP CONSTRAINT tbl_admin_pkey;
+ALTER TABLE public.tbl_users ALTER COLUMN id_user DROP DEFAULT;
+ALTER TABLE public.tbl_kriteria ALTER COLUMN id_kriteria DROP DEFAULT;
+ALTER TABLE public.tbl_admin ALTER COLUMN id_admin DROP DEFAULT;
+DROP SEQUENCE public.tbl_users_id_user_seq;
+DROP TABLE public.tbl_users;
+DROP TABLE public.tbl_pemain;
+DROP TABLE public.tbl_nilai_kriteria;
+DROP SEQUENCE public.tbl_kriteria_id_kriteria_seq;
+DROP TABLE public.tbl_kriteria;
+DROP SEQUENCE public.tbl_admin_id_admin_seq;
+DROP TABLE public.tbl_admin;
+DROP SCHEMA public;
 --
 -- TOC entry 4 (class 2615 OID 2200)
 -- Name: public; Type: SCHEMA; Schema: -; Owner: pg_database_owner
@@ -53,7 +50,7 @@ CREATE SCHEMA public;
 ALTER SCHEMA public OWNER TO pg_database_owner;
 
 --
--- TOC entry 3372 (class 0 OID 0)
+-- TOC entry 3371 (class 0 OID 0)
 -- Dependencies: 4
 -- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: pg_database_owner
 --
@@ -100,7 +97,7 @@ CREATE SEQUENCE public.tbl_admin_id_admin_seq
 ALTER TABLE public.tbl_admin_id_admin_seq OWNER TO shairul;
 
 --
--- TOC entry 3373 (class 0 OID 0)
+-- TOC entry 3372 (class 0 OID 0)
 -- Dependencies: 215
 -- Name: tbl_admin_id_admin_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: shairul
 --
@@ -142,7 +139,7 @@ CREATE SEQUENCE public.tbl_kriteria_id_kriteria_seq
 ALTER TABLE public.tbl_kriteria_id_kriteria_seq OWNER TO shairul;
 
 --
--- TOC entry 3374 (class 0 OID 0)
+-- TOC entry 3373 (class 0 OID 0)
 -- Dependencies: 217
 -- Name: tbl_kriteria_id_kriteria_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: shairul
 --
@@ -219,7 +216,7 @@ CREATE SEQUENCE public.tbl_users_id_user_seq
 ALTER TABLE public.tbl_users_id_user_seq OWNER TO shairul;
 
 --
--- TOC entry 3375 (class 0 OID 0)
+-- TOC entry 3374 (class 0 OID 0)
 -- Dependencies: 221
 -- Name: tbl_users_id_user_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: shairul
 --
@@ -889,7 +886,7 @@ COPY public.tbl_users (id_user, username, password, role, created_at, updated_at
 
 
 --
--- TOC entry 3376 (class 0 OID 0)
+-- TOC entry 3375 (class 0 OID 0)
 -- Dependencies: 215
 -- Name: tbl_admin_id_admin_seq; Type: SEQUENCE SET; Schema: public; Owner: shairul
 --
@@ -898,7 +895,7 @@ SELECT pg_catalog.setval('public.tbl_admin_id_admin_seq', 11, true);
 
 
 --
--- TOC entry 3377 (class 0 OID 0)
+-- TOC entry 3376 (class 0 OID 0)
 -- Dependencies: 217
 -- Name: tbl_kriteria_id_kriteria_seq; Type: SEQUENCE SET; Schema: public; Owner: shairul
 --
@@ -907,7 +904,7 @@ SELECT pg_catalog.setval('public.tbl_kriteria_id_kriteria_seq', 61, true);
 
 
 --
--- TOC entry 3378 (class 0 OID 0)
+-- TOC entry 3377 (class 0 OID 0)
 -- Dependencies: 221
 -- Name: tbl_users_id_user_seq; Type: SEQUENCE SET; Schema: public; Owner: shairul
 --
@@ -996,7 +993,7 @@ ALTER TABLE ONLY public.tbl_pemain
     ADD CONSTRAINT tbl_pemain_id_user_fkey FOREIGN KEY (id_user) REFERENCES public.tbl_users(id_user);
 
 
--- Completed on 2023-09-11 19:44:51
+-- Completed on 2023-09-11 20:04:41
 
 --
 -- PostgreSQL database dump complete
