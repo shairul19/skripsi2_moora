@@ -1278,7 +1278,7 @@ def perhitungan_divisi_akar():
 
             # Query data from the database for the selected player position
             # and join data from multiple tables to get criteria values
-            cur.execute("SELECT p.nama_pemain, p.nisn, k.nama_kriteria, nk.nilai, k.id_kriteria "
+            cur.execute("SELECT p.nisn, p.nama_pemain, k.nama_kriteria, nk.nilai, k.id_kriteria "
                         "FROM tbl_nilai_kriteria nk "
                         "JOIN tbl_pemain p ON nk.nisn = p.nisn "
                         "JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria "
