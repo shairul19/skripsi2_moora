@@ -739,8 +739,6 @@ def lihat_data_kriteria():
         return redirect('/login')
 
 # Halaman Tambah Kriteria
-
-
 @app.route('/tambah_kriteria', methods=['GET', 'POST'])
 def tambah_kriteria():
     if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
@@ -769,11 +767,20 @@ def tambah_kriteria():
                       'danger')
                 return render_template('tambah_kriteria.html', username=username, total_bobot_posisi=total_bobot_per_position)
 
+            # Memeriksa apakah kode kriteria sudah ada dalam tabel
+            cur.execute("SELECT kode_kriteria FROM tbl_kriteria WHERE kode_kriteria = %s",
+                        (kode_kriteria,))
+            existing_kriteria = cur.fetchone()
+
+            if existing_kriteria:
+                flash('Kode Kriteria sudah ada dalam tabel.', 'danger')
+                return render_template('tambah_kriteria.html', username=username, total_bobot_posisi=total_bobot_per_position)
+
             # Jika total bobot masih dalam batas, simpan data ke database
             cur.execute("INSERT INTO tbl_kriteria (kode_kriteria, nama_kriteria, posisi, bobot, tipe) VALUES (%s, %s, %s, %s, %s)",
                         (kode_kriteria, nama_kriteria, posisi, bobot, tipe))
             conn.commit()
-
+            flash('Kriteria berhasil ditambahkan', 'success')
             return redirect('/lihat_data_kriteria')
 
         # Mengambil total bobot untuk setiap posisi dari database
