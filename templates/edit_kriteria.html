@@ -8,6 +8,13 @@
     <!--Main-->  
     <main class="mt-5 pt-3">
         <div class="col-md-12 p-4 pt-2">
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <div class="alert alert-danger alert-dismissible" role="alert">
+                {{ messages[0] }}
+            </div>
+            {% endif %}
+            {% endwith %}
             <h3>Edit Kriteria</h3>
             <hr>
             <div class="row">
@@ -39,6 +46,38 @@
                     <button type="submit" class="btn btn-success">Simpan</button>
                     <a class="btn btn-danger" href="/lihat_data_kriteria" role="button">Batal</a>
                 </form>
+            </div>
+            <br>
+            <div class="col-lg-8">
+                <div class="shadow border rounded p-4 mb-2">
+                    <h4>Informasi Total Bobot Tiap Posisi</h4>
+                    <hr>
+                    <div class="row">
+                        <p class="card-text">
+                            <table class="table table-sm table-striped table-hover">
+                                <tr class="table table-dark">
+                                    <th>No</th>
+                                    <th>Posisi</th>
+                                    <th>Total Bobot</th>
+                                </tr>
+                                {% for pos, total in total_bobot_posisi.items() %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>
+                                        {{ pos }}
+                                    </td>
+                                    <td>{{ total }}</td>
+                                    {% endfor %}
+                                </tr>
+                            </table>
+                        </p>
+                    </div>
+                    </hr>
+                </div>
+
+
+
+
             </div>
         </div>
     </main>

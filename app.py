@@ -819,16 +819,41 @@ def edit_kriteria(id_kriteria):
             nama_kriteria = request.form['nama_kriteria']
             posisi = kriteria[3]
             tipe = request.form['tipe']
-            bobot = float(request.form['bobot'])
+            bobot = Decimal(request.form['bobot'])
 
+            # Mengambil total bobot untuk setiap posisi dari database
+            cur.execute(
+                "SELECT posisi, SUM(bobot) FROM tbl_kriteria GROUP BY posisi")
+            total_bobot_per_position = {row[0]: row[1]
+                                        for row in cur.fetchall()}
+
+            # Mendapatkan total bobot untuk posisi tertentu
+            total_bobot_posisi = total_bobot_per_position.get(
+                posisi, Decimal(0))
+
+            # Memeriksa apakah total bobot untuk posisi tertentu melebihi 1.0
+            if total_bobot_posisi - kriteria[5] + bobot > 1.0:
+                flash('Total Bobot sudah lebih dari 1.0, harap cek kembali kriteria lainnya pada posisi tersebut',
+                      'danger')
+                return render_template('edit_kriteria.html', kriteria=kriteria, username=username, total_bobot_posisi=total_bobot_per_position)
+            
+
+            # Jika total bobot masih dalam batas, update dan simpan data ke database
             cur.execute("UPDATE tbl_kriteria "
                         "SET kode_kriteria = %s, nama_kriteria = %s, posisi = %s, tipe = %s, bobot = %s "
                         "WHERE id_kriteria = %s",
                         (kode_kriteria, nama_kriteria, posisi, tipe, bobot, id_kriteria))
             conn.commit()
+            flash('Kriteria Berhasil diubah',
+                      'success')
             return redirect('/lihat_data_kriteria')
 
-        return render_template('edit_kriteria.html', username=username, kriteria=kriteria)
+         # Mengambil total bobot untuk setiap posisi dari database
+        cur.execute(
+            "SELECT posisi, SUM(bobot) FROM tbl_kriteria GROUP BY posisi")
+        total_bobot_per_position = {row[0]: row[1] for row in cur.fetchall()}
+
+        return render_template('edit_kriteria.html', username=username, kriteria=kriteria, total_bobot_posisi=total_bobot_per_position)
     else:
         flash('Anda tidak memiliki izin untuk mengedit data kriteria',
               'danger')
