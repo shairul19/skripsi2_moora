@@ -15,100 +15,118 @@ Data Tim Seleksi
         <hr>
 
         <div class="row">
-            <form method="POST" action="/lihat_data_tim_seleksi">
-                <label for="jabatan">Pilih Jabatan:</label>
-                <select name="jabatan" id="jabatan">
-                    <option value="semua" {% if jabatan == 'semua' %}selected{% endif %}>Lihat Semua</option>
-                    <option value="Head Coach" {% if jabatan == 'Head Coach' %}selected{% endif %}>Head Coach</option>
-                    <option value="Asst. Coach" {% if jabatan == 'Asst. Coach' %}selected{% endif %}>Asst. Coach
-                    </option>
-                    <option value="Scout Staff" {% if jabatan == 'Scout Staff' %}selected{% endif %}>Scout Staff
-                    </option>
-                </select>
-                <button type="submit">Tampilkan</button>
-            </form>
-            <br><br>
+            <div class="container">
+                <div class="row">
 
-            <table class="table table-sm table-striped table-hover">
-                <thead class="table-dark">
+                    <div class="col-md-6">
+                        <form method="POST" action="/lihat_data_tim_seleksi">
+                            <label for="jabatan">Pilih Jabatan:</label>
+                            <select name="jabatan" id="jabatan">
+                                <option value="semua" {% if jabatan == 'semua' %}selected{% endif %}>Lihat Semua
+                                </option>
+                                <option value="Head Coach" {% if jabatan == 'Head Coach' %}selected{% endif %}>Head
+                                    Coach</option>
+                                <option value="Asst. Coach" {% if jabatan == 'Asst. Coach' %}selected{% endif %}>Asst.
+                                    Coach
+                                </option>
+                                <option value="Scout Staff" {% if jabatan == 'Scout Staff' %}selected{% endif %}>Scout
+                                    Staff
+                                </option>
+                            </select>
+                            <button type="submit">Tampilkan</button>
+                        </form>
+                    </div>
+                    {% if 'user_id' in session and session['role'] == 'admin' or session['role'] == 'superadmin' %}
+                    <div class="col-md-6 d-flex justify-content-end">
+                        <a href="/generate_pdf_data_tim_seleksi" class="btn btn-primary"><i
+                                class="fa-solid fa-print"></i>
+                            Cetak PDF</a>
+                    </div>
+                    {%endif%}
+
+                </div>
+            </div>
+            <p>
+                <table class="table table-sm table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>No.</th>
+                            <th>Nama</th>
+                            <th>Tanggal Lahir</th>
+                            <th>Jabatan</th>
+                            {% if 'user_id' in session and session['role'] == 'superadmin' %}
+                            <th>Aksi</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    {% if data_tim_seleksi %}
+                    {% for tim in data_tim_seleksi %}
+
                     <tr>
-                        <th>No.</th>
-                        <th>Nama</th>
-                        <th>Tanggal Lahir</th>
-                        <th>Jabatan</th>
+                        <td>{{ (current_page - 1) * per_page + loop.index }}</td>
+                        <td>{{ tim[1] }}</td>
+                        <td>{{ tim[2] }}</td>
+                        <td>{{ tim[3] }}</td>
                         {% if 'user_id' in session and session['role'] == 'superadmin' %}
-                        <th>Aksi</th>
-                        {% endif %}
-                    </tr>
-                </thead>
-                {% if data_tim_seleksi %}
-                {% for tim in data_tim_seleksi %}
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                data-bs-target="#hapusModal{{ tim[0] }}">
+                                <i class="fa-solid fa-trash-can"></i>Hapus
+                            </button>
 
-                <tr>
-                    <td>{{ (current_page - 1) * per_page + loop.index }}</td>
-                    <td>{{ tim[1] }}</td>
-                    <td>{{ tim[2] }}</td>
-                    <td>{{ tim[3] }}</td>
-                    {% if 'user_id' in session and session['role'] == 'superadmin' %}
-                    <td>
-                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
-                            data-bs-target="#hapusModal{{ tim[0] }}">
-                            <i class="fa-solid fa-trash-can"></i>Hapus
-                        </button>
-
-                        <!-- Modal Konfirmasi Hapus -->
-                        <div class="modal fade" id="hapusModal{{ tim[0] }}" tabindex="-1"
-                            aria-labelledby="hapusModalLabel" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="hapusModalLabel">Konfirmasi Hapus</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        Apakah Anda yakin ingin menghapus data {{tim[1]}}?
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                            data-bs-dismiss="modal">Batal</button>
-                                        <form method="POST" action="/hapus_data_admin/{{ tim[0] }}">
-                                            <button type="submit" class="btn btn-danger">Hapus</button>
-                                        </form>
+                            <!-- Modal Konfirmasi Hapus -->
+                            <div class="modal fade" id="hapusModal{{ tim[0] }}" tabindex="-1"
+                                aria-labelledby="hapusModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="hapusModalLabel">Konfirmasi Hapus</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Apakah Anda yakin ingin menghapus data {{tim[1]}}?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Batal</button>
+                                            <form method="POST" action="/hapus_data_admin/{{ tim[0] }}">
+                                                <button type="submit" class="btn btn-danger">Hapus</button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        {% endif %}
+                            {% endif %}
 
-                    </td>
-                </tr>
+                        </td>
+                    </tr>
 
-                {% endfor %}
-
-            </table>
-            <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-center">
-                    {% if current_page > 1 %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ current_page - 1 }}&jabatan={{ jabatan }}">Previous</a>
-                    </li>
-                    {% endif %}
-
-                    {% for page_num in range(1, total_pages + 1) %}
-                    <li class="page-item {% if page_num == current_page %}active{% endif %}">
-                        <a class="page-link" href="?page={{ page_num }}&jabatan={{ jabatan }}">{{ page_num }}</a>
-                    </li>
                     {% endfor %}
 
-                    {% if current_page < total_pages %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ current_page + 1 }}&jabatan={{ jabatan }}">Next</a>
-                    </li>
-                    {% endif %}
-                </ul>
-            </nav>
-            {% endif %}
+                </table>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if current_page > 1 %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ current_page - 1 }}&jabatan={{ jabatan }}">Previous</a>
+                        </li>
+                        {% endif %}
+
+                        {% for page_num in range(1, total_pages + 1) %}
+                        <li class="page-item {% if page_num == current_page %}active{% endif %}">
+                            <a class="page-link" href="?page={{ page_num }}&jabatan={{ jabatan }}">{{ page_num }}</a>
+                        </li>
+                        {% endfor %}
+
+                        {% if current_page < total_pages %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ current_page + 1 }}&jabatan={{ jabatan }}">Next</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
         </div>
     </div>
 </main>

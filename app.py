@@ -148,6 +148,22 @@ def get_data_pemain():
     return data
 
 
+def get_data_tim_seleksi():
+    cur.execute(
+        "SELECT nama_admin, tgl_lahir_admin, jabatan FROM tbl_admin WHERE jabatan != 'superadmin'")
+    data_admin = cur.fetchall()
+
+    return data_admin
+
+
+def get_data_kriteria():
+    cur.execute(
+        "SELECT kode_kriteria, nama_kriteria, posisi, bobot, tipe FROM tbl_kriteria")
+    data_kriteria = cur.fetchall()
+
+    return data_kriteria
+
+
 # Function mengambil nama admin (pencetak)
 def get_admin_name(user_id):
     cur.execute("SELECT a.nama_admin "
@@ -1750,7 +1766,190 @@ def generate_pdf_data_peserta():
         # Set up the response to send the PDF for download
         pdf_data.seek(0)
         response = Response(pdf_data.read(), content_type='application/pdf')
-        response.headers['Content-Disposition'] = 'attachment; filename=laporan_pemain.pdf'
+        response.headers['Content-Disposition'] = 'attachment; filename=Laporan Data Peserta Seleksi.pdf'
+
+        return response
+    else:
+        return redirect('/login')
+
+# Cetak PDF data tim seleksi
+
+
+@app.route('/generate_pdf_data_tim_seleksi', methods=['GET'])
+def generate_pdf_data_tim_seleksi():
+    if 'user_id' in session:
+        user_id = session['user_id']
+
+        # Create an in-memory PDF
+        pdf_data = io.BytesIO()
+
+        # Mendapatkan tanggal dan waktu saat laporan dibuat
+        current_datetime = datetime.datetime.now()
+
+        # Mendapatkan data yang ingin dicetak ke PDF (misalnya, data_pemain)
+        # Replace with your data retrieval logic
+        data_tim_seleksi = get_data_tim_seleksi()
+
+        admin_name = get_admin_name(user_id)
+
+        # Mengurutkan data pemain berdasarkan posisi
+        data_tim_seleksi = sorted(data_tim_seleksi, key=lambda x: x[2])
+
+        # Menambahkan nomor urut ke dalam data pemain
+        # Tambahkan header kolom
+        data_tim_seleksi_with_number = [
+            ['No.', 'nama_admin', 'tgl_lahir_admin', 'jabatan']]
+        for i, row in enumerate(data_tim_seleksi, start=1):
+            nama_admin, tgl_lahir_admin, jabatan = row  # Unpack the tuple
+            data_tim_seleksi_with_number.append(
+                [i, nama_admin, tgl_lahir_admin, jabatan])
+
+        # Create a SimpleDocTemplate with the in-memory buffer
+        doc = SimpleDocTemplate(pdf_data, pagesize=letter)
+
+        # Objek style untuk judul
+        title_style = getSampleStyleSheet()['Heading1']
+        title_style.alignment = 1  # Rata tengah
+        title_style.fontName = 'Helvetica-Bold'
+        title_style.fontSize = 20  # Ubah ukuran font sesuai kebutuhan
+
+        # Objek style untuk tanggal cetak
+        date_style = getSampleStyleSheet()['Normal']
+        date_style.alignment = 1  # Rata tengah
+        date_style.fontName = 'Helvetica'
+        date_style.fontSize = 8  # Ukuran font tanggal cetak
+
+        # Tambahkan judul data peserta seleksi ke PDF
+        # Ganti judul sesuai kebutuhan
+        elements = [Paragraph("Data Tim Seleksi", title_style)]
+
+        # Tambahkan tanggal cetak ke PDF di bawah judul
+        elements.append(Paragraph(
+            "Tanggal Cetak: " + current_datetime.strftime("%d %B %Y %H:%M:%S"), date_style))
+
+        # Tambahkan nama pencetak ke PDF
+        elements.append(
+            Paragraph("Dicetak Oleh: " + admin_name[0], date_style))
+
+        # Menghitung lebar kolom sesuai dengan lebar halaman
+        lebar_halaman, tinggi_halaman = letter
+        # Jumlah kolom dalam tabel
+        jumlah_kolom = len(data_tim_seleksi_with_number[0])
+        lebar_kolom = (lebar_halaman-20) / jumlah_kolom
+
+        # Membuat tabel dengan lebar kolom yang sesuai
+        table = Table(data_tim_seleksi_with_number,
+                      colWidths=[lebar_kolom] * jumlah_kolom)
+        table_style = TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                                  ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                                  ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                                  ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                                  ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                                  ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                                  ('GRID', (0, 0), (-1, -1), 1, colors.black)])
+
+        table.setStyle(table_style)
+
+        # Build the PDF document
+        elements.append(table)
+        doc.build(elements)
+
+        # Set up the response to send the PDF for download
+        pdf_data.seek(0)
+        response = Response(pdf_data.read(), content_type='application/pdf')
+        response.headers['Content-Disposition'] = 'attachment; filename=Laporan Data Tim Seleksi.pdf'
+
+        return response
+    else:
+        return redirect('/login')
+
+
+# Cetak PDF data kriteria
+
+
+@app.route('/generate_pdf_data_kriteria', methods=['GET'])
+def generate_pdf_data_kriteria():
+    if 'user_id' in session:
+        user_id = session['user_id']
+
+        # Create an in-memory PDF
+        pdf_data = io.BytesIO()
+
+        # Mendapatkan tanggal dan waktu saat laporan dibuat
+        current_datetime = datetime.datetime.now()
+
+        # Mendapatkan data yang ingin dicetak ke PDF (misalnya, data_pemain)
+        # Replace with your data retrieval logic
+        data_kriteria = get_data_kriteria()
+
+        admin_name = get_admin_name(user_id)
+
+        # Mengurutkan data pemain berdasarkan posisi
+        data_kriteria = sorted(data_kriteria, key=lambda x: x[2])
+
+        # Menambahkan nomor urut ke dalam data pemain
+        # Tambahkan header kolom
+        data_kriteria_with_number = [
+            ['No.', 'kode kriteria', 'nama kriteria', 'posisi', 'bobot', 'tipe']]
+        for i, row in enumerate(data_kriteria, start=1):
+            kode_kriteria, nama_kriteria, posisi, bobot, tipe = row  # Unpack the tuple
+            data_kriteria_with_number.append(
+                [i, kode_kriteria, nama_kriteria, posisi, bobot, tipe])
+
+        # Create a SimpleDocTemplate with the in-memory buffer
+        doc = SimpleDocTemplate(pdf_data, pagesize=letter)
+
+        # Objek style untuk judul
+        title_style = getSampleStyleSheet()['Heading1']
+        title_style.alignment = 1  # Rata tengah
+        title_style.fontName = 'Helvetica-Bold'
+        title_style.fontSize = 20  # Ubah ukuran font sesuai kebutuhan
+
+        # Objek style untuk tanggal cetak
+        date_style = getSampleStyleSheet()['Normal']
+        date_style.alignment = 1  # Rata tengah
+        date_style.fontName = 'Helvetica'
+        date_style.fontSize = 8  # Ukuran font tanggal cetak
+
+        # Tambahkan judul data peserta seleksi ke PDF
+        # Ganti judul sesuai kebutuhan
+        elements = [Paragraph("Data Kriteria", title_style)]
+
+        # Tambahkan tanggal cetak ke PDF di bawah judul
+        elements.append(Paragraph(
+            "Tanggal Cetak: " + current_datetime.strftime("%d %B %Y %H:%M:%S"), date_style))
+
+        # Tambahkan nama pencetak ke PDF
+        elements.append(
+            Paragraph("Dicetak Oleh: " + admin_name[0], date_style))
+
+        # Menghitung lebar kolom sesuai dengan lebar halaman
+        lebar_halaman, tinggi_halaman = letter
+        # Jumlah kolom dalam tabel
+        jumlah_kolom = len(data_kriteria_with_number[0])
+        lebar_kolom = (lebar_halaman-20) / jumlah_kolom
+
+        # Membuat tabel dengan lebar kolom yang sesuai
+        table = Table(data_kriteria_with_number,
+                      colWidths=[lebar_kolom] * jumlah_kolom)
+        table_style = TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                                  ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                                  ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                                  ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                                  ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                                  ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                                  ('GRID', (0, 0), (-1, -1), 1, colors.black)])
+
+        table.setStyle(table_style)
+
+        # Build the PDF document
+        elements.append(table)
+        doc.build(elements)
+
+        # Set up the response to send the PDF for download
+        pdf_data.seek(0)
+        response = Response(pdf_data.read(), content_type='application/pdf')
+        response.headers['Content-Disposition'] = 'attachment; filename=Laporan Data Kriteria.pdf'
 
         return response
     else:
