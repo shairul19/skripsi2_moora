@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, redirect, make_response, flash
+from flask import Flask, render_template, request, session, redirect, make_response, flash, Response
 import psycopg2
 import hashlib
 import jinja2.ext
@@ -10,6 +10,13 @@ import logging
 import pandas as pd
 import numpy as np
 from flask_paginate import Pagination, get_page_args
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, PageBreak
+from tempfile import NamedTemporaryFile
+import io
+import datetime
+from reportlab.lib.styles import getSampleStyleSheet
 
 app = Flask(__name__)
 app.secret_key = 'wasdqwerty'
@@ -51,8 +58,6 @@ def cek_nisn(nisn):
     return count > 0
 
 
-
-
 # Function lengkapi data user
 def lengkapi_data_user(nisn, user_id, nama_pemain, tgl_lahir_pemain, posisi, asal_sekolah):
     # Masukkan data ke tabel tbl_pemain
@@ -79,8 +84,6 @@ def lengkapi_data_admin(user_id, nama_admin, tgl_lahir_admin, jabatan):
     conn.commit()
 
 
-
-
 # Function mengambil username
 def get_username(user_id):
     cur.execute("SELECT username FROM tbl_users WHERE id_user = %s", (user_id,))
@@ -89,6 +92,8 @@ def get_username(user_id):
     return username
 
 # Function mengambil data untuk profil pemain
+
+
 def get_user_profile(user_id):
     cur.execute("SELECT u.id_user, u.username, p.nisn, p.nama_pemain, p.tgl_lahir_pemain, p.posisi, p.asal_sekolah "
                 "FROM tbl_users u "
@@ -135,6 +140,21 @@ def check_admin_for_user(user_id):
     return count > 0
 
 
+def get_data_pemain():
+    cur.execute(
+        "SELECT nisn, nama_pemain, tgl_lahir_pemain, asal_sekolah, posisi FROM tbl_pemain")
+    data = cur.fetchall()
+
+    return data
+
+
+# Function mengambil nama admin (pencetak)
+def get_admin_name(user_id):
+    cur.execute("SELECT a.nama_admin "
+                "FROM tbl_admin a "
+                "WHERE a.id_user = %s", (user_id,))
+    admin_name = cur.fetchone()
+    return admin_name
 # Baris Function (END) ===============================
 
 
@@ -146,6 +166,8 @@ def halaman_awal():
     return redirect('/login')
 
 # Halaman registrasi
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -224,14 +246,15 @@ def login():
 @app.route('/logout')
 def logout():
     # Membersihkan Session
-    session.pop('user_id', None) #membersihkan info user_id
-    session.pop('role', None) #mmebersihkan info role
+    session.pop('user_id', None)  # membersihkan info user_id
+    session.pop('role', None)  # mmebersihkan info role
 
-    response = make_response(redirect('/login')) #mengarahkan ke halaman login
-    
-    #menghapus cache pada browser
-    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate' 
-    response.headers['Pragma'] = 'no-cache' 
+    # mengarahkan ke halaman login
+    response = make_response(redirect('/login'))
+
+    # menghapus cache pada browser
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = 0
 
     return response
@@ -288,17 +311,18 @@ def lengkapi_data_admin_page():
 @app.route('/halaman_pengguna')
 def halaman_pengguna():
     if 'user_id' in session and session['role'] == 'user':
-        #menghitung jumlah pemain pada tbl_pemain
+        # menghitung jumlah pemain pada tbl_pemain
         cur.execute("SELECT COUNT (*) FROM tbl_pemain")
         conn.commit()
         jumlah_pemain = cur.fetchone()[0]
 
-        #menghitung jumlah tim seleksi pada tbl_admin
-        cur.execute("SELECT COUNT (*) FROM tbl_admin WHERE jabatan != 'superadmin' ")
+        # menghitung jumlah tim seleksi pada tbl_admin
+        cur.execute(
+            "SELECT COUNT (*) FROM tbl_admin WHERE jabatan != 'superadmin' ")
         conn.commit()
         jumlah_penilai = cur.fetchone()[0]
 
-        #menghitung jumlah pemain yang dinilai pada tbl_nilai_kriteria yang dicek dengan nisn
+        # menghitung jumlah pemain yang dinilai pada tbl_nilai_kriteria yang dicek dengan nisn
         cur.execute("SELECT COUNT (DISTINCT Nisn) FROM tbl_nilai_kriteria")
         conn.commit()
         jumlah_pemain_dinilai = cur.fetchone()[0]
@@ -316,18 +340,18 @@ def halaman_pengguna():
 @app.route('/halaman_admin')
 def halaman_admin():
     if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
-        #menghitung jumlah pemain pada tbl_pemain
+        # menghitung jumlah pemain pada tbl_pemain
         cur.execute("SELECT COUNT (*) FROM tbl_pemain")
         conn.commit()
         jumlah_pemain = cur.fetchone()[0]
 
-        #menghitung jumlah tim seleksi pada tbl_admin
+        # menghitung jumlah tim seleksi pada tbl_admin
         cur.execute(
             "SELECT COUNT (*) FROM tbl_admin WHERE jabatan != 'superadmin' ")
         conn.commit()
         jumlah_penilai = cur.fetchone()[0]
 
-        #menghitung jumlah pemain yang dinilai pada tbl_nilai_kriteria yang dicek dengan nisn
+        # menghitung jumlah pemain yang dinilai pada tbl_nilai_kriteria yang dicek dengan nisn
         cur.execute("SELECT COUNT (DISTINCT Nisn) FROM tbl_nilai_kriteria")
         conn.commit()
         jumlah_pemain_dinilai = cur.fetchone()[0]
@@ -739,6 +763,8 @@ def lihat_data_kriteria():
         return redirect('/login')
 
 # Halaman Tambah Kriteria
+
+
 @app.route('/tambah_kriteria', methods=['GET', 'POST'])
 def tambah_kriteria():
     if 'user_id' in session and (session['role'] == 'admin' or session['role'] == 'superadmin'):
@@ -843,7 +869,6 @@ def edit_kriteria(id_kriteria):
                 flash('Total Bobot sudah lebih dari 1.0, harap cek kembali kriteria lainnya pada posisi tersebut',
                       'danger')
                 return render_template('edit_kriteria.html', kriteria=kriteria, username=username, total_bobot_posisi=total_bobot_per_position)
-            
 
             # Jika total bobot masih dalam batas, update dan simpan data ke database
             cur.execute("UPDATE tbl_kriteria "
@@ -852,7 +877,7 @@ def edit_kriteria(id_kriteria):
                         (kode_kriteria, nama_kriteria, posisi, tipe, bobot, id_kriteria))
             conn.commit()
             flash('Kriteria Berhasil diubah',
-                      'success')
+                  'success')
             return redirect('/lihat_data_kriteria')
 
          # Mengambil total bobot untuk setiap posisi dari database
@@ -1358,7 +1383,8 @@ def perhitungan_divisi_akar():
 
             # Konversi nilai kedalam dictionary, table_data adalah hasil moora
             table_data = pivot_df_divisi_akar.reset_index().to_dict(orient='records')
-            table_data.sort(key=lambda x: x['Nilai Moora'], reverse=True) #mengurutkan peringkat dari nilai terbesar
+            # mengurutkan peringkat dari nilai terbesar
+            table_data.sort(key=lambda x: x['Nilai Moora'], reverse=True)
 
             # Pagination
             per_page = 10
@@ -1434,7 +1460,6 @@ def perhitungan_divisi_akar():
 
             data_to_display = table_data[offset: offset + per_page]
 
-           
             return render_template('perhitungan_divisi_akar.html', username=username, table_data=data_to_display,
                                    criteria=pivot_df_divisi_akar.columns, positions=get_player_positions(), posisi_pemain=posisi_pemain,
                                    current_page=page, total_pages=total_pages, per_page=per_page)
@@ -1443,6 +1468,8 @@ def perhitungan_divisi_akar():
         return redirect('/login')
 
 # Fungsi untuk menyimpan data hasil kuadrat (jika nilai true)
+
+
 def create_pivot_df(data, squared=False):
     # membuat dataframe
     df = pd.DataFrame(
@@ -1463,6 +1490,8 @@ def create_pivot_df(data, squared=False):
     return pivot_df
 
 # Fungsi untuk menghitung normalisasi matriks terbobot
+
+
 def create_pivot_df_divisi_akar(pivot_df_squared, sum_data, posisi_pemain, cur):
     # Buat Dataframe sesuai dengan normalisasi matriks
     pivot_df_divisi_akar = pivot_df_squared.copy()
@@ -1476,9 +1505,9 @@ def create_pivot_df_divisi_akar(pivot_df_squared, sum_data, posisi_pemain, cur):
     for kriteria in pivot_df_divisi_akar.columns:
         sum_value = next(
             (item['jumlah'] for item in sum_data if item['kriteria'] == kriteria), None)
-        
+
         sum_value_decimal = decimal.Decimal(sum_value)
-        
+
         bobot = decimal.Decimal(kriteria_weights.get(kriteria, 1.0))
         pivot_df_divisi_akar[kriteria] = (
             np.sqrt(pivot_df_divisi_akar[kriteria]) / sum_value_decimal) * bobot
@@ -1486,6 +1515,8 @@ def create_pivot_df_divisi_akar(pivot_df_squared, sum_data, posisi_pemain, cur):
     return pivot_df_divisi_akar
 
 # Halaman Ubah Password
+
+
 @app.route('/change_password', methods=['GET', 'POST'])
 def change_password():
     if 'user_id' not in session:
@@ -1525,6 +1556,7 @@ def change_password():
         return render_template('change_password.html', success=success)
 
     return render_template('change_password.html')
+
 
 # Halaman Untuk cek perhitungan
 """
@@ -1641,6 +1673,146 @@ def perhitungan_jumlah_pemangkatan():
     else:
         return redirect('/login')
 """
+
+"""
+@app.route('/generate_pdf', methods=['GET'])
+def generate_pdf():
+    if 'user_id' in session:
+        # Create an in-memory PDF
+        pdf_data = io.BytesIO()
+
+        # Mendapatkan tanggal dan waktu saat laporan dibuat
+        current_datetime = datetime.datetime.now()
+
+        # Mendapatkan data yang ingin dicetak ke PDF (misalnya, data_pemain)
+        data_pemain = get_data_pemain()  # Replace with your data retrieval logic
+
+        # Mengurutkan data pemain berdasarkan posisi
+        data_pemain = sorted(data_pemain, key=lambda x: x[3])
+
+        # Menambahkan nomor urut ke dalam data pemain
+        # Tambahkan header kolom
+        data_pemain_with_number = [
+            ['No.', 'NISN', 'Nama', 'Tanggal Lahir', 'Sekolah', 'Posisi']]
+        for i, row in enumerate(data_pemain, start=1):
+            nisn, nama_pemain, tgl_lahir_pemain, asal_sekolah, posisi = row  # Unpack the tuple
+            data_pemain_with_number.append(
+                [i, nisn, nama_pemain, tgl_lahir_pemain, asal_sekolah, posisi])
+
+        # Create a SimpleDocTemplate with the in-memory buffer
+        doc = SimpleDocTemplate(pdf_data, pagesize=letter)
+
+        # Tambahkan informasi tanggal cetak ke PDF
+        elements = [Paragraph(
+            "Tanggal Cetak: " + current_datetime.strftime("%d %B %Y %H:%M:%S"), style)]
+
+        # Create the table and set style
+        table = Table(data_pemain_with_number)
+        style = TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                            ('GRID', (0, 0), (-1, -1), 1, colors.black)])
+
+        table.setStyle(style)
+
+        # Build the PDF document
+        elements.append(table)
+        doc.build(elements)
+
+        # Set up the response to send the PDF for download
+        pdf_data.seek(0)
+        response = Response(pdf_data.read(), content_type='application/pdf')
+        response.headers['Content-Disposition'] = 'attachment; filename=laporan_pemain.pdf'
+
+        return response
+    else:
+        return redirect('/login')
+"""
+
+
+@app.route('/generate_pdf', methods=['GET'])
+def generate_pdf():
+    if 'user_id' in session:
+        user_id = session['user_id']
+
+        # Create an in-memory PDF
+        pdf_data = io.BytesIO()
+
+        # Mendapatkan tanggal dan waktu saat laporan dibuat
+        current_datetime = datetime.datetime.now()
+
+        # Mendapatkan data yang ingin dicetak ke PDF (misalnya, data_pemain)
+        data_pemain = get_data_pemain()  # Replace with your data retrieval logic
+
+        admin_name = get_admin_name(user_id)
+
+        # Mengurutkan data pemain berdasarkan posisi
+        data_pemain = sorted(data_pemain, key=lambda x: x[4])
+
+        # Menambahkan nomor urut ke dalam data pemain
+        # Tambahkan header kolom
+        data_pemain_with_number = [
+            ['No.', 'NISN', 'Nama', 'Tanggal Lahir', 'Sekolah', 'Posisi']]
+        for i, row in enumerate(data_pemain, start=1):
+            nisn, nama_pemain, tgl_lahir_pemain, asal_sekolah, posisi = row  # Unpack the tuple
+            data_pemain_with_number.append(
+                [i, nisn, nama_pemain, tgl_lahir_pemain, asal_sekolah, posisi])
+
+        # Create a SimpleDocTemplate with the in-memory buffer
+        doc = SimpleDocTemplate(pdf_data, pagesize=letter)
+
+        # Objek style untuk judul
+        title_style = getSampleStyleSheet()['Heading1']
+        title_style.alignment = 1  # Rata tengah
+        title_style.fontName = 'Helvetica-Bold'
+        title_style.fontSize = 20  # Ubah ukuran font sesuai kebutuhan
+
+        # Objek style untuk tanggal cetak
+        date_style = getSampleStyleSheet()['Normal']
+        date_style.alignment = 1  # Rata tengah
+        date_style.fontName = 'Helvetica'
+        date_style.fontSize = 8  # Ukuran font tanggal cetak
+
+        # Tambahkan judul data peserta seleksi ke PDF
+        # Ganti judul sesuai kebutuhan
+        elements = [Paragraph("Data Peserta Seleksi", title_style)]
+
+        # Tambahkan tanggal cetak ke PDF di bawah judul
+        elements.append(Paragraph(
+            "Tanggal Cetak: " + current_datetime.strftime("%d %B %Y %H:%M:%S"), date_style))
+
+        # Tambahkan nama pencetak ke PDF
+        elements.append(
+            Paragraph("Dicetak Oleh: " + admin_name[0], date_style))
+
+        # Create the table and set style
+        table = Table(data_pemain_with_number)
+        table_style = TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                                  ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                                  ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                                  ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                                  ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                                  ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                                  ('GRID', (0, 0), (-1, -1), 1, colors.black)])
+
+        table.setStyle(table_style)
+
+        # Build the PDF document
+        elements.append(table)
+        doc.build(elements)
+
+        # Set up the response to send the PDF for download
+        pdf_data.seek(0)
+        response = Response(pdf_data.read(), content_type='application/pdf')
+        response.headers['Content-Disposition'] = 'attachment; filename=laporan_pemain.pdf'
+
+        return response
+    else:
+        return redirect('/login')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
