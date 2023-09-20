@@ -1674,65 +1674,8 @@ def perhitungan_jumlah_pemangkatan():
         return redirect('/login')
 """
 
-"""
-@app.route('/generate_pdf', methods=['GET'])
-def generate_pdf():
-    if 'user_id' in session:
-        # Create an in-memory PDF
-        pdf_data = io.BytesIO()
 
-        # Mendapatkan tanggal dan waktu saat laporan dibuat
-        current_datetime = datetime.datetime.now()
-
-        # Mendapatkan data yang ingin dicetak ke PDF (misalnya, data_pemain)
-        data_pemain = get_data_pemain()  # Replace with your data retrieval logic
-
-        # Mengurutkan data pemain berdasarkan posisi
-        data_pemain = sorted(data_pemain, key=lambda x: x[3])
-
-        # Menambahkan nomor urut ke dalam data pemain
-        # Tambahkan header kolom
-        data_pemain_with_number = [
-            ['No.', 'NISN', 'Nama', 'Tanggal Lahir', 'Sekolah', 'Posisi']]
-        for i, row in enumerate(data_pemain, start=1):
-            nisn, nama_pemain, tgl_lahir_pemain, asal_sekolah, posisi = row  # Unpack the tuple
-            data_pemain_with_number.append(
-                [i, nisn, nama_pemain, tgl_lahir_pemain, asal_sekolah, posisi])
-
-        # Create a SimpleDocTemplate with the in-memory buffer
-        doc = SimpleDocTemplate(pdf_data, pagesize=letter)
-
-        # Tambahkan informasi tanggal cetak ke PDF
-        elements = [Paragraph(
-            "Tanggal Cetak: " + current_datetime.strftime("%d %B %Y %H:%M:%S"), style)]
-
-        # Create the table and set style
-        table = Table(data_pemain_with_number)
-        style = TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-                            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                            ('GRID', (0, 0), (-1, -1), 1, colors.black)])
-
-        table.setStyle(style)
-
-        # Build the PDF document
-        elements.append(table)
-        doc.build(elements)
-
-        # Set up the response to send the PDF for download
-        pdf_data.seek(0)
-        response = Response(pdf_data.read(), content_type='application/pdf')
-        response.headers['Content-Disposition'] = 'attachment; filename=laporan_pemain.pdf'
-
-        return response
-    else:
-        return redirect('/login')
-"""
-
-
+# Cetak PDF data pemain
 @app.route('/generate_pdf', methods=['GET'])
 def generate_pdf():
     if 'user_id' in session:
