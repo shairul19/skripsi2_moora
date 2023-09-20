@@ -1676,8 +1676,8 @@ def perhitungan_jumlah_pemangkatan():
 
 
 # Cetak PDF data pemain
-@app.route('/generate_pdf', methods=['GET'])
-def generate_pdf():
+@app.route('/generate_pdf_data_peserta', methods=['GET'])
+def generate_pdf_data_peserta():
     if 'user_id' in session:
         user_id = session['user_id']
 
