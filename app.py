@@ -1,3 +1,7 @@
+from flask import request
+from reportlab.platypus import PageBreak
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
 from flask import Flask, render_template, request, session, redirect, make_response, flash, Response
 import psycopg2
 import hashlib
@@ -10,7 +14,7 @@ import logging
 import pandas as pd
 import numpy as np
 from flask_paginate import Pagination, get_page_args
-from reportlab.lib.pagesizes import letter
+from reportlab.lib.pagesizes import letter, landscape
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, PageBreak
 from tempfile import NamedTemporaryFile
@@ -1950,6 +1954,124 @@ def generate_pdf_data_kriteria():
         pdf_data.seek(0)
         response = Response(pdf_data.read(), content_type='application/pdf')
         response.headers['Content-Disposition'] = 'attachment; filename=Laporan Data Kriteria.pdf'
+
+        return response
+    else:
+        return redirect('/login')
+
+
+# ...
+
+
+@app.route('/generate_pdf_data_nilai_pemain', methods=['GET'])
+def generate_pdf_data_nilai_pemain():
+    if 'user_id' in session:
+        user_id = session['user_id']
+
+        # Create an in-memory PDF
+        pdf_data = io.BytesIO()
+
+        # Mendapatkan tanggal dan waktu saat laporan dibuat
+        current_datetime = datetime.datetime.now()
+
+        # Mendapatkan data yang ingin dicetak ke PDF (misalnya, data_nilai_kriteria)
+        # Replace dengan logika Anda untuk mendapatkan data tersebut
+        posisi_pemain = request.args.get('posisi_pemain', 'GK')
+        cur.execute("SELECT p.nisn, p.nama_pemain, k.id_kriteria, nk.nilai "
+                    "FROM tbl_nilai_kriteria nk "
+                    "JOIN tbl_pemain p ON nk.nisn = p.nisn "
+                    "JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria "
+                    "WHERE p.posisi = %s", (posisi_pemain,))
+        data_nilai_kriteria = cur.fetchall()
+
+        table_data = {}
+
+        for row in data_nilai_kriteria:
+            nisn = row[0]
+            nama_pemain = row[1]
+            id_kriteria = row[2]
+            nilai = row[3]
+
+            if nisn not in table_data:
+                table_data[nisn] = {
+                    'nama_pemain': nama_pemain, 'nisn': nisn}
+            table_data[nisn][id_kriteria] = nilai
+
+        cur.execute("SELECT k.id_kriteria, k.nama_kriteria "
+                    "FROM tbl_kriteria k "
+                    "WHERE k.posisi = %s", (posisi_pemain,))
+        kriteria_list = {row[0]: row[1] for row in cur.fetchall()}
+
+        # Membuat dokumen PDF dengan menggunakan ReportLab
+        doc = SimpleDocTemplate(pdf_data, pagesize=(14 * inch, 11 * inch))
+
+        # Objek style untuk judul
+        title_style = getSampleStyleSheet()['Heading1']
+        title_style.alignment = 1  # Rata tengah
+        title_style.fontName = 'Helvetica-Bold'
+        title_style.fontSize = 20  # Ubah ukuran font sesuai kebutuhan
+
+        # Objek style untuk tanggal cetak
+        date_style = getSampleStyleSheet()['Normal']
+        date_style.alignment = 1  # Rata tengah
+        date_style.fontName = 'Helvetica'
+        date_style.fontSize = 8  # Ukuran font tanggal cetak
+
+        # Tambahkan judul data peserta seleksi ke PDF
+        elements = [
+            Paragraph(f"Data Nilai Pemain ({posisi_pemain})", title_style)]
+
+        # Tambahkan tanggal cetak ke PDF di bawah judul
+        elements.append(Paragraph(
+            "Tanggal Cetak: " + current_datetime.strftime("%d %B %Y %H:%M:%S"), date_style))
+
+        # Tambahkan nama pencetak ke PDF (gantilah dengan nama admin yang sesuai)
+        # Gantilah dengan fungsi Anda untuk mendapatkan nama admin
+        admin_name = get_admin_name(user_id)
+        elements.append(
+            Paragraph("Dicetak Oleh: " + admin_name[0], date_style))
+
+        # Membuat tabel berdasarkan data nilai kriteria
+        table_data_list = []
+        header_row = ['No.', 'NISN', 'Nama Pemain'] + \
+            list(kriteria_list.values())
+        table_data_list.append(header_row)
+
+        row_number = 1
+        for nisn, data in table_data.items():
+            row = [row_number, nisn, data['nama_pemain']] + \
+                [data.get(kriteria_id, '-')
+                 for kriteria_id in kriteria_list.keys()]
+            table_data_list.append(row)
+            row_number += 1
+
+        # Membuat tabel dengan ReportLab
+        table = Table(table_data_list, repeatRows=1)
+        table_style = TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ])
+
+        table.setStyle(table_style)
+
+        # Menambahkan tabel ke dokumen PDF
+        elements.append(table)
+
+        # Menambahkan halaman baru jika tabel terlalu panjang
+        elements.append(PageBreak())
+
+        doc.build(elements)
+
+        # Mengatur respons untuk mengirimkan PDF untuk diunduh
+        pdf_data.seek(0)
+        response = Response(pdf_data.read(), content_type='application/pdf')
+        response.headers[
+            'Content-Disposition'] = f'attachment; filename=laporan_data_nilai_pemain_{posisi_pemain}.pdf'
 
         return response
     else:

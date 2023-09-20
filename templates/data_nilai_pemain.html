@@ -52,6 +52,12 @@ Nilai Pemain
                             <button type="submit">Cari</button>
                         </form>
                     </div>
+                    {% if 'user_id' in session and session['role'] == 'admin' or session['role'] == 'superadmin' %}
+                    <div class="col-md-6 d-flex justify-content-end">
+                        <a href="/generate_pdf_data_nilai_pemain?posisi_pemain={{ posisi_pemain }}"
+                            class="btn btn-primary">Cetak PDF</a>
+                    </div>
+                    {%endif%}
                 </div>
             </div>
             <br><br>
