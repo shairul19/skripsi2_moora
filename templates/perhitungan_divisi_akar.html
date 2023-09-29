@@ -24,6 +24,9 @@ Hasil MOORA
                 <input type="submit" value="Submit">
             </form>
             <br><br>
+            <!-- Tambahkan tombol atau tautan untuk cetak PDF -->
+            <a href="{{ url_for('cetak_pdf_moora', posisi_pemain=posisi_pemain) }}" class="btn btn-primary">Cetak
+                PDF</a>
             {% if table_data %}
             <table class="table table-sm table-striped table-hover">
                 <thead class="table-dark">

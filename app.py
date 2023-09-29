@@ -6,6 +6,7 @@ from flask import Flask, render_template, request, session, redirect, make_respo
 import psycopg2
 import hashlib
 import jinja2.ext
+from io import BytesIO
 import math
 from math import sqrt
 from decimal import Decimal, DivisionByZero
@@ -2074,6 +2075,135 @@ def generate_pdf_data_nilai_pemain():
             'Content-Disposition'] = f'attachment; filename=laporan_data_nilai_pemain_{posisi_pemain}.pdf'
 
         return response
+    else:
+        return redirect('/login')
+
+
+def get_moora_data(posisi_pemain):
+    cur.execute("SELECT p.nisn, p.nama_pemain, k.nama_kriteria, nk.nilai, k.id_kriteria "
+                "FROM tbl_nilai_kriteria nk "
+                "JOIN tbl_pemain p ON nk.nisn = p.nisn "
+                "JOIN tbl_kriteria k ON nk.id_kriteria = k.id_kriteria "
+                "WHERE p.posisi = %s", (posisi_pemain,))
+    data_nilai_kriteria = cur.fetchall()
+
+    # Gunakan Function normalisasi matriks
+    sum_data = calculate_sum_of_squared_values(data_nilai_kriteria)
+
+    # Buat dataframe lalu lakukan perhitungan kuadrat tiap nilai kriteria
+    pivot_df_squared = create_pivot_df(
+        data_nilai_kriteria, squared=True)
+
+    # Buat Dataframe untuk pengakaran
+    pivot_df_divisi_akar = create_pivot_df_divisi_akar(
+        pivot_df_squared, sum_data, posisi_pemain, cur)
+
+    # konversi nilai dari pengakaran ke decimal.Decimal
+    pivot_df_divisi_akar = pivot_df_divisi_akar.applymap(
+        decimal.Decimal)
+
+    # Ambil tipe kriteria (benefit atau cost) dari tbl_kriteria berdasarkan posisi
+    cur.execute(
+        "SELECT nama_kriteria, tipe FROM tbl_kriteria WHERE posisi = %s", (posisi_pemain,))
+    criteria_types = dict(cur.fetchall())
+
+    # Menghitung total nilai bertipe benefit dan cost untuk setiap pemain
+    pivot_df_divisi_akar['Total Benefit'] = decimal.Decimal(0.0)
+    pivot_df_divisi_akar['Total Cost'] = decimal.Decimal(0.0)
+
+    # perulangan untuk menjumlahkan tiap kriteria benefit dan cost
+    for kriteria in pivot_df_divisi_akar.columns:
+        nilai_kriteria = pivot_df_divisi_akar[kriteria]
+        tipe_kriteria = criteria_types.get(kriteria)
+
+        if tipe_kriteria == 'benefit':
+            pivot_df_divisi_akar['Total Benefit'] += nilai_kriteria
+        elif tipe_kriteria == 'cost':
+            pivot_df_divisi_akar['Total Cost'] += nilai_kriteria
+
+    # menghitung nilai optimasi dengan mengurangkan jumlah nilai benefit dikurang jumlah nilai cost
+    # \ adalah line continuation character.
+    pivot_df_divisi_akar['Nilai Moora'] = pivot_df_divisi_akar['Total Benefit'] - \
+        pivot_df_divisi_akar['Total Cost']
+
+    # Konversi nilai kedalam dictionary, table_data adalah hasil moora
+    table_data = pivot_df_divisi_akar.reset_index().to_dict(orient='records')
+    table_data.sort(key=lambda x: x['Nilai Moora'], reverse=True)
+
+    return table_data
+
+# Cetak PDF hasil MOORA
+
+
+@app.route('/cetak_pdf_moora', methods=['GET', 'POST'])
+def cetak_pdf_moora():
+    if 'user_id' in session:
+        user_id = session['user_id']
+        # Mendapatkan data yang akan dicetak ke PDF
+        posisi_pemain = request.args.get('posisi_pemain', 'GK')
+        # Ganti dengan fungsi yang sesuai
+        data_to_display = get_moora_data(posisi_pemain)
+        # Mendapatkan tanggal dan waktu saat laporan dibuat
+        current_datetime = datetime.datetime.now()
+        admin_name = get_admin_name(user_id)
+
+        # Membuat dokumen PDF
+        buffer = BytesIO()
+        pdf = SimpleDocTemplate(buffer, pagesize=letter)
+        elements = []
+
+        # Objek style untuk judul
+        title_style = getSampleStyleSheet()['Heading1']
+        title_style.alignment = 1  # Rata tengah
+        title_style.fontName = 'Helvetica-Bold'
+        title_style.fontSize = 20  # Ubah ukuran font sesuai kebutuhan
+
+        # Objek style untuk tanggal cetak
+        date_style = getSampleStyleSheet()['Normal']
+        date_style.alignment = 1  # Rata tengah
+        date_style.fontName = 'Helvetica'
+        date_style.fontSize = 8  # Ukuran font tanggal cetak
+
+        # Tambahkan judul data peserta seleksi ke PDF
+        # Tambahkan judul data peserta seleksi ke PDF
+        elements = [
+            Paragraph(f"Hasil Rekomendasi ({posisi_pemain})", title_style)]
+
+        # Tambahkan tanggal cetak ke PDF di bawah judul
+        elements.append(Paragraph(
+            "Tanggal Cetak: " + current_datetime.strftime("%d %B %Y %H:%M:%S"), date_style))
+
+        # Tambahkan nama pencetak ke PDF
+        elements.append(
+            Paragraph("Dicetak Oleh: " + admin_name[0], date_style))
+
+        # Tambahkan tabel dengan data MOORA ke PDF
+        data = [["Peringkat", "NISN", "Nama", "Nilai Moora"]]
+        for idx, row in enumerate(data_to_display, start=1):
+            data.append([idx, row['nisn'], row['nama_pemain'],
+                        round(row['Nilai Moora'], 7)])
+        t = Table(data, colWidths=[1 * inch, 1.5 *
+                  inch, 2.5 * inch, 1.5 * inch])
+        t.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        elements.append(t)
+
+        # Membuat dokumen PDF
+        pdf.build(elements)
+
+        # Mengatur posisi buffer ke awal
+        buffer.seek(0)
+
+        # Mengembalikan dokumen PDF sebagai respons
+        return Response(buffer.getvalue(), mimetype='application/pdf',
+                        headers={'Content-Disposition': f'attachment;filename=moora_{posisi_pemain}.pdf'})
     else:
         return redirect('/login')
 
