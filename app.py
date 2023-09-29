@@ -22,6 +22,9 @@ from tempfile import NamedTemporaryFile
 import io
 import datetime
 from reportlab.lib.styles import getSampleStyleSheet
+import matplotlib.pyplot as plt
+import base64
+import plotly.express as px
 
 app = Flask(__name__)
 app.secret_key = 'wasdqwerty'
@@ -176,6 +179,14 @@ def get_admin_name(user_id):
                 "WHERE a.id_user = %s", (user_id,))
     admin_name = cur.fetchone()
     return admin_name
+
+# Fungsi untuk mengambil data jumlah pemain berdasarkan posisi
+
+
+def get_data_per_posisi():
+    cur.execute("SELECT posisi, COUNT(*) FROM tbl_pemain GROUP BY posisi")
+    data = cur.fetchall()
+    return data
 # Baris Function (END) ===============================
 
 
@@ -381,7 +392,9 @@ def halaman_admin():
         user_id = session['user_id']
         username = get_username(user_id)
 
-        return render_template('dashboard.html', username=username, jumlah_pemain=jumlah_pemain, jumlah_penilai=jumlah_penilai, jumlah_pemain_dinilai=jumlah_pemain_dinilai)
+        data_posisi = get_data_per_posisi()
+
+        return render_template('dashboard.html', data_posisi=data_posisi, username=username, jumlah_pemain=jumlah_pemain, jumlah_penilai=jumlah_penilai, jumlah_pemain_dinilai=jumlah_pemain_dinilai)
     else:
         return redirect('/login')
 

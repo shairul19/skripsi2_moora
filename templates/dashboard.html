@@ -12,33 +12,106 @@ Dashboard
         <h3> <i class="fa-solid fa-chart-line icon"></i> DASHBOARD</h3>
         <hr>
 
+
         <div class="row">
-            <div class="card bg-light m-2 shadow" style="max-width: 20rem;">
-                <div class="card-body text-dark">
+            <div class="card bg-primary m-2 shadow" style="max-width: 25rem;">
+                <div class="card-body text-light">
                     <h4 class="card-title">Data Pemain</h4>
                     <hr>
-                    <p class="card-text fs-1 text-dark">{{ jumlah_pemain }}</p>
+                    <p class="card-text fs-1 text-light">{{ jumlah_pemain }}</p>
                 </div>
             </div>
 
-            <div class="card bg-light  m-2 shadow" style="max-width: 20rem;">
-                <div class="card-body text-dark">
+            <div class="card bg-warning  m-2 shadow" style="max-width: 25rem;">
+                <div class="card-body text-light">
                     <h4 class="card-title">Data Penilai</h4>
                     <hr>
-                    <p class="card-text fs-1 text-dark">{{ jumlah_penilai }}</p>
+                    <p class="card-text fs-1 text-light">{{ jumlah_penilai }}</p>
                 </div>
 
             </div>
 
-            <div class="card bg-light  m-2 shadow" style="max-width: 20rem;">
-                <div class="card-body text-dark">
+            <div class="card bg-success  m-2 shadow" style="max-width: 25rem;">
+                <div class="card-body text-light">
                     <h4 class="card-title">Pemain Dinilai</h4>
                     <hr>
-                    <p class="card-text fs-1 text-dark">{{ jumlah_pemain_dinilai }}</p>
+                    <p class="card-text fs-1 text-light">{{ jumlah_pemain_dinilai }}</p>
                 </div>
             </div>
         </div>
-    </div>
+        <div class="row">
+            <div class="card text-white bg-primary mb-3 mt-4" style="max-width: 25rem;">
+
+                <div class="card-header text-center">Jumlah Peserta</div>
+                <!-- .row start -->
+                <div class="card-body bg-white">
+
+
+                    <!-- .col start -->
+                    <div class="col-lg-6">
+                        <table class="table table-striped table-hover" style="width: 220%;">
+                            <thead class=".table-striped text-center">
+                                <th>No</th>
+                                <th>Posisi</th>
+                                <th>Jumlah Peserta</th>
+                            </thead>
+                            <tbody class="text-center">
+                                {% for posisi, jumlah in data_posisi %}
+                                <tr>
+                                    <td>{{loop.index}}</td>
+                                    <td>{{ posisi }} </td>
+                                    <td>{{ jumlah }} Peserta</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+
+                    </div>
+                    <!-- .col end -->
+
+
+                </div>
+                <!-- .row end -->
+            </div>
+            <div class="card text-white bg-primary mb-3 mt-4" style="max-width: 25rem;">
+
+                <div class="card-header text-center">Jumlah Peserta</div>
+                <!-- .row start -->
+                <div class="card-body bg-white">
+
+
+                    <!-- .col start -->
+                    <div class="col-lg-6">
+                        <table class="table table-striped table-hover" style="width: 220%;">
+                            <thead class=".table-striped text-center">
+                                <th>No</th>
+                                <th>Posisi</th>
+                                <th>Jumlah Peserta</th>
+                            </thead>
+                            <tbody class="text-center">
+                                {% for posisi, jumlah in data_posisi %}
+                                <tr>
+                                    <td>{{loop.index}}</td>
+                                    <td>{{ posisi }} </td>
+                                    <td>{{ jumlah }} Peserta</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+
+                    </div>
+                    <!-- .col end -->
+
+
+                </div>
+            </div>
+
+
+        </div>
 </main>
 <!--Main-->
+{% endblock %}
+{% block js %}
+
+
 {% endblock %}
