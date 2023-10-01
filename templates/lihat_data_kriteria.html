@@ -27,7 +27,8 @@ Data Kriteria
                     </i> Tambah</a>
             </div><br><br>
             {% endif %}
-
+            <div class="row">
+                <div class="col-md-6">
             <form method="POST">
                 <label for="posisi">Pilih Posisi:</label>
                 <select name="posisi" id="posisi">
@@ -39,13 +40,15 @@ Data Kriteria
                 </select>
                 <button type="submit" class="btn btn-secondary btn-sm">Tampilkan</button>
             </form>
-            <br><br>
+            </div>
             {% if 'user_id' in session and session['role'] == 'admin' or session['role'] == 'superadmin' %}
             <div class="col-md-6 d-flex justify-content-end">
                 <a href="/generate_pdf_data_kriteria" class="btn btn-primary"><i class="fa-solid fa-print"></i>
                     Cetak PDF</a>
             </div>
+        </div>
             {%endif%}
+            <div class="card bg-white p-3 mt-2 shadow">
             <table class="table table-sm table-striped table-hover">
                 <thead class="table-dark">
                     <tr>

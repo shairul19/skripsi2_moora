@@ -363,7 +363,9 @@ def halaman_pengguna():
         user_id = session['user_id']
         username = get_username(user_id)
 
-        return render_template('dashboard.html', username=username, jumlah_pemain=jumlah_pemain, jumlah_penilai=jumlah_penilai, jumlah_pemain_dinilai=jumlah_pemain_dinilai)
+        data_posisi = get_data_per_posisi()
+
+        return render_template('dashboard.html', data_posisi=data_posisi, username=username, jumlah_pemain=jumlah_pemain, jumlah_penilai=jumlah_penilai, jumlah_pemain_dinilai=jumlah_pemain_dinilai)
     else:
         return redirect('/login')
 

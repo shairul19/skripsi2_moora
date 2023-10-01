@@ -13,6 +13,7 @@ Hasil MOORA
         <hr>
 
         <div class="row">
+            <div class="col-md-6">
             <form method="POST">
                 <label for="posisi_pemain">Pilih Posisi Pemain:</label>
                 <select name="posisi_pemain" id="posisi_pemain">
@@ -23,11 +24,18 @@ Hasil MOORA
                 </select>
                 <input type="submit" value="Submit">
             </form>
-            <br><br>
-            <!-- Tambahkan tombol atau tautan untuk cetak PDF -->
-            <a href="{{ url_for('cetak_pdf_moora', posisi_pemain=posisi_pemain) }}" class="btn btn-primary">Cetak
-                PDF</a>
+        </div>
+            {% if 'user_id' in session and session['role'] == 'admin' or session['role'] == 'superadmin' %}
+            <div class="col-sm-6 d-flex justify-content-end">
+                <a href="{{ url_for('cetak_pdf_moora', posisi_pemain=posisi_pemain) }}" class="btn btn-primary"><i
+                    class="fa-solid fa-print"></i> Cetak PDF</a>
+            </div>
+        {%endif%}
+        
+    
+        
             {% if table_data %}
+            <div class="card bg-white p-3 mt-2 shadow">
             <table class="table table-sm table-striped table-hover">
                 <thead class="table-dark">
                     <tr>
