@@ -13,6 +13,7 @@ Data Pemain
         <hr>
 
         <div class="row">
+            <div class="card bg-white p-3 m-1 shadow">
             <form method="POST" action="/lihat_data_pemain">
                 <div class="container">
                     <div class="row">
@@ -28,7 +29,7 @@ Data Pemain
                                 <option value="MF" {% if posisi == 'MF' %}selected{% endif %}>Gelandang (MF)</option>
                                 <option value="FW" {% if posisi == 'FW' %}selected{% endif %}>Penyerang (FW)</option>
                             </select>
-                            <button type="submit" class="btn btn-secondary btn-sm">Tampilkan</button>
+                            <button type="submit" class="btn btn-primary btn-sm">Tampilkan</button>
                         </div>
                         {% if 'user_id' in session and session['role'] == 'admin' or session['role'] == 'superadmin' %}
                         <div class="col-md-6 d-flex justify-content-end">
@@ -49,10 +50,10 @@ Data Pemain
                     </div>
                 </div>
             </form>
+        </div>
+           
 
-            <p>
-
-
+                <div class="card bg-white p-2 m-1 shadow">
                 <table class="table table-sm table-striped table-hover">
                     <tr class="table-dark">
                         <th>No.</th>
@@ -142,10 +143,9 @@ Data Pemain
                         {% endif %}
                     </ul>
                 </nav>
-
+            </div>
                 {% endif %}
         </div>
-    </div>
 </main>
 <!--Main-->
 {% endblock %}
